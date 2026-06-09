@@ -1,0 +1,471 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#191919;--bg2:#222;--bg3:#2c2c2c;--bg4:#383838;
+--t:#f0efe8;--t2:#9a9990;--t3:#5a5955;
+--coral:#e8705a;--coral-bg:#241a18;--coral-dim:#3a2018;
+--teal:#3bbf8a;--teal-bg:#152620;
+--amber:#e8a840;--amber-bg:#231c0e;
+--blue:#5a9fd4;--blue-bg:#101c28;
+--purple:#9b7fe8;--purple-bg:#1a1428;
+--green:#5ab870;--green-bg:#122018;
+--border:#2a2a2a;--r:18px;--rsm:11px;
+}
+body{background:transparent;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif}
+
+.phone{width:375px;background:var(--bg);border-radius:46px;border:2.5px solid #303030;overflow:hidden;margin:0 auto;position:relative}
+.sbar{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 4px;font-size:12px;font-weight:600;color:var(--t)}
+.sbar-r{display:flex;gap:5px;align-items:center}
+.scroll{height:712px;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:88px}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── GREETING ── */
+.grt{padding:14px 18px 0;display:flex;justify-content:space-between;align-items:flex-start}
+.grt-l h1{font-size:25px;font-weight:700;color:var(--t);letter-spacing:-.5px;line-height:1.2}
+.grt-l p{font-size:13px;color:var(--t3);margin-top:4px}
+.grt-r{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.av{width:40px;height:40px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+.streak-pill{display:flex;align-items:center;gap:5px;background:var(--bg3);border:0.5px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--t2)}
+.streak-pill i{font-size:13px;color:var(--amber)}
+
+/* ── SECTION LABEL ── */
+.slbl{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:1.3px;text-transform:uppercase;padding:0 18px;margin:20px 0 11px}
+
+/* ══ SECTION 2 — HERO CAROUSEL ══ */
+.carousel-outer{overflow:hidden;padding:0 0 0 18px;position:relative}
+.carousel-track{display:flex;gap:12px;transition:transform .38s cubic-bezier(.4,0,.2,1);will-change:transform}
+.hero-card{
+  flex-shrink:0;width:315px;height:234px;border-radius:var(--r);
+  padding:22px 22px 18px;display:flex;flex-direction:column;justify-content:space-between;
+  cursor:pointer;position:relative;overflow:hidden;border:0.5px solid transparent;
+}
+.hc-recovery{background:var(--teal-bg);border-color:#1e4030}
+.hc-action{background:var(--coral-bg);border-color:#3a2218}
+.hc-edu{background:var(--purple-bg);border-color:#28183c}
+.hc-win{background:var(--amber-bg);border-color:#302010}
+.hc-upcoming{background:var(--blue-bg);border-color:#142030}
+
+.hc-badge{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;margin-bottom:14px;width:fit-content}
+.hcb-recovery{background:#1e3c2c;color:#3bbf8a}
+.hcb-action{background:#301a12;color:#e8705a}
+.hcb-edu{background:#241630;color:#9b7fe8}
+.hcb-win{background:#2c1e08;color:#e8a840}
+.hcb-upcoming{background:#0e1e30;color:#5a9fd4}
+
+.hc-badge i{font-size:13px}
+.hc-title{font-size:20px;font-weight:700;line-height:1.25;flex:1}
+.hc-recovery .hc-title{color:#c0e8d0}
+.hc-action .hc-title{color:#f0b0a0}
+.hc-edu .hc-title{color:#c8b8f8}
+.hc-win .hc-title{color:#f0c870}
+.hc-upcoming .hc-title{color:#90c8f0}
+
+.hc-sub{font-size:13px;line-height:1.45;margin-top:6px}
+.hc-recovery .hc-sub{color:#5a8a70}
+.hc-action .hc-sub{color:#a07060}
+.hc-edu .hc-sub{color:#7868a8}
+.hc-win .hc-sub{color:#a07828}
+.hc-upcoming .hc-sub{color:#4878a0}
+
+.hc-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.hc-cta{font-size:12px;font-weight:700;letter-spacing:.4px;padding:8px 14px;border-radius:20px;border:none;cursor:pointer}
+.hc-recovery .hc-cta{background:#1e3c2c;color:var(--teal)}
+.hc-action .hc-cta{background:var(--coral);color:#fff}
+.hc-edu .hc-cta{background:#241630;color:var(--purple)}
+.hc-win .hc-cta{background:#2c1e08;color:var(--amber)}
+.hc-upcoming .hc-cta{background:#0e1e30;color:var(--blue)}
+.hc-cta:active{opacity:.8}
+.hc-read{font-size:11px}
+.hc-recovery .hc-read{color:#3a6a50}
+.hc-edu .hc-read{color:#4a3870}
+
+.dots{display:flex;justify-content:center;gap:6px;margin-top:12px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--bg4);transition:all .25s;cursor:pointer}
+.dot.on{background:var(--coral);width:18px;border-radius:3px}
+
+/* ══ SECTION 3 — CHECK-IN ══ */
+.ci-card{margin:0 18px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:20px}
+.ci-q{font-size:18px;font-weight:700;color:var(--t);margin-bottom:16px;line-height:1.25}
+.mood-row{display:flex;gap:6px;margin-bottom:14px}
+.mb{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;background:var(--bg3);border:1.5px solid transparent;border-radius:var(--rsm);cursor:pointer;transition:all .15s}
+.mb i{font-size:19px;color:var(--t3)}
+.mb span{font-size:9px;color:var(--t3);text-align:center;line-height:1.2}
+.mb.sel{border-color:var(--coral);background:var(--coral-bg)}
+.mb.sel i,.mb.sel span{color:var(--coral)}
+.ci-note{width:100%;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--rsm);color:var(--t);font-size:13px;padding:11px 13px;resize:none;outline:none;font-family:inherit;transition:border-color .15s;display:block;margin-bottom:13px}
+.ci-note:focus{border-color:var(--coral)}
+.ci-note::placeholder{color:var(--t3)}
+.ci-btn{width:100%;background:var(--coral);border:none;border-radius:var(--rsm);color:#fff;font-size:14px;font-weight:600;padding:13px;cursor:pointer;opacity:.35;transition:opacity .15s}
+.ci-btn.rdy{opacity:1}
+.ci-btn:active{opacity:.8}
+
+.ci-done{display:none}
+.ci-done.show{display:block}
+.ci-d-top{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+.ci-ring{width:50px;height:50px;border-radius:50%;border:2px solid var(--coral);background:var(--coral-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ci-ring i{font-size:22px;color:var(--coral)}
+.ci-d-mood{font-size:19px;font-weight:700;color:var(--t)}
+.ci-d-time{font-size:12px;color:var(--t3);margin-top:2px}
+.ci-d-note{font-size:13px;color:var(--t2);font-style:italic;background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:12px;line-height:1.4}
+.ci-ref{background:var(--teal-bg);border:0.5px solid #253c30;border-radius:var(--rsm);padding:12px;margin-bottom:12px}
+.ci-ref-lbl{font-size:10px;font-weight:700;color:var(--teal);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.ci-ref-body{font-size:13px;color:#7ab89a;line-height:1.5}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{background:var(--bg3);border:0.5px solid var(--border);border-radius:20px;padding:5px 10px;font-size:11px;color:var(--t2);display:flex;align-items:center;gap:5px}
+.chip i{font-size:12px;color:var(--teal)}
+.chip.win i{color:var(--amber)}
+
+/* ══ SECTION 4 — FEED ══ */
+.fc{margin:0 18px 10px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:17px}
+.fc-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.ftype{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+.ft-rec{background:#182414;color:#5aaa48}
+.ft-rem{background:#202020;color:var(--t3)}
+.ft-pat{background:var(--amber-bg);color:#b08030}
+.ft-edu{background:var(--purple-bg);color:#8868c8}
+.ft-ref{background:#181420;color:#7868a8}
+.ft-prog{background:var(--teal-bg);color:#3aaa78}
+.ft-win{background:#102018;color:var(--teal)}
+.fc-spark{display:flex;align-items:center;gap:3px}
+.fc-spark i{font-size:13px;color:var(--t3)}
+.fc-title{font-size:15px;font-weight:600;color:var(--t);margin-bottom:6px;line-height:1.3}
+.fc-body{font-size:13px;color:var(--t2);line-height:1.5;margin-bottom:12px}
+.fc-read{font-size:11px;color:var(--t3);margin-bottom:10px}
+.btns{display:flex;gap:7px}
+.fb{flex:1;background:var(--bg3);border:0.5px solid var(--border);border-radius:9px;color:var(--t2);font-size:12px;font-weight:600;padding:10px 8px;cursor:pointer;text-align:center;transition:background .15s}
+.fb:active{background:var(--bg4)}
+.fb.pri{background:var(--coral);border-color:var(--coral);color:#fff}
+.fb.pri:active{opacity:.85}
+.fb.done{background:var(--teal-bg);border-color:#253c30;color:var(--teal);cursor:default}
+.fc-prog-bar{height:3px;background:var(--bg4);border-radius:3px;margin:10px 0 4px}
+.fc-prog-fill{height:3px;border-radius:3px;background:var(--teal)}
+.fc-prog-lbl{font-size:11px;color:var(--t3)}
+.more{display:block;text-align:center;font-size:13px;color:var(--t3);padding:11px;margin:4px 18px 0;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--rsm);cursor:pointer}
+.more:active{background:var(--bg3)}
+
+/* ══ SECTION 5 — QUICK ACTIONS ══ */
+.qa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 18px}
+.qa{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--rsm);padding:15px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;transition:background .15s}
+.qa:active{background:var(--bg3)}
+.qa i{font-size:21px;color:var(--coral)}
+.qa span{font-size:11px;color:var(--t2)}
+
+/* ── BOTTOM NAV ── */
+.bnav{position:absolute;bottom:0;left:0;right:0;background:var(--bg2);border-top:0.5px solid var(--border);padding:9px 0 20px;display:flex;justify-content:space-around;z-index:5}
+.bni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.bni i{font-size:21px;color:var(--t3)}
+.bni span{font-size:10px;color:var(--t3)}
+.bni.active i,.bni.active span{color:var(--coral)}
+.bni-bg{background:var(--coral-bg);border-radius:10px;padding:3px 14px}
+
+/* ── MODAL ── */
+.mwrap{display:none;position:absolute;inset:0;background:#000000b0;z-index:30;align-items:flex-end;border-radius:44px;overflow:hidden}
+.mwrap.open{display:flex}
+.msheet{background:var(--bg2);border-radius:22px 22px 0 0;padding:18px 18px 30px;width:100%}
+.mh{width:36px;height:4px;background:var(--bg4);border-radius:4px;margin:0 auto 16px}
+.mt{font-size:16px;font-weight:700;color:var(--t);margin-bottom:8px}
+.mb2{font-size:13px;color:var(--t2);line-height:1.65;white-space:pre-line}
+.mclose{display:block;width:100%;margin-top:16px;padding:12px;background:var(--bg3);border:none;border-radius:var(--rsm);color:var(--t2);font-size:14px;cursor:pointer;text-align:center}
+</style>
+
+<div class="phone">
+  <div class="sbar">
+    <span>9:41</span>
+    <div class="sbar-r">
+      <i class="ti ti-wifi" style="font-size:14px" aria-hidden="true"></i>
+      <i class="ti ti-battery-2" style="font-size:14px" aria-hidden="true"></i>
+    </div>
+  </div>
+
+  <div class="scroll">
+
+    <!-- ── S1: GREETING ── -->
+    <div class="grt">
+      <div class="grt-l">
+        <h1>Good morning,<br>Subigya</h1>
+        <p>Wednesday, June 10</p>
+      </div>
+      <div class="grt-r">
+        <div class="av">SU</div>
+        <div class="streak-pill"><i class="ti ti-flame" aria-hidden="true"></i>7 day streak</div>
+      </div>
+    </div>
+
+    <!-- ── S2: FOR YOU TODAY CAROUSEL ── -->
+    <div class="slbl" style="margin-top:18px">For you today</div>
+    <div class="carousel-outer" id="carouselOuter">
+      <div class="carousel-track" id="track">
+
+        <!-- Card 1: Recovery window -->
+        <div class="hero-card hc-recovery" onclick="openM('Stable recovery window','Your gut patterns have been stable for 4 consecutive days — your longest run this month.\n\nStable periods are the best time to identify true baselines. Logging carefully today will dramatically improve the accuracy of future predictions.\n\nSymptoms logged this week: 2 minor episodes vs 6 last week.')">
+          <div>
+            <div class="hc-badge hcb-recovery"><i class="ti ti-leaf" aria-hidden="true"></i>Recovery window</div>
+            <div class="hc-title">4 stable days in a row</div>
+            <div class="hc-sub">Your longest stable period this month. A good moment to establish your baseline.</div>
+          </div>
+          <div class="hc-footer">
+            <button class="hc-cta" onclick="event.stopPropagation();openM('Stable recovery window','Your gut patterns have been stable for 4 consecutive days — your longest run this month.\n\nStable periods are the best time to identify true baselines. Logging carefully today will dramatically improve the accuracy of future predictions.\n\nSymptoms logged this week: 2 minor episodes vs 6 last week.')">View details →</button>
+            <span class="hc-read" style="color:#3a6a50">Updated just now</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Recommended action -->
+        <div class="hero-card hc-action" onclick="openM('Why lunch timing matters','On days you eat before 1 PM, your afternoon symptom scores average 40% lower.\n\nThis pattern has held across 18 of your last 22 tracked days.\n\nEating earlier reduces gastric acid build-up and gives your digestive system more time to process before the afternoon cortisol dip.')">
+          <div>
+            <div class="hc-badge hcb-action"><i class="ti ti-sparkles" aria-hidden="true"></i>Recommended today</div>
+            <div class="hc-title">Eat lunch before 1 PM</div>
+            <div class="hc-sub">On days you do this, afternoon symptoms are 40% lower on average.</div>
+          </div>
+          <div class="hc-footer">
+            <button class="hc-cta" id="heroLunch" onclick="event.stopPropagation();heroMark('heroLunch','Marked complete')">Mark complete</button>
+            <span class="hc-read" style="color:#a07060">Personalized for you</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Gut insight -->
+        <div class="hero-card hc-edu" onclick="openM('Why stress affects your gut','Your gut has over 100 million nerve cells — more than your spinal cord. It communicates directly with your brain via the vagus nerve.\n\nWhen stress activates your nervous system, blood flow shifts away from digestion. Gut motility slows, the gut lining becomes more permeable, and bacterial balance can shift — all of which amplify symptoms.\n\nThis is why stress is currently your #1 symptom predictor. The good news: breathing exercises, consistent sleep, and even brief walks measurably reduce gut reactivity within days.')">
+          <div>
+            <div class="hc-badge hcb-edu"><i class="ti ti-book" aria-hidden="true"></i>Gut insight</div>
+            <div class="hc-title">Why does stress affect digestion?</div>
+            <div class="hc-sub">Learn how the gut-brain axis drives your symptoms — and what you can do about it.</div>
+          </div>
+          <div class="hc-footer">
+            <button class="hc-cta" onclick="event.stopPropagation();openM('Why stress affects your gut','Your gut has over 100 million nerve cells — more than your spinal cord. It communicates directly with your brain via the vagus nerve.\n\nWhen stress activates your nervous system, blood flow shifts away from digestion. Gut motility slows, the gut lining becomes more permeable, and bacterial balance can shift — all of which amplify symptoms.\n\nThis is why stress is currently your #1 symptom predictor. The good news: breathing exercises, consistent sleep, and even brief walks measurably reduce gut reactivity within days.')">Read more →</button>
+            <span class="hc-read">2 min read</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Win -->
+        <div class="hero-card hc-win" onclick="openM('14-day medication streak','This is your longest streak ever — and it\'s having a measurable effect.\n\nDuring this 14-day window:\n· Urgency episodes: down from ~5/wk to ~2/wk\n· Bloating severity: down 18%\n· Gut baseline score: steady improvement\n\nConsistent medication adherence is one of the highest-impact changes you can make. Keep going.')">
+          <div>
+            <div class="hc-badge hcb-win"><i class="ti ti-trophy" aria-hidden="true"></i>Achievement</div>
+            <div class="hc-title">14-day medication streak</div>
+            <div class="hc-sub">Your longest ever — and urgency episodes are already down 60% this window.</div>
+          </div>
+          <div class="hc-footer">
+            <button class="hc-cta" onclick="event.stopPropagation();openM('14-day medication streak','This is your longest streak ever — and it\'s having a measurable effect.\n\nDuring this 14-day window:\n· Urgency episodes: down from ~5/wk to ~2/wk\n· Bloating severity: down 18%\n· Gut baseline score: steady improvement\n\nConsistent medication adherence is one of the highest-impact changes you can make. Keep going.')">See progress →</button>
+            <span class="hc-read" style="color:#a07828">Unlocked today</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="dots" id="dots">
+      <div class="dot on" onclick="goTo(0)"></div>
+      <div class="dot" onclick="goTo(1)"></div>
+      <div class="dot" onclick="goTo(2)"></div>
+      <div class="dot" onclick="goTo(3)"></div>
+    </div>
+
+    <!-- ── S3: DAILY CHECK-IN ── -->
+    <div class="slbl">Daily check-in</div>
+    <div class="ci-card">
+
+      <div id="ciPre">
+        <div class="ci-q">How are you feeling today?</div>
+        <div class="mood-row">
+          <div class="mb" onclick="pickM(this,'great','ti-mood-happy','Great','4 great mornings this month. Great days follow 7+ hrs sleep 80% of the time.')">
+            <i class="ti ti-mood-happy" aria-hidden="true"></i><span>Great</span>
+          </div>
+          <div class="mb" onclick="pickM(this,'good','ti-mood-smile','Good','Good days correlate strongly with adequate hydration before noon.')">
+            <i class="ti ti-mood-smile" aria-hidden="true"></i><span>Good</span>
+          </div>
+          <div class="mb" onclick="pickM(this,'okay','ti-mood-neutral','Okay','Okay mornings often improve after a light early lunch. Try eating before 1 PM.')">
+            <i class="ti ti-mood-neutral" aria-hidden="true"></i><span>Okay</span>
+          </div>
+          <div class="mb" onclick="pickM(this,'notgreat','ti-mood-sad','Not great','You\'ve reported similar mornings 3 times this month. Symptoms typically improve after lunch.')">
+            <i class="ti ti-mood-sad" aria-hidden="true"></i><span>Not great</span>
+          </div>
+          <div class="mb" onclick="pickM(this,'bad','ti-mood-confuzed','Struggling','Struggling days are your body asking for rest. Take it easy and log what you feel.')">
+            <i class="ti ti-mood-confuzed" aria-hidden="true"></i><span>Struggling</span>
+          </div>
+        </div>
+        <textarea class="ci-note" id="ciTxt" rows="2" placeholder="Anything you'd like to share? (optional)" oninput="chkRdy()"></textarea>
+        <button class="ci-btn" id="ciBtn" disabled onclick="saveCI()">Save check-in</button>
+      </div>
+
+      <div class="ci-done" id="ciDone">
+        <div class="ci-d-top">
+          <div class="ci-ring"><i class="ti" id="ciIc" aria-hidden="true"></i></div>
+          <div>
+            <div class="ci-d-mood" id="ciMood">Not great</div>
+            <div class="ci-d-time">Checked in · just now</div>
+          </div>
+        </div>
+        <div class="ci-d-note" id="ciNote2"></div>
+        <div class="ci-ref">
+          <div class="ci-ref-lbl">Today's reflection</div>
+          <div class="ci-ref-body" id="ciRef"></div>
+        </div>
+        <div class="chips">
+          <div class="chip"><i class="ti ti-trending-up" aria-hidden="true"></i>Bloating ↓ 18%</div>
+          <div class="chip"><i class="ti ti-moon" aria-hidden="true"></i>Sleep +42 min</div>
+          <div class="chip win"><i class="ti ti-trophy" aria-hidden="true"></i>7-day streak</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── S4: FEED ── -->
+    <div class="slbl">Your feed</div>
+
+    <div class="fc">
+      <div class="fc-meta"><span class="ftype ft-rec">Action</span><div class="fc-spark"><i class="ti ti-sparkles" aria-hidden="true"></i></div></div>
+      <div class="fc-title">Reach your hydration target today</div>
+      <div class="fc-body">You've been below target for 2 days. Low hydration correlates with harder stools and increased urgency risk in your data.</div>
+      <div class="btns">
+        <div class="fb pri" id="hydDone" onclick="markD('hydDone','Logged · keep going')">Log water</div>
+        <div class="fb" onclick="openM('Why hydration matters for gut health','Adequate hydration softens stool, reduces bowel transit time, and keeps the gut lining lubricated.\n\nYour target: 2L daily\nToday so far: ~900ml\nGap: ~1.1L\n\nTip: A glass before each meal adds ~600ml with minimal effort.')">Learn more</div>
+      </div>
+    </div>
+
+    <div class="fc">
+      <div class="fc-meta"><span class="ftype ft-rem">Reminder</span></div>
+      <div class="fc-title">Evening probiotic due at 7 PM</div>
+      <div class="fc-body">Day 14 of your streak. Don't break it — this is your highest-impact daily habit right now.</div>
+      <div class="btns">
+        <div class="fb pri" id="medDone" onclick="markD('medDone','Taken · streak continues')">Mark taken</div>
+        <div class="fb" onclick="openM('Snoozed','We\'ll remind you again at 6:50 PM.')">Snooze</div>
+      </div>
+    </div>
+
+    <div class="fc">
+      <div class="fc-meta"><span class="ftype ft-pat">Pattern</span></div>
+      <div class="fc-title">Stress remains your strongest symptom driver</div>
+      <div class="fc-body">For the 3rd consecutive week, stress signal outranks diet and sleep as your top predictor. On high-stress days your symptom risk is 2× baseline.</div>
+      <div class="btns">
+        <div class="fb pri" onclick="openM('2-minute breathing routine','This is backed by your own data — not just general advice.\n\nTry this before meals or when tension rises:\n· Inhale 4 counts\n· Hold 4 counts\n· Exhale 6 counts\n· Repeat 4 times\n\nTakes under 2 minutes. Measurably reduces gut reactivity when done consistently.')">Try breathing routine</div>
+        <div class="fb" onclick="openM('Stress pattern details','Weeks where your stress signal is elevated:\n· Symptom episodes: avg 6.2 per week\n· Weeks with low stress signal:\n· Symptom episodes: avg 3.1 per week\n\nStress became your top predictor around 3 weeks ago, overtaking diet.')">View pattern</div>
+      </div>
+    </div>
+
+    <div class="fc">
+      <div class="fc-meta"><span class="ftype ft-ref">Reflection</span></div>
+      <div class="fc-title">Symptoms increased 2 hours after yesterday's dinner</div>
+      <div class="fc-body">Dinner included onion and garlic — both on your sensitivity list. Bloating logged at 9:50 PM. This association has appeared 3 times in 30 days.</div>
+      <div class="btns">
+        <div class="fb pri" onclick="openM('Meal & symptom timeline','Dinner: 7:42 PM\nFoods logged: onion-based dish\nBloating (4/10): 9:50 PM\nDelay: ~2 hours\n\nThis onion/garlic → bloating pattern has appeared 3 times in the past 30 days with a consistent 2-hour window.\n\nSuggestion: try removing these from dinner for 1 week and see if morning symptoms shift.')">View meal log</div>
+      </div>
+    </div>
+
+    <div class="fc">
+      <div class="fc-meta"><span class="ftype ft-prog">Progress</span></div>
+      <div class="fc-title">Urgency down 24% vs last month</div>
+      <div class="fc-body">2 fewer episodes this week. Medication consistency and meal logging are the likely drivers — both trending up.</div>
+      <div class="fc-prog-bar"><div class="fc-prog-fill" style="width:76%"></div></div>
+      <div class="fc-prog-lbl">24% improvement vs monthly baseline</div>
+    </div>
+
+    <div class="more" onclick="openM('More insights coming','You\'ve seen your 5 highest-priority cards for this morning.\n\nAs you log meals and symptoms throughout the day, your feed will refresh with new insights by afternoon.\n\nCheck back this evening for your daily reflection and progress summary.')">View more insights →</div>
+
+    <!-- ── S5: QUICK ACTIONS ── -->
+    <div class="slbl" style="margin-top:20px">Quick log</div>
+    <div class="qa-grid">
+      <div class="qa" onclick="openM('Log a meal','Select food items, meal time, and portion size. Trigger foods are flagged automatically.')"><i class="ti ti-bowl-spoon" aria-hidden="true"></i><span>Meal</span></div>
+      <div class="qa" onclick="openM('Log a symptom','Rate severity 1–10 and type: bloating, urgency, pain, nausea, or other. Time auto-fills.')"><i class="ti ti-activity-heartbeat" aria-hidden="true"></i><span>Symptom</span></div>
+      <div class="qa" onclick="openM('Log bowel movement','Bristol scale selector, timing, and consistency notes.')"><i class="ti ti-wave-sine" aria-hidden="true"></i><span>Bowel</span></div>
+      <div class="qa" onclick="openM('Log water intake','Quick add: +250ml · +500ml · custom. Today\'s total updates instantly.')"><i class="ti ti-droplet" aria-hidden="true"></i><span>Water</span></div>
+      <div class="qa" onclick="openM('Log medication','Mark taken, add time, note any side effects.')"><i class="ti ti-pill" aria-hidden="true"></i><span>Medication</span></div>
+      <div class="qa" onclick="openM('Add a note','Free text — anything that doesn\'t fit the other categories.')"><i class="ti ti-notes" aria-hidden="true"></i><span>Note</span></div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <div class="bni active">
+      <div class="bni-bg"><i class="ti ti-sun" aria-hidden="true"></i></div>
+      <span>Today</span>
+    </div>
+    <div class="bni"><i class="ti ti-pencil" aria-hidden="true"></i><span>Track</span></div>
+    <div class="bni"><i class="ti ti-chart-bar" aria-hidden="true"></i><span>Pattern</span></div>
+    <div class="bni"><i class="ti ti-heart" aria-hidden="true"></i><span>Care</span></div>
+    <div class="bni"><i class="ti ti-message-circle" aria-hidden="true"></i><span>Chat</span></div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="mwrap" id="mwrap" onclick="closeMod(event)">
+    <div class="msheet" onclick="event.stopPropagation()">
+      <div class="mh"></div>
+      <div class="mt" id="mT"></div>
+      <div class="mb2" id="mB"></div>
+      <button class="mclose" onclick="closeMod()">Close</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var cur=0,total=4,moodSel=null,moodIc=null,moodRef=null;
+
+function goTo(i){
+  cur=i;
+  var tw=315+12;
+  document.getElementById('track').style.transform='translateX(-'+cur*tw+'px)';
+  document.querySelectorAll('.dot').forEach(function(d,j){
+    d.className=j===cur?'dot on':'dot';
+  });
+}
+
+(function(){
+  var outer=document.getElementById('carouselOuter');
+  var startX=0,dragging=false;
+  outer.addEventListener('touchstart',function(e){startX=e.touches[0].clientX;dragging=true;},{passive:true});
+  outer.addEventListener('touchend',function(e){
+    if(!dragging)return;
+    var dx=e.changedTouches[0].clientX-startX;
+    if(dx<-40&&cur<total-1)goTo(cur+1);
+    else if(dx>40&&cur>0)goTo(cur-1);
+    dragging=false;
+  },{passive:true});
+  outer.addEventListener('mousedown',function(e){startX=e.clientX;dragging=true;});
+  outer.addEventListener('mouseup',function(e){
+    if(!dragging)return;
+    var dx=e.clientX-startX;
+    if(dx<-40&&cur<total-1)goTo(cur+1);
+    else if(dx>40&&cur>0)goTo(cur-1);
+    dragging=false;
+  });
+})();
+
+function heroMark(id,lbl){
+  var el=document.getElementById(id);
+  if(el){el.textContent=lbl;el.style.background='#152620';el.style.color='#3bbf8a';el.style.borderColor='#253c30';el.onclick=null;}
+}
+
+function pickM(el,m,ic,lbl,ref){
+  document.querySelectorAll('.mb').forEach(function(b){b.classList.remove('sel')});
+  el.classList.add('sel');
+  moodSel=lbl;moodIc=ic;moodRef=ref;
+  chkRdy();
+}
+function chkRdy(){
+  var btn=document.getElementById('ciBtn');
+  if(moodSel){btn.disabled=false;btn.classList.add('rdy');}
+}
+function saveCI(){
+  if(!moodSel)return;
+  var note=document.getElementById('ciTxt').value.trim()||'No additional notes today.';
+  document.getElementById('ciPre').style.display='none';
+  var d=document.getElementById('ciDone');
+  d.classList.add('show');
+  document.getElementById('ciIc').className='ti '+moodIc;
+  document.getElementById('ciMood').textContent=moodSel;
+  document.getElementById('ciNote2').textContent='"'+note+'"';
+  document.getElementById('ciRef').textContent=moodRef;
+}
+function markD(id,lbl){
+  var el=document.getElementById(id);
+  if(el&&!el.classList.contains('done')){el.textContent=lbl;el.className='fb done';}
+}
+function openM(t,b){
+  document.getElementById('mT').textContent=t;
+  document.getElementById('mB').textContent=b;
+  document.getElementById('mwrap').classList.add('open');
+}
+function closeMod(e){
+  if(!e||e.target===document.getElementById('mwrap'))
+    document.getElementById('mwrap').classList.remove('open');
+}
+</script>

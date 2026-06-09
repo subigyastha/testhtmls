@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gutsphere Today — Rounded Card Interactive Prototype</title>
+<style>
+:root{
+  --bg:#F7F5F1;
+  --surface:#FFFFFF;
+  --surfaceWarm:#FFF7EC;
+  --text:#1E293B;
+  --muted:#64748B;
+  --brand:#7466F0;
+  --brand2:#8EE0C2;
+  --brandSoft:#EDEBFF;
+  --green:#22A06B;
+  --amber:#F2A93B;
+  --red:#E76F51;
+  --line:#E9E2D8;
+  --shadow:0 16px 42px rgba(30,41,59,.08);
+  --radius:24px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:linear-gradient(180deg,#FBFAF6,#EEEAE2);
+}
+.wrapper{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:minmax(420px,1fr) 370px;
+  gap:28px;
+  padding:28px;
+}
+.phone-shell{
+  width:390px;
+  height:844px;
+  margin:auto;
+  background:#111827;
+  border-radius:46px;
+  padding:14px;
+  box-shadow:0 28px 90px rgba(0,0,0,.3);
+}
+.phone{
+  height:100%;
+  overflow:auto;
+  background:var(--bg);
+  border-radius:34px;
+  padding:22px 18px 96px;
+  scroll-behavior:smooth;
+}
+.phone::-webkit-scrollbar{display:none}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:flex-start;
+  margin-bottom:22px;
+}
+h1,h2,h3,p{margin:0}
+h1{font-size:29px;line-height:1.05;letter-spacing:-.045em}
+h2{font-size:20px;letter-spacing:-.035em;margin:22px 0 12px}
+h3{font-size:17px;letter-spacing:-.025em;line-height:1.2}
+p{font-size:15px;line-height:1.45;color:#475569;margin-top:8px}
+.eyebrow{font-size:13px;color:var(--muted);margin-top:6px}
+.avatar{
+  width:44px;height:44px;border-radius:50%;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  color:white;font-weight:900;
+}
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+}
+.section-title span{font-size:13px;color:var(--muted)}
+.today-rail{
+  display:flex;
+  gap:14px;
+  overflow-x:auto;
+  margin:0 -18px 8px;
+  padding:4px 18px 18px;
+  scroll-snap-type:x mandatory;
+}
+.today-rail::-webkit-scrollbar{display:none}
+.today-card{
+  flex:0 0 282px;
+  min-height:164px;
+  border-radius:26px;
+  padding:18px;
+  background:white;
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+  scroll-snap-align:start;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.today-card:hover{transform:translateY(-2px)}
+.today-card::after{
+  content:"";
+  position:absolute;
+  width:120px;height:120px;border-radius:50%;
+  right:-48px;bottom:-58px;
+  background:rgba(116,102,240,.08);
+}
+.today-card.checkin{
+  background:linear-gradient(135deg,#FFFFFF,#F2F0FF);
+  border-color:#DDD8FF;
+}
+.today-card.sleep{
+  background:linear-gradient(135deg,#FFFFFF,#EFF6FF);
+}
+.today-card.action{
+  background:linear-gradient(135deg,#FFFFFF,#FFF5DF);
+}
+.today-card.learn{
+  background:linear-gradient(135deg,#FFFFFF,#ECFDF5);
+}
+.today-card.progress{
+  background:linear-gradient(135deg,#FFFFFF,#F8EFFF);
+}
+.card-kicker{
+  display:flex;align-items:center;gap:8px;
+  color:#334155;
+  font-weight:800;
+  font-size:13px;
+  margin-bottom:12px;
+}
+.icon{
+  width:34px;height:34px;border-radius:13px;
+  display:grid;place-items:center;
+  background:rgba(255,255,255,.72);
+  box-shadow:0 8px 24px rgba(30,41,59,.07);
+  font-size:19px;
+}
+.card-title{font-size:20px;font-weight:900;letter-spacing:-.04em;line-height:1.06}
+.today-card .micro{
+  position:absolute;
+  bottom:16px;
+  left:18px;
+  font-size:13px;
+  color:var(--brand);
+  font-weight:900;
+}
+.mood-inline{
+  display:flex;gap:7px;margin-top:13px;
+}
+.mood-pill{
+  background:rgba(255,255,255,.76);
+  border:1px solid rgba(116,102,240,.16);
+  padding:8px 10px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:13px;
+}
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px;
+  margin:14px 0;
+}
+.featured{
+  background:linear-gradient(135deg,#FFFFFF,#FFF6E8);
+  border-color:#F3DEC1;
+}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 10px;
+  border-radius:999px;
+  background:var(--brandSoft);
+  color:var(--brand);
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+.card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+button{
+  appearance:none;
+  border:0;
+  border-radius:14px;
+  padding:11px 14px;
+  font-weight:900;
+  cursor:pointer;
+  color:#1E293B;
+  background:#F1EFE9;
+}
+.primary{background:var(--brand);color:white}
+.success{background:var(--green);color:white}
+.ghost{background:#F1EFE9;color:#475569}
+.feed-card{position:relative;cursor:grab}
+.feed-card:active{cursor:grabbing}
+.drag{position:absolute;right:16px;top:16px;color:#C4BDB2;font-weight:900}
+.details{
+  display:none;
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px dashed var(--line);
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.5;
+}
+.expanded .details{display:block}
+.quick-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.quick{
+  min-height:74px;
+  border-radius:22px;
+  background:white;
+  border:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px;
+  box-shadow:0 8px 24px rgba(30,41,59,.05);
+  cursor:pointer;
+}
+.quick span{font-size:24px}
+.bottom-nav{
+  position:sticky;
+  bottom:-82px;
+  margin-top:22px;
+  border:1px solid var(--line);
+  border-radius:26px;
+  background:rgba(255,255,255,.84);
+  backdrop-filter:blur(20px);
+  display:flex;
+  justify-content:space-around;
+  padding:12px;
+}
+.nav-item{text-align:center;color:var(--muted);font-size:12px}
+.nav-item.active{color:var(--brand);font-weight:900}
+.panel{
+  background:white;
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+  border-radius:26px;
+  padding:20px;
+  height:fit-content;
+  position:sticky;
+  top:24px;
+}
+.panel h2{margin-top:0}
+.panel p,.panel li{font-size:14px;color:#475569;line-height:1.5}
+.tools{display:grid;gap:10px;margin:18px 0}
+.tool{text-align:left;background:#F7F5F1;width:100%}
+textarea,input{
+  width:100%;
+  border:1px solid var(--line);
+  background:#FCFBF8;
+  border-radius:14px;
+  font:inherit;
+  padding:12px;
+  margin-top:8px;
+}
+.editable{outline:none;border-radius:6px}
+.editable:focus{
+  background:rgba(237,235,255,.5);
+  box-shadow:0 0 0 3px rgba(116,102,240,.22);
+}
+.modal{
+  position:fixed;inset:0;
+  background:rgba(15,23,42,.45);
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  padding:20px;
+  z-index:20;
+}
+.modal.show{display:flex}
+.sheet{
+  width:min(390px,100%);
+  background:white;
+  border-radius:30px 30px 20px 20px;
+  padding:20px;
+  box-shadow:0 28px 90px rgba(0,0,0,.28);
+}
+.mood-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  margin-top:16px;
+}
+.mood{
+  min-height:58px;
+  display:grid;
+  place-items:center;
+  font-size:25px;
+  background:#F7F5F1;
+  border-radius:17px;
+}
+.story-detail-card{
+  margin-top:14px;
+  padding:14px;
+  background:#F7F5F1;
+  border-radius:18px;
+}
+.hint{font-size:12px;color:var(--muted);margin-top:8px}
+@media(max-width:920px){
+  .wrapper{display:block;padding:14px}
+  .panel{position:static;margin:22px auto;max-width:430px}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="phone-shell">
+    <main class="phone" id="prototype">
+      <section class="topbar">
+        <div>
+          <h1 class="editable" contenteditable="true">Good Morning 👋</h1>
+          <div class="eyebrow editable" contenteditable="true">Wednesday, June 10</div>
+        </div>
+        <div class="avatar editable" contenteditable="true">S</div>
+      </section>
+
+      <section class="section-title">
+        <h2 class="editable" contenteditable="true">For You Today</h2>
+        <span class="editable" contenteditable="true">Swipe →</span>
+      </section>
+
+      <section class="today-rail" id="todayRail">
+        <article class="today-card checkin" onclick="openCheckin()">
+          <div class="card-kicker"><span class="icon" id="checkinIcon">😊</span><span class="editable" contenteditable="true">Check In</span></div>
+          <div class="card-title editable" id="checkinTitle" contenteditable="true">How are you feeling today?</div>
+          <div class="mood-inline" id="moodInline">
+            <span class="mood-pill">Great</span>
+            <span class="mood-pill">Good</span>
+            <span class="mood-pill">Okay</span>
+          </div>
+          <div class="micro editable" id="checkinCTA" contenteditable="true">Tap to check in →</div>
+        </article>
+
+        <article class="today-card sleep" onclick="openStory('Sleep Below Baseline','5h 12m sleep. Below your usual baseline.','Poor sleep has preceded recent symptom spikes. This should be framed as awareness, not prediction.')">
+          <div class="card-kicker"><span class="icon">😴</span><span class="editable" contenteditable="true">Sleep</span></div>
+          <div class="card-title editable" contenteditable="true">5h 12m</div>
+          <p class="editable" contenteditable="true">Below baseline. Poor sleep often precedes symptom spikes.</p>
+          <div class="micro editable" contenteditable="true">Learn more →</div>
+        </article>
+
+        <article class="today-card action" onclick="openStory('Recommended Today','Eat lunch before 1 PM.','On days where lunch occurs before 1 PM, afternoon symptoms tend to be lower.')">
+          <div class="card-kicker"><span class="icon">✨</span><span class="editable" contenteditable="true">Recommended</span></div>
+          <div class="card-title editable" contenteditable="true">Eat lunch before 1 PM</div>
+          <p class="editable" contenteditable="true">A small action that may support a smoother afternoon.</p>
+          <div class="micro editable" contenteditable="true">Mark complete →</div>
+        </article>
+
+        <article class="today-card learn" onclick="openStory('Gut Insight','Why stress affects digestion','A short curated explanation of the gut-brain axis and symptom sensitivity.')">
+          <div class="card-kicker"><span class="icon">📚</span><span class="editable" contenteditable="true">Gut Insight</span></div>
+          <div class="card-title editable" contenteditable="true">Stress & digestion</div>
+          <p class="editable" contenteditable="true">Learn how the gut-brain axis can affect symptoms.</p>
+          <div class="micro editable" contenteditable="true">2 min read →</div>
+        </article>
+
+        <article class="today-card progress" onclick="openStory('Progress Highlight','Bloating ↓ 18% compared to last month.','Progress should appear as encouragement, not as a separate dashboard section.')">
+          <div class="card-kicker"><span class="icon">📈</span><span class="editable" contenteditable="true">Progress</span></div>
+          <div class="card-title editable" contenteditable="true">Bloating ↓ 18%</div>
+          <p class="editable" contenteditable="true">Compared to last month.</p>
+          <div class="micro editable" contenteditable="true">View progress →</div>
+        </article>
+      </section>
+
+      <section class="card featured">
+        <div class="card-head">
+          <div>
+            <span class="badge editable" contenteditable="true">✨ Featured Recommendation</span>
+            <h3 class="editable" contenteditable="true">Eat lunch before 1 PM</h3>
+          </div>
+          <span>⋯</span>
+        </div>
+        <p class="editable" contenteditable="true">Your afternoon symptoms tend to be lower on days where lunch happens earlier.</p>
+        <div class="btn-row">
+          <button class="primary" onclick="markComplete(this)">Mark Complete</button>
+          <button class="ghost" onclick="expandCard(this)">Why this?</button>
+        </div>
+        <div class="details editable" contenteditable="true">This is based on recent meal timing and symptom logs. Keep the language reflective, not overly predictive.</div>
+      </section>
+
+      <h2 class="editable" contenteditable="true">Personalized Feed</h2>
+      <section id="feed">
+        <article class="card feed-card" draggable="true">
+          <span class="drag">☰</span>
+          <span class="badge editable" contenteditable="true">Pattern Detected</span>
+          <h3 class="editable" contenteditable="true">Stress remains your strongest symptom signal</h3>
+          <p class="editable" contenteditable="true">Stress has aligned with higher symptom severity more often than meal timing this month.</p>
+          <div class="btn-row"><button class="ghost" onclick="expandCard(this)">View details</button></div>
+          <div class="details editable" contenteditable="true">Supporting logs: stress scores, symptom severity, notes, and check-ins from the last 30 days.</div>
+        </article>
+
+        <article class="card feed-card" draggable="true">
+          <span class="drag">☰</span>
+          <span class="badge editable" contenteditable="true">Gut Insight</span>
+          <h3 class="editable" contenteditable="true">How meal timing affects digestion</h3>
+          <p class="editable" contenteditable="true">A 2-minute read explaining why late meals can affect comfort, bloating, and reflux symptoms.</p>
+          <div class="btn-row"><button class="ghost" onclick="expandCard(this)">Read preview</button></div>
+          <div class="details editable" contenteditable="true">Educational content should be contextual and curated by Gutsphere, not generic blog content.</div>
+        </article>
+
+        <article class="card feed-card" draggable="true">
+          <span class="drag">☰</span>
+          <span class="badge editable" contenteditable="true">🏆 Achievement</span>
+          <h3 class="editable" contenteditable="true">7-day symptom logging streak</h3>
+          <p class="editable" contenteditable="true">Consistency improves the quality of your personal insights.</p>
+          <div class="btn-row"><button class="ghost" onclick="expandCard(this)">See why it matters</button></div>
+          <div class="details editable" contenteditable="true">Achievements should be injected into the feed, not isolated as a separate section.</div>
+        </article>
+      </section>
+
+      <h2 class="editable" contenteditable="true">Quick Actions</h2>
+      <section class="quick-grid">
+        <div class="quick" onclick="openLogger('Meal')"><span>🍽️</span><b class="editable" contenteditable="true">Meal</b></div>
+        <div class="quick" onclick="openLogger('Symptom')"><span>🤕</span><b class="editable" contenteditable="true">Symptom</b></div>
+        <div class="quick" onclick="openLogger('Bowel')"><span>🚽</span><b class="editable" contenteditable="true">Bowel</b></div>
+        <div class="quick" onclick="openLogger('Water')"><span>💧</span><b class="editable" contenteditable="true">Water</b></div>
+        <div class="quick" onclick="openLogger('Medication')"><span>💊</span><b class="editable" contenteditable="true">Medication</b></div>
+        <div class="quick" onclick="openLogger('Note')"><span>📝</span><b class="editable" contenteditable="true">Note</b></div>
+      </section>
+
+      <nav class="bottom-nav">
+        <div class="nav-item active">●<br/>Today</div>
+        <div class="nav-item">○<br/>Track</div>
+        <div class="nav-item">○<br/>Insights</div>
+        <div class="nav-item">○<br/>Profile</div>
+      </nav>
+    </main>
+  </div>
+
+  <aside class="panel">
+    <h2>Live Editing Panel</h2>
+    <p>This version replaces Instagram-style story circles with larger rounded rectangular cards containing actual useful detail.</p>
+    <ul>
+      <li>Click any text to edit it live.</li>
+      <li>Swipe the “For You Today” card rail horizontally.</li>
+      <li>Tap cards to open detail sheets.</li>
+      <li>Drag feed cards to reorder them.</li>
+      <li>Save edits locally in your browser.</li>
+    </ul>
+
+    <div class="tools">
+      <button class="tool" onclick="setMorning()">Morning state</button>
+      <button class="tool" onclick="setAfternoon()">Afternoon state</button>
+      <button class="tool" onclick="setEvening()">Evening state</button>
+      <button class="tool" onclick="addTodayCard()">+ Add For You Card</button>
+      <button class="tool" onclick="addFeedCard()">+ Add Feed Card</button>
+      <button class="tool" onclick="savePrototype()">Save edits locally</button>
+      <button class="tool" onclick="resetPrototype()">Reset prototype</button>
+    </div>
+
+    <label><b>Prototype notes</b></label>
+    <textarea id="notes" rows="8" placeholder="Add UX notes, product decisions, or critique here..."></textarea>
+    <p class="hint">Saved edits use localStorage. To share with others, host this HTML file on GitHub Pages, Netlify, Vercel, or Cloudflare Pages.</p>
+  </aside>
+</div>
+
+<div class="modal" id="modal" onclick="closeModal(event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <h2 id="modalTitle" class="editable" contenteditable="true">Title</h2>
+    <p id="modalBody" class="editable" contenteditable="true">Body</p>
+    <div id="modalExtra"></div>
+    <div class="btn-row">
+      <button class="primary" onclick="closeAnyModal()">Done</button>
+      <button class="ghost" onclick="closeAnyModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const modal=document.getElementById('modal');
+const modalTitle=document.getElementById('modalTitle');
+const modalBody=document.getElementById('modalBody');
+const modalExtra=document.getElementById('modalExtra');
+
+function openStory(title, body, extra){
+  modalTitle.innerText=title;
+  modalBody.innerText=body;
+  modalExtra.innerHTML='<div class="story-detail-card editable" contenteditable="true">'+extra+'</div>';
+  modal.classList.add('show');
+}
+function openCheckin(){
+  modalTitle.innerText='How are you feeling today?';
+  modalBody.innerText='Choose a quick check-in. Keep this lightweight so it feels like a habit, not homework.';
+  modalExtra.innerHTML=`
+    <div class="mood-grid">
+      <button class="mood" onclick="completeCheckin('😊','Great')">😊</button>
+      <button class="mood" onclick="completeCheckin('🙂','Good')">🙂</button>
+      <button class="mood" onclick="completeCheckin('😐','Okay')">😐</button>
+      <button class="mood" onclick="completeCheckin('😕','Not Great')">😕</button>
+      <button class="mood" onclick="completeCheckin('😣','Struggling')">😣</button>
+    </div>
+    <textarea rows="3" placeholder="Anything you'd like to share?"></textarea>
+  `;
+  modal.classList.add('show');
+}
+function completeCheckin(emoji,label){
+  document.getElementById('checkinIcon').innerText=emoji;
+  document.getElementById('checkinTitle').innerText='Checked in: '+label;
+  document.getElementById('moodInline').innerHTML='<span class="mood-pill">2h ago</span><span class="mood-pill">Stable symptoms</span>';
+  document.getElementById('checkinCTA').innerText='View reflection →';
+  closeAnyModal();
+  openStory('Today’s Reflection', 'You checked in as '+label+'.', 'Symptoms have remained stable for 5 days. This card should reinforce the user emotionally without pretending to predict their day.');
+}
+function openLogger(type){
+  modalTitle.innerText='Log '+type;
+  modalBody.innerText='Fast bottom-sheet logging interaction.';
+  modalExtra.innerHTML='<textarea rows="4" placeholder="Enter '+type.toLowerCase()+' details..."></textarea>';
+  modal.classList.add('show');
+}
+function closeModal(e){ if(e.target===modal) modal.classList.remove('show');}
+function closeAnyModal(){ modal.classList.remove('show');}
+function expandCard(btn){ btn.closest('.card').classList.toggle('expanded');}
+function markComplete(btn){ btn.innerText='Completed ✓'; btn.className='success';}
+
+function setMorning(){
+  document.querySelector('h1').innerText='Good Morning 👋';
+  document.querySelector('.featured h3').innerText='Eat lunch before 1 PM';
+  document.querySelector('.featured p').innerText='Your afternoon symptoms tend to be lower on days where lunch happens earlier.';
+}
+function setAfternoon(){
+  document.querySelector('h1').innerText='Good Afternoon ☀️';
+  document.querySelector('.featured h3').innerText='Log lunch while it is fresh';
+  document.querySelector('.featured p').innerText='Quick meal logging now will make tonight’s symptom reflection more useful.';
+}
+function setEvening(){
+  document.querySelector('h1').innerText='Good Evening 🌙';
+  document.querySelector('.featured h3').innerText='Complete your daily reflection';
+  document.querySelector('.featured p').innerText='A short check-in helps connect today’s meals, stress, bowel pattern, and symptoms.';
+}
+function addTodayCard(){
+  const rail=document.getElementById('todayRail');
+  const card=document.createElement('article');
+  card.className='today-card';
+  card.onclick=()=>openStory('New For You Card','Add a high-value insight, action, progress note, or curated learning card.','Use this card for content that deserves top-of-page visibility.');
+  card.innerHTML=`
+    <div class="card-kicker"><span class="icon">＋</span><span class="editable" contenteditable="true">New Card</span></div>
+    <div class="card-title editable" contenteditable="true">Editable top card</div>
+    <p class="editable" contenteditable="true">Add enough detail to make the card useful without a tap.</p>
+    <div class="micro editable" contenteditable="true">Open →</div>
+  `;
+  rail.appendChild(card);
+}
+function addFeedCard(){
+  const feed=document.getElementById('feed');
+  const card=document.createElement('article');
+  card.className='card feed-card';
+  card.draggable=true;
+  card.innerHTML=`
+    <span class="drag">☰</span>
+    <span class="badge editable" contenteditable="true">New Feed Card</span>
+    <h3 class="editable" contenteditable="true">Editable feed card title</h3>
+    <p class="editable" contenteditable="true">Add recommendation, education, reminder, achievement, or pattern content here.</p>
+    <div class="btn-row"><button class="ghost" onclick="expandCard(this)">Expand</button></div>
+    <div class="details editable" contenteditable="true">Add supporting details here.</div>
+  `;
+  feed.prepend(card);
+  enableDrag();
+}
+function savePrototype(){
+  localStorage.setItem('gutsphereRoundedPrototypeHTML',document.getElementById('prototype').innerHTML);
+  localStorage.setItem('gutsphereRoundedPrototypeNotes',document.getElementById('notes').value);
+  alert('Saved locally in this browser.');
+}
+function resetPrototype(){
+  localStorage.removeItem('gutsphereRoundedPrototypeHTML');
+  localStorage.removeItem('gutsphereRoundedPrototypeNotes');
+  location.reload();
+}
+function loadPrototype(){
+  const saved=localStorage.getItem('gutsphereRoundedPrototypeHTML');
+  if(saved) document.getElementById('prototype').innerHTML=saved;
+  document.getElementById('notes').value=localStorage.getItem('gutsphereRoundedPrototypeNotes')||'';
+  enableDrag();
+}
+function enableDrag(){
+  let dragged=null;
+  document.querySelectorAll('.feed-card').forEach(card=>{
+    card.addEventListener('dragstart',()=>{dragged=card; card.style.opacity=.5;});
+    card.addEventListener('dragend',()=>{dragged=null; card.style.opacity=1;});
+    card.addEventListener('dragover',e=>e.preventDefault());
+    card.addEventListener('drop',e=>{
+      e.preventDefault();
+      if(dragged && dragged!==card){
+        const feed=document.getElementById('feed');
+        const cards=[...feed.children];
+        const draggedIndex=cards.indexOf(dragged);
+        const targetIndex=cards.indexOf(card);
+        if(draggedIndex<targetIndex) card.after(dragged);
+        else card.before(dragged);
+      }
+    });
+  });
+}
+loadPrototype();
+</script>
+</body>
+</html>
