@@ -25,21 +25,25 @@
 --safe-top:env(safe-area-inset-top,0px);
 --safe-bottom:env(safe-area-inset-bottom,0px);
 }
-html{-webkit-text-size-adjust:100%}
+html{
+  -webkit-text-size-adjust:100%;
+  height:100%;
+  height:100dvh;
+}
 body{
   background:var(--bg);
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
   color:var(--t);
-  min-height:100vh;
-  min-height:100dvh;
+  height:100%;
+  height:100dvh;
   overflow:hidden;
 }
 
 .phone{
   width:100%;
   max-width:430px;
-  min-height:100vh;
-  min-height:100dvh;
+  height:100dvh;
+  max-height:100dvh;
   background:var(--bg);
   margin:0 auto;
   position:relative;
@@ -51,7 +55,7 @@ body{
   body{background:#111}
   .phone{
     margin:16px auto;
-    min-height:calc(100dvh - 32px);
+    height:calc(100dvh - 32px);
     max-height:calc(100dvh - 32px);
     border-radius:32px;
     border:2px solid #303030;
@@ -71,13 +75,15 @@ body{
 }
 .sbar-r{display:flex;gap:5px;align-items:center}
 .scroll{
-  flex:1;
+  flex:1 1 auto;
+  min-height:0;
   overflow-y:auto;
   overflow-x:hidden;
   scrollbar-width:none;
   padding-bottom:calc(var(--bnav-h) + var(--safe-bottom) + 16px);
   -webkit-overflow-scrolling:touch;
   overscroll-behavior-y:contain;
+  touch-action:pan-y;
 }
 .scroll::-webkit-scrollbar{display:none}
 
