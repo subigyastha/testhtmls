@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#F7F5F1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
 <title>Gutsphere Today — Rounded Card Interactive Prototype</title>
 <style>
 :root{
@@ -22,22 +24,27 @@
   --radius:24px;
 }
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;
   color:var(--text);
   background:linear-gradient(180deg,#FBFAF6,#EEEAE2);
+  min-height:100vh;
+  min-height:100dvh;
 }
 .wrapper{
   min-height:100vh;
+  min-height:100dvh;
   display:grid;
   grid-template-columns:minmax(420px,1fr) 370px;
   gap:28px;
   padding:28px;
 }
 .phone-shell{
-  width:390px;
+  width:min(390px,100%);
   height:844px;
+  max-height:calc(100dvh - 56px);
   margin:auto;
   background:#111827;
   border-radius:46px;
@@ -49,8 +56,10 @@ body{
   overflow:auto;
   background:var(--bg);
   border-radius:34px;
-  padding:22px 18px 96px;
+  padding:22px 18px 110px;
   scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
 }
 .phone::-webkit-scrollbar{display:none}
 .topbar{
@@ -61,7 +70,7 @@ body{
   margin-bottom:22px;
 }
 h1,h2,h3,p{margin:0}
-h1{font-size:29px;line-height:1.05;letter-spacing:-.045em}
+h1{font-size:clamp(24px,7vw,29px);line-height:1.05;letter-spacing:-.045em}
 h2{font-size:20px;letter-spacing:-.035em;margin:22px 0 12px}
 h3{font-size:17px;letter-spacing:-.025em;line-height:1.2}
 p{font-size:15px;line-height:1.45;color:#475569;margin-top:8px}
@@ -86,10 +95,12 @@ p{font-size:15px;line-height:1.45;color:#475569;margin-top:8px}
   margin:0 -18px 8px;
   padding:4px 18px 18px;
   scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
 }
 .today-rail::-webkit-scrollbar{display:none}
 .today-card{
-  flex:0 0 282px;
+  flex:0 0 min(282px,calc(100vw - 72px));
   min-height:164px;
   border-radius:26px;
   padding:18px;
@@ -190,11 +201,13 @@ button{
   appearance:none;
   border:0;
   border-radius:14px;
-  padding:11px 14px;
+  padding:12px 14px;
   font-weight:900;
   cursor:pointer;
   color:#1E293B;
   background:#F1EFE9;
+  -webkit-tap-highlight-color:transparent;
+  min-height:44px;
 }
 .primary{background:var(--brand);color:white}
 .success{background:var(--green);color:white}
@@ -228,21 +241,30 @@ button{
   padding:14px;
   box-shadow:0 8px 24px rgba(30,41,59,.05);
   cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
 }
 .quick span{font-size:24px}
 .bottom-nav{
   position:sticky;
-  bottom:-82px;
+  bottom:8px;
   margin-top:22px;
   border:1px solid var(--line);
   border-radius:26px;
-  background:rgba(255,255,255,.84);
+  background:rgba(255,255,255,.92);
   backdrop-filter:blur(20px);
   display:flex;
   justify-content:space-around;
-  padding:12px;
+  padding:12px 8px calc(12px + env(safe-area-inset-bottom,0px));
+  z-index:4;
 }
-.nav-item{text-align:center;color:var(--muted);font-size:12px}
+.nav-item{
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  min-width:56px;
+  padding:4px 0;
+  -webkit-tap-highlight-color:transparent;
+}
 .nav-item.active{color:var(--brand);font-weight:900}
 .panel{
   background:white;
@@ -278,22 +300,31 @@ textarea,input{
   display:none;
   align-items:flex-end;
   justify-content:center;
-  padding:20px;
+  padding:0;
   z-index:20;
 }
 .modal.show{display:flex}
 .sheet{
-  width:min(390px,100%);
+  width:100%;
+  max-width:430px;
   background:white;
-  border-radius:30px 30px 20px 20px;
-  padding:20px;
+  border-radius:30px 30px 0 0;
+  padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));
   box-shadow:0 28px 90px rgba(0,0,0,.28);
+  max-height:90vh;
+  max-height:90dvh;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
 }
 .mood-grid{
   display:grid;
   grid-template-columns:repeat(5,1fr);
   gap:8px;
   margin-top:16px;
+}
+@media(max-width:380px){
+  .mood-grid{gap:6px}
+  .mood{font-size:22px;min-height:52px}
 }
 .mood{
   min-height:58px;
@@ -310,14 +341,83 @@ textarea,input{
   border-radius:18px;
 }
 .hint{font-size:12px;color:var(--muted);margin-top:8px}
+.wrapper>.back-home{
+  grid-column:1 / -1;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  font-weight:700;
+  color:var(--muted);
+  text-decoration:none;
+  margin-bottom:4px;
+  padding:6px 0;
+  -webkit-tap-highlight-color:transparent;
+}
+.back-home:active{color:var(--brand)}
+.panel-toggle{
+  display:none;
+  width:100%;
+  margin-bottom:14px;
+  text-align:left;
+  font-weight:900;
+}
 @media(max-width:920px){
-  .wrapper{display:block;padding:14px}
-  .panel{position:static;margin:22px auto;max-width:430px}
+  .wrapper{
+    display:flex;
+    flex-direction:column;
+    padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+    gap:0;
+  }
+  .phone-shell{
+    width:100%;
+    height:auto;
+    max-height:none;
+    background:transparent;
+    border-radius:0;
+    padding:0;
+    box-shadow:none;
+  }
+  .phone{
+    border-radius:0;
+    padding:16px 16px calc(100px + env(safe-area-inset-bottom,0px));
+    min-height:100dvh;
+  }
+  .panel{
+    position:static;
+    margin:0;
+    max-width:none;
+    border-radius:20px;
+  }
+  .panel-toggle{display:block}
+  .panel.collapsed .panel-body{display:none}
+  .panel.collapsed .panel-toggle::after{content:" ▼"}
+  .panel:not(.collapsed) .panel-toggle::after{content:" ▲"}
+  .today-card{flex:0 0 min(260px,calc(100vw - 48px))}
+  .quick{min-height:68px}
+  h2{font-size:18px}
+  .bottom-nav{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    margin:0;
+    border-radius:0;
+    border-left:0;
+    border-right:0;
+    border-bottom:0;
+    padding:10px 8px calc(10px + env(safe-area-inset-bottom,0px));
+  }
+  .phone{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+}
+@media(min-width:921px){
+  .panel-body{display:block!important}
 }
 </style>
 </head>
 <body>
 <div class="wrapper">
+  <a class="back-home" href="index.html">← All prototypes</a>
   <div class="phone-shell">
     <main class="phone" id="prototype">
       <section class="topbar">
@@ -439,7 +539,9 @@ textarea,input{
     </main>
   </div>
 
-  <aside class="panel">
+  <aside class="panel collapsed" id="editPanel">
+    <button class="panel-toggle ghost" type="button" onclick="togglePanel()">Live editing panel</button>
+    <div class="panel-body">
     <h2>Live Editing Panel</h2>
     <p>This version replaces Instagram-style story circles with larger rounded rectangular cards containing actual useful detail.</p>
     <ul>
@@ -463,6 +565,7 @@ textarea,input{
     <label><b>Prototype notes</b></label>
     <textarea id="notes" rows="8" placeholder="Add UX notes, product decisions, or critique here..."></textarea>
     <p class="hint">Saved edits use localStorage. To share with others, host this HTML file on GitHub Pages, Netlify, Vercel, or Cloudflare Pages.</p>
+    </div>
   </aside>
 </div>
 
@@ -479,6 +582,9 @@ textarea,input{
 </div>
 
 <script>
+function togglePanel(){
+  document.getElementById('editPanel').classList.toggle('collapsed');
+}
 const modal=document.getElementById('modal');
 const modalTitle=document.getElementById('modalTitle');
 const modalBody=document.getElementById('modalBody');
