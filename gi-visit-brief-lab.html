@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GutSphere · GI Visit Brief lab</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
 :root{
@@ -15,9 +15,8 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--body);background:#E9E2DC;color:var(--ink);padding:22px 18px 60px;-webkit-font-smoothing:antialiased}
+body.contrast{--text:#292524;--muted:#57534E;--border:#CFC5BE;background:#D8D0C9}
 button,input,textarea{font:inherit}
-.back-home{display:block;max-width:1180px;margin:0 auto 12px;padding:0 0 2px;font-size:13px;font-weight:700;color:#746E69;text-decoration:none;-webkit-tap-highlight-color:transparent}
-.back-home:active{color:var(--coral)}
 .top{max-width:1180px;margin:0 auto 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
 .brand{font:700 15px var(--display)}.brand b{color:var(--coral)}.sub{max-width:680px;font-size:11.5px;line-height:1.5;color:var(--text)}
 .stage{max-width:1180px;margin:auto;display:flex;justify-content:center;align-items:flex-start;gap:36px;flex-wrap:wrap}
@@ -94,7 +93,6 @@ button,input,textarea{font:inherit}
 </style>
 </head>
 <body>
-<a class="back-home" href="index.html">← All prototypes</a>
 <div class="top" id="top">
   <div class="brand">Gut<b>Sphere</b> · GI Visit Brief lab</div>
   <div class="sub">A visit-specific, person-controlled discussion aid. Purpose and history slice stay independent; sparse data is visible; recorded facts, person observations, and optional GutSphere-generated observations remain separate.</div>
@@ -124,6 +122,8 @@ button,input,textarea{font:inherit}
     <div class="group"><div class="glabel">History slice <em>independent</em></div><div class="segs" id="ctl-range"></div></div>
     <div class="group"><div class="glabel">Coverage <em>missingness rules</em></div><div class="segs" id="ctl-coverage"></div></div>
     <div class="group"><div class="glabel">Tier <em>basic export always works</em></div><div class="segs" id="ctl-tier"></div></div>
+    <div class="group"><div class="glabel">Report recipe <em>included sections</em></div><div class="segs" id="ctl-sections"></div></div>
+    <div class="group"><div class="glabel">Appearance</div><div class="segs" id="ctl-appearance"></div></div>
     <div class="group"><div class="glabel">Step <em id="step-count">1 of 7</em></div><div class="segs" id="ctl-step"></div></div>
     <div class="group"><div class="glabel">View state</div><div class="segs" id="ctl-view"></div></div>
     <div class="statebox" id="statebox"></div>
@@ -238,7 +238,7 @@ const SCENARIOS={
       {date:'2023',title:'Onset / early tracking',text:'Intermittent bloating and constipation recorded; sparse diary coverage.'},
       {date:'2024',title:'Diet and routine trials',text:'Low-FODMAP period and post-meal walking recorded; response was mixed.'},
       {date:'2025',title:'Higher-impact flare',text:'Pain and urgency recorded more often; work disruption noted.'},
-      {date:'2026',title:'Current phase',text:'Bowel form is more stable; bloating remains the main discussion priority.'}
+      {date:'2026',title:'Current phase',text:'Bristol types 3–4 were recorded most often; bloating remains the main discussion priority.'}
     ],
     events:[
       {kind:'test',date:'2023-05-12',entered:'2023-05-12',name:'Initial GI testing',status:'Result text stored by user'},
@@ -311,7 +311,7 @@ let S={
   flow:'first',scenario:'appointment',purpose:'visit',range:'m3',coverage:'adequate',tier:'free',
   step:1,view:'phone',focus:'selected',selected:new Set(RECOMMENDED.visit),impacts:new Set(['eating','sleep']),
   primary:'',secondary:[],observation:'',exclude:'',includeDob:false,includeCopilot:false,copilotChoice:false,
-  safetyAck:false,generating:null,generated:false,detail:false,saved:false
+  safetyAck:false,generating:null,generated:false,detail:false,saved:false,appearance:'warm'
 };
 
 function data(){
@@ -430,7 +430,9 @@ function recentDashboard(){
   const d=data();
   return`<div class="hero"><div class="heroicon">${svg(ICON.doc,24)}</div><h1>${S.flow==='reuse'?'Reuse a previous setup.':'Create another GI Visit Brief.'}</h1><p>Your prior brief remains unchanged. Reusing copies its configuration, then updates the range and data.</p></div>
   <div class="card"><div class="eyebrow"><span>Recent brief</span><span class="pill ok">Generated</span></div><h3>${PURPOSES[S.purpose].label}</h3><p>${d.focus} · ${rangeLabel()} · generated 24 Jul 2026</p>
-  <div class="row"><span class="ricon">${svg(ICON.copy)}</span><span class="rbody"><span class="rtitle">Use last GI visit setup</span><span class="rmeta">Questions and included sections can be revised</span></span><button class="pill rec" data-action="reuse">Use setup</button></div></div>
+  <div class="row"><span class="ricon">${svg(ICON.plus)}</span><span class="rbody"><span class="rtitle">12 records since last brief</span><span class="rmeta">Includes 1 treatment update and 4 symptom entries</span></span></div>
+  <div class="row"><span class="ricon">${svg(ICON.question)}</span><span class="rbody"><span class="rtitle">Previous priority</span><span class="rmeta">${d.question}</span></span></div>
+  <div class="row"><span class="ricon">${svg(ICON.copy)}</span><span class="rbody"><span class="rtitle">Use last GI visit setup</span><span class="rmeta">Copies configuration only · 1 previously removed section stays removed until you change it</span></span><button class="pill rec" data-action="reuse">Use setup</button></div></div>
   <button class="cta" data-action="new">Generate another brief</button><button class="secondary" data-action="help">How Visit Briefs work</button>`;
 }
 function purposeStep(){
@@ -465,8 +467,8 @@ function contextStep(){
 function reviewStep(){
   const r=buildReport(),selected=r.selected.map(k=>SECTIONS[k]?.label).filter(Boolean);
   return`${progress(7,7)}<div class="hero"><h1>Review what will be shared.</h1><p>Every number keeps its period and denominator. Missing data stays visible.</p></div>
-  ${S.coverage==='safety'&&!S.safetyAck?`<div class="danger"><h3>Care guidance before export</h3><p>A concerning change is present in the selected records. Do not rely on this PDF being reviewed promptly. Use the care options appropriate to your situation first.</p><button class="secondary" data-action="safety">I’ve seen the care guidance</button></div>`:''}
-  <div class="review"><div class="reviewline"><span>Purpose</span><span>${r.purpose}</span></div><div class="reviewline"><span>Priority</span><span>${r.questions.primary}</span></div><div class="reviewline"><span>Focus</span><span>${r.focus}</span></div><div class="reviewline"><span>Period</span><span>${r.period}</span></div><div class="reviewline"><span>Coverage</span><span>${r.events.length} selected records · ${r.late} entered later</span></div><div class="reviewline"><span>Included</span><span>${selected.length} sections</span></div><div class="reviewline"><span>Person observation</span><span>${r.personObservation?'Included':'Not included'}</span></div></div>
+  ${S.coverage==='safety'&&!S.safetyAck?`<div class="danger"><h3>Care guidance before export</h3><p>Blood in stool is present in the selected records. This PDF is not monitored. For heavy or ongoing bleeding, black or tarry stool, fainting, marked dizziness, severe pain, or rapid worsening, seek urgent medical care. Otherwise, contact your care team for advice rather than waiting for this brief to be reviewed.</p><button class="secondary" data-action="safety">I’ve seen the care guidance</button></div>`:''}
+  <div class="review"><div class="reviewline"><span>Purpose</span><span>${r.purpose}</span></div><div class="reviewline"><span>Priority</span><span>${r.questions.primary}</span></div><div class="reviewline"><span>Focus</span><span>${r.focus}</span></div><div class="reviewline"><span>Period</span><span>${r.period}</span></div><div class="reviewline"><span>Coverage</span><span>${r.events.length} selected records · ${r.late} entered later</span></div><div class="reviewline"><span>Included</span><span>${selected.length} sections</span></div><div class="reviewline"><span>Person observation</span><span>${r.personObservation?'Included':'Not included'}</span></div><div class="reviewline"><span>Correction / exclusion note</span><span>${r.exclude||'None'}</span></div></div>
   <div class="label">Coverage by domain</div><div class="coverage">${r.coverage.map(c=>`<div class="cov"><b>${c.tracked}/${Math.min(r.days,999)}</b><span>${c.domain} days · ${c.events} records</span></div>`).join('')}</div>
   ${r.late?`<div class="warning">${svg(ICON.clock,13)}<span>${r.late} record${r.late===1?' was':'s were'} entered after the event date. Event time and entry time remain distinct in detailed data.</span></div>`:''}
   <button class="secondary" data-action="edit-sections">Edit included sections</button><button class="cta" data-action="generate" ${S.coverage==='safety'&&!S.safetyAck?'disabled style="opacity:.45"':''}>Generate GI Visit Brief</button>`;
@@ -480,7 +482,7 @@ function completeScreen(){
   const r=buildReport();
   return`<div class="gen" style="padding-top:45px"><div class="doneicon">${svg(ICON.check,26)}</div><h2>Your GI Visit Brief is ready.</h2><p>${r.period} · ${r.events.length} selected records · ${r.selected.length} sections</p></div>
   ${S.tier==='free'&&!S.copilotChoice?`<div class="card"><div class="eyebrow"><span>Optional</span><span class="pill rec">Copilot</span></div><h3>Add GutSphere-generated observations?</h3><p>The basic brief is complete without them. Copilot adds removable descriptive observations with inputs, denominators, period, and limitations.</p><button class="cta" data-action="add-copilot">Preview with Copilot</button><button class="secondary" data-action="basic">Continue with basic brief</button></div>`:
-  `<button class="cta" data-action="view-doc">View GI Visit Brief</button><button class="secondary" data-action="start-over">Generate another brief</button>`}`;
+  `${S.tier==='copilot'?`<div class="card"><div class="eyebrow"><span>Copilot perspective</span><span class="pill ${S.includeCopilot?'ok':''}">${S.includeCopilot?'Included':'Removed'}</span></div><h3>${r.observations.length} GutSphere-generated observation${r.observations.length===1?'':'s'}</h3><p>Shown separately with inputs, denominator, period, and limitations. The basic brief remains complete without this block.</p><button class="secondary" data-action="${S.includeCopilot?'remove-copilot':'restore-copilot'}">${S.includeCopilot?'Remove from brief':'Add back to brief'}</button></div>`:''}<button class="cta" data-action="view-doc">View GI Visit Brief</button><button class="secondary" data-action="start-over">Generate another brief</button>`}`;
 }
 function savedScreen(){return`<div class="hero" style="padding-top:42px"><div class="heroicon">${svg(ICON.check,24)}</div><h1>Setup saved.</h1><p>Your choices and person-authored context remain in this demo. No brief was generated.</p></div><button class="cta" data-action="resume">Resume setup</button>`}
 
@@ -524,6 +526,8 @@ function handleAction(a){
   if(a==='generate'&&(S.coverage!=='safety'||S.safetyAck))startGeneration();
   if(a==='add-copilot'){S.tier='copilot';S.includeCopilot=true;S.copilotChoice=true;renderAll();return}
   if(a==='basic'){S.includeCopilot=false;S.copilotChoice=true;renderAll();return}
+  if(a==='remove-copilot'){S.includeCopilot=false;renderAll();return}
+  if(a==='restore-copilot'){S.includeCopilot=true;renderAll();return}
   if(a==='view-doc')openDocument();
   if(a==='start-over'){S.generated=false;S.step=2;S.flow='returning'}
   renderAll();
@@ -537,8 +541,12 @@ function startGeneration(){
 function documentHtml(r){
   const problemRows=r.selected.includes('problems')?r.problems.map(p=>`<tr><td><b>${p.name}</b></td><td>${p.wording}</td><td>Self-reported entries</td></tr>`).join(''):'';
   const timeline=r.selected.includes('timeline')?r.timeline.map(e=>`<div class="tevent"><b>${e.date}</b> ${e.title} · ${e.text||''}${e.late?' <span class="source">entered later</span>':''}</div>`).join(''):'';
-  const tryRows=r.tries.map(e=>`<tr><td><b>${e.name}</b><br><span class="source">${e.source}</span></td><td>${fmt(e.date)}</td><td>${e.adherence}</td><td>${e.effect}</td></tr>`).join('');
-  const cov=r.coverage.map(c=>`${c.domain}: ${c.tracked} tracked day${c.tracked===1?'':'s'} / ${Math.min(r.days,999)}; ${c.events} record${c.events===1?'':'s'}`).join(' · ');
+  const shownTries=r.tries.filter(e=>(e.kind==='treatment'&&r.selected.includes('treatments'))||(e.kind==='routine'&&r.selected.includes('plans')));
+  const tryRow=e=>`<tr><td><b>${e.name}</b><br><span class="source">${e.source}</span></td><td>${fmt(e.date)}</td><td>${e.adherence}</td><td>${e.effect}</td></tr>`;
+  const prescribed=shownTries.filter(e=>/clinician|prescri/i.test(e.source)),selfDirected=shownTries.filter(e=>!/clinician|prescri/i.test(e.source));
+  const tryRows=`${prescribed.length?`<tr><td colspan="4"><b>Clinician-prescribed</b></td></tr>${prescribed.map(tryRow).join('')}`:''}${selfDirected.length?`<tr><td colspan="4"><b>Self-directed, plan, or other</b></td></tr>${selfDirected.map(tryRow).join('')}`:''}`;
+  const testRows=r.tests.map(e=>`<tr><td><b>${e.name}</b></td><td>${fmt(e.date)}</td><td>${e.status||'Recorded by person'}</td></tr>`).join('');
+  const cov=r.coverage.map(c=>`${c.domain}: ${c.tracked} tracked day${c.tracked===1?'':'s'} / ${r.days}; ${c.events} record${c.events===1?'':'s'}`).join(' · ');
   return`<section class="paper" id="page1"><div class="phead"><div class="pbrand">GUTSPHERE · PERSON-GENERATED DISCUSSION AID</div><div class="ptitle">GI Visit Brief</div><div class="pprov"><b>${r.person}</b>${r.dob?` · DOB ${fmt(r.dob)}`:''} · Generated ${r.generated.toLocaleString('en-GB')}<br>${r.purpose} · ${r.period} · ${r.focus}<br>${r.source} Coverage: ${cov}. ${r.late?`${r.late} record${r.late===1?' was':'s were'} entered later.`:''}</div></div>
   <div class="pagenda"><div class="k">Priority for this visit</div><div class="q">${r.questions.primary}</div>${r.questions.secondary.length?`<ul>${r.questions.secondary.map(q=>`<li>${q}</li>`).join('')}</ul>`:''}</div>
   ${problemRows?`<div class="psection"><h2>Current problem picture</h2><table class="ptable"><thead><tr><th style="width:22%">Recorded item</th><th>What the selected records show</th><th style="width:20%">Source</th></tr></thead><tbody>${problemRows}</tbody></table></div>`:''}
@@ -547,7 +555,8 @@ function documentHtml(r){
     ${r.selected.includes('function')?`<div class="pbox"><span class="source person">Person-reported</span><h3>Function and impact</h3><p>${r.impacts.length?r.impacts.join(', '):'No functional impact selected.'}</p><p>${r.impactNote||''}</p></div>`:''}
     ${r.selected.includes('observation')&&r.personObservation?`<div class="pbox"><span class="source person">Person’s observation</span><h3>What I noticed</h3><p>${r.personObservation}</p></div>`:''}
   </div>
-  ${r.selected.includes('treatments')&&tryRows?`<div class="psection"><h2>What was tried</h2><table class="ptable"><thead><tr><th>Item + source</th><th>Date</th><th>Adherence / context</th><th>Person-reported effect</th></tr></thead><tbody>${tryRows}</tbody></table></div>`:''}
+  ${tryRows?`<div class="psection"><h2>${r.selected.includes('treatments')&&r.selected.includes('plans')?'What was tried':r.selected.includes('plans')?'Plans and routines':'Treatments and self-care'}</h2><table class="ptable"><thead><tr><th>Item + source</th><th>Date</th><th>Adherence / context</th><th>Person-reported effect</th></tr></thead><tbody>${tryRows}</tbody></table></div>`:''}
+  ${r.selected.includes('tests')&&testRows?`<div class="psection"><h2>Tests, procedures, and visits</h2><table class="ptable"><thead><tr><th>Recorded item</th><th>Date</th><th>Status / source retained</th></tr></thead><tbody>${testRows}</tbody></table></div>`:''}
   ${r.observations.length?`<div class="psection"><h2>Optional GutSphere-generated observations</h2>${r.observations.map(o=>`<div class="pbox" style="margin-bottom:6px"><span class="source system">${o.title}</span><p>${o.text}</p><p><b>Limitations:</b> ${o.limits}</p></div>`).join('')}</div>`:''}
   <div class="psection"><h2>Evidence pointer</h2><p style="font-size:9.5px">See the selected evidence page for purpose-relevant views. Detailed selected records are available as CSV and are not part of the default reading path.</p></div>
   <div class="pfooter">Self-reported in GutSphere · not clinically reviewed · not a diagnosis, assessment, plan, or inbox alert. The clinician remains responsible for verification, interpretation, assessment, and planning. Filters: ${r.purpose}; ${r.period}; ${r.focus}. Report ${r.version}.</div></section>`;
@@ -605,8 +614,10 @@ function makePdfBlob(){
   if(r.selected.includes('problems')&&r.problems.length){section('Current problem picture');r.problems.forEach(p=>{y=addWrapped(doc,p.name,M,y,115,{bold:true,size:9});y=addWrapped(doc,p.wording,M+120,y-12,W-2*M-120,{size:8,leading:10});y+=5})}
   if(r.selected.includes('timeline')&&r.timeline.length){section('Change over time');r.timeline.forEach(e=>{const date=e.date;y=addWrapped(doc,`${date} · ${e.title} · ${e.text||''}${e.late?' · entered later':''}`,M,y,W-2*M,{size:8,leading:10});y+=3})}
   if(r.selected.includes('function')){section('Function and impact');y=addWrapped(doc,`${r.impacts.length?r.impacts.join(', '):'No functional impact selected.'} ${r.impactNote||''}`,M,y,W-2*M,{size:8});y+=7}
-  if(r.selected.includes('observation')&&r.personObservation){section(\"Person's observation\");y=addWrapped(doc,r.personObservation,M,y,W-2*M,{size:8});y+=7}
-  if(r.selected.includes('treatments')&&r.tries.length){section('What was tried');r.tries.forEach(e=>{y=addWrapped(doc,`${e.name} (${e.source}) · ${fmt(e.date)} · ${e.adherence} · ${e.effect}`,M,y,W-2*M,{size:8,leading:10});y+=3})}
+  if(r.selected.includes('observation')&&r.personObservation){section("Person's observation");y=addWrapped(doc,r.personObservation,M,y,W-2*M,{size:8});y+=7}
+  const pdfTries=r.tries.filter(e=>(e.kind==='treatment'&&r.selected.includes('treatments'))||(e.kind==='routine'&&r.selected.includes('plans')));
+  if(pdfTries.length){section(r.selected.includes('treatments')&&r.selected.includes('plans')?'What was tried':r.selected.includes('plans')?'Plans and routines':'Treatments and self-care');pdfTries.forEach(e=>{y=addWrapped(doc,`${e.name} (${e.source}) · ${fmt(e.date)} · ${e.adherence} · ${e.effect}`,M,y,W-2*M,{size:8,leading:10});y+=3})}
+  if(r.selected.includes('tests')&&r.tests.length){section('Tests, procedures, and visits');r.tests.forEach(e=>{y=addWrapped(doc,`${e.name} · ${fmt(e.date)} · ${e.status||'Recorded by person'}`,M,y,W-2*M,{size:8,leading:10});y+=3})}
   if(r.observations.length){section('Optional GutSphere-generated observations');r.observations.forEach(o=>{y=addWrapped(doc,`${o.text} Limitations: ${o.limits}`,M,y,W-2*M,{size:8,leading:10});y+=5})}
   section('Evidence pointer');y=addWrapped(doc,'See the selected evidence page for purpose-relevant views. Detailed selected records are available as CSV.',M,y,W-2*M,{size:8});
   doc.setFontSize(7);doc.setTextColor(100);doc.text(doc.splitTextToSize(`Self-reported in GutSphere · not clinically reviewed · not a diagnosis, assessment, or plan. Filters: ${r.purpose}; ${r.period}; ${r.focus}. Report ${r.version}.`,W-2*M),M,H-36);
@@ -635,6 +646,11 @@ function renderControls(){
   segs('ctl-range',Object.fromEntries(Object.entries(RANGES).map(([k,v])=>[k,v.label])),'range');
   segs('ctl-coverage',{sparse:'Sparse',adequate:'Adequate',backfilled:'Backfilled',safety:'Safety concern'},'coverage',()=>S.safetyAck=false);
   segs('ctl-tier',{free:'Free',copilot:'Copilot'},'tier',k=>{S.includeCopilot=k==='copilot'});
+  const sectionCtl=document.getElementById('ctl-sections');
+  sectionCtl.innerHTML=Object.entries(SECTIONS).map(([k,v])=>`<button class="seg ${S.selected.has(k)?'on':''}" data-k="${k}">${v.label.replace('Current problem picture','Current picture').replace('Function + selected concerns','Function').replace('Treatments + self-care','Treatments').replace('Plans + routines','Plans').replace('Tests, procedures + visits','Tests / visits').replace('Selected tracking evidence','Evidence').replace('Questions for clinician','Questions').replace('My observations','My notes')}</button>`).join('');
+  sectionCtl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{S.selected.has(b.dataset.k)?S.selected.delete(b.dataset.k):S.selected.add(b.dataset.k);renderAll()});
+  segs('ctl-appearance',{warm:'Warm',contrast:'Higher contrast'},'appearance',k=>document.body.classList.toggle('contrast',k==='contrast'));
+  document.body.classList.toggle('contrast',S.appearance==='contrast');
   const total=7,steps=Object.fromEntries(Array.from({length:total},(_,i)=>[String(i+1),String(i+1)]));
   const st=document.getElementById('ctl-step');st.innerHTML=Object.entries(steps).map(([k,l])=>`<button class="seg ${S.step===+k?'on':''}" data-k="${k}">${l}</button>`).join('');st.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{S.step=+b.dataset.k;S.generated=false;S.saved=false;renderAll()});
   document.getElementById('step-count').textContent=`${S.step||0} of 7`;
