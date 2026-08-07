@@ -1,0 +1,2499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GutSphere · Patterns (Journey variant) — deterministic template lab</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+/* ── Design tokens — mirror app/assets/stylesheets tokens 1:1 ── */
+:root{
+  --coral:#D93A3E; --coral-deep:#C7323A; --coral-glow:rgba(217,58,62,.07); --coral-light:rgba(217,58,62,.14);
+  --sand:#F5EEE8; --sand-light:#FAF6F2; --warm-cream:#FFFAF7;
+  --card:#FFFFFF; --card-elevated:#FFFFFF;
+  --text-primary:#1C1917; --text-secondary:#57534E; --text-muted:#5F5B57; --text-hint:#6F6B67;
+  --border:#E7E0DA; --border-hover:#D4CCC5;
+  --green:#2E7D32; --green-bg:#D1FAE5;
+  --amber:#F59E0B; --amber-bg:#FEF3C7; --amber-text:#92400E;
+  --red:#DC2626; --red-bg:#FEE2E2;
+  --sky-text:#0369A1; --sky-bg:rgba(56,189,248,.12);
+  --nav-bg:rgba(255,255,255,.95); --nav-active:rgba(245,238,232,.85);
+  --on-coral:#FFFFFF;
+  --stool:#8A5A33;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04); --shadow-md:0 4px 16px rgba(0,0,0,.08); --shadow-lg:0 8px 40px rgba(0,0,0,.12);
+  --font-d:'Inter',-apple-system,'SF Pro Display',sans-serif;
+  --font-b:'DM Sans',-apple-system,sans-serif;
+}
+.phone.dark{
+  --coral:#F87171; --coral-deep:#F87171; --coral-glow:rgba(248,113,113,.12); --coral-light:rgba(248,113,113,.20);
+  --sand:#1A1614; --sand-light:#221E1B; --warm-cream:#2A2522;
+  --card:#221E1B; --card-elevated:#2A2522;
+  --text-primary:#F5F0EC; --text-secondary:#C4BBB5; --text-muted:#A79E96; --text-hint:#9A928A;
+  --border:#3A3431; --border-hover:#4A423E;
+  --green:#7BC68F; --green-bg:rgba(123,198,143,.18);
+  --amber:#FCD34D; --amber-bg:rgba(252,211,77,.18); --amber-text:#FCD34D;
+  --red:#F87171; --red-bg:rgba(248,113,113,.18);
+  --sky-text:#38BDF8; --sky-bg:rgba(56,189,248,.18);
+  --nav-bg:rgba(34,30,27,.95); --nav-active:rgba(248,113,113,.14);
+  --on-coral:#1A1614;
+  --stool:#C89B6D;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.5); --shadow-md:0 4px 16px rgba(0,0,0,.6); --shadow-lg:0 8px 40px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#E7E0DA;font-family:var(--font-b);color:var(--text-primary);-webkit-font-smoothing:antialiased;min-height:100vh;padding:24px 20px 60px}
+
+.topbar{max-width:1180px;margin:0 auto 18px;display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.topbar .brand{font-family:var(--font-d);font-weight:700;font-size:15px;letter-spacing:-.01em;color:#1C1917}
+.topbar .brand span{color:#D93A3E}
+.topbar .sub{font-size:12px;color:#57534E;line-height:1.5;max-width:640px}
+
+.stage{max-width:1180px;margin:0 auto;display:flex;gap:36px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+
+/* ─────────────── Phone ─────────────── */
+.phone-col{display:flex;flex-direction:column;align-items:center;gap:10px}
+.phone{width:360px;height:740px;background:var(--warm-cream);border-radius:48px;border:12px solid #15110F;box-shadow:0 30px 70px rgba(0,0,0,.28);overflow:hidden;position:relative;display:flex;flex-direction:column;transition:background .3s}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:122px;height:26px;background:#15110F;border-radius:0 0 16px 16px;z-index:40}
+.status{height:44px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 7px;font-size:12px;font-weight:600;flex-shrink:0;z-index:5;color:var(--text-primary);font-family:var(--font-b)}
+.status .sicons{display:flex;gap:5px;align-items:center}
+
+.app{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column}
+
+.appheader{height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:var(--nav-bg);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--border);z-index:10}
+.avatar{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--coral-light);background:var(--coral-glow);color:var(--coral-deep);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.appheader .ttl{font-family:var(--font-b);font-weight:600;font-size:15px;color:var(--text-primary)}
+.bell{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);position:relative}
+.bell .bdg{position:absolute;top:-3px;right:-3px;min-width:15px;height:15px;border-radius:9px;background:var(--coral);color:var(--on-coral);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 18px 20px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+
+.greet{padding:2px 4px 12px}
+.greet .ctx{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--coral-deep)}
+.greet h1{font-family:var(--font-d);font-size:24px;letter-spacing:-.025em;margin-top:5px;color:var(--text-primary)}
+
+/* section headers */
+.sechead{display:flex;justify-content:space-between;align-items:center;margin:14px 2px 8px;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-hint)}
+.sechead:first-child{margin-top:0}
+.sechead .sechint{letter-spacing:0;text-transform:none;font-weight:600;color:var(--border-hover);font-size:10px}
+
+/* carousel */
+.carousel{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -18px;padding:2px 18px 4px;scrollbar-width:none}
+.carousel::-webkit-scrollbar{display:none}
+.cslide{flex:0 0 86%;scroll-snap-align:start;display:flex}
+.cslide .card{margin-bottom:0;width:100%}
+.cslide.solo{flex-basis:100%}
+.cslide.peek{flex-basis:78%} /* specialist slides — show next discipline peeking */
+.ldots{display:flex;gap:5px;justify-content:center;padding:7px 0 2px}
+.ld{width:6px;height:6px;border-radius:50%;background:var(--border);transition:.2s}
+.ld.on{background:var(--coral);width:16px;border-radius:4px}
+
+/* card base */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:var(--shadow-sm);transition:background .3s,border-color .3s}
+.card .eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-hint);display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.card h3{font-family:var(--font-b);font-size:15.5px;font-weight:600;line-height:1.3;color:var(--text-primary)}
+.card p{font-size:13px;line-height:1.5;color:var(--text-secondary);margin-top:6px}
+
+/* state chip */
+.statechip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px}
+.statechip.footing{background:var(--coral-glow);color:var(--coral-deep)}
+.statechip.pattern{background:var(--sky-bg);color:var(--sky-text)}
+.statechip.baseline{background:var(--green-bg);color:var(--green)}
+
+/* pointer line */
+.pointer{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--text-primary);margin-top:10px;line-height:1.4}
+.pointer svg{color:var(--coral-deep);flex-shrink:0}
+
+/* metric tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.tile{background:var(--sand-light);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.phone.dark .tile{background:var(--card-elevated)}
+.tile .tv{font-family:var(--font-d);font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--text-primary);line-height:1.1}
+.tile .tv .tu{font-size:12px;font-weight:600;color:var(--text-muted);margin-left:1px}
+.tile .tl{font-size:10.5px;font-weight:600;color:var(--text-muted);margin-top:3px}
+.tile .td{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;margin-top:5px;padding:2.5px 7px;border-radius:10px}
+.td.up{background:var(--amber-bg);color:var(--amber-text)}
+.td.down{background:var(--green-bg);color:var(--green)}
+.td.same{background:var(--sand);color:var(--text-muted)}
+.td.info{background:var(--sky-bg);color:var(--sky-text)}
+
+/* numbered rows */
+.numrows{margin-top:10px}
+.numrow{display:flex;align-items:center;gap:13px;padding:9px 2px;border-bottom:1px solid var(--border)}
+.numrow:last-child{border-bottom:none}
+.numrow .nn{font-family:var(--font-d);font-size:19px;font-weight:800;letter-spacing:-.02em;min-width:28px;color:var(--text-hint)}
+.numrow.next .nn{color:var(--coral)}
+.numrow .nr-t{flex:1;min-width:0}
+.numrow .nr-name{font-size:13.5px;font-weight:600;color:var(--text-primary);line-height:1.25}
+.numrow .nr-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
+.numrow.done .nr-name{color:var(--text-muted);text-decoration:line-through;text-decoration-color:var(--border-hover)}
+.numrow.done .nn{color:var(--green);font-size:15px}
+.numrow .nr-tag{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:9px;background:var(--coral-glow);color:var(--coral-deep);flex-shrink:0}
+.numrow .nr-tag.mut{background:var(--sand-light);color:var(--text-muted);border:1px solid var(--border)}
+.phone.dark .numrow .nr-tag.mut{background:var(--card-elevated)}
+
+/* plan snapshot */
+.segbar{display:flex;gap:3px;margin-top:12px}
+.segbar i{height:5px;flex:1;border-radius:3px;background:var(--border)}
+.segbar i.on{background:var(--coral)}
+.ministats{display:flex;gap:8px;margin-top:12px}
+.mstat{flex:1;background:var(--sand-light);border:1px solid var(--border);border-radius:10px;padding:8px 10px;min-width:0}
+.phone.dark .mstat{background:var(--card-elevated)}
+.mstat .mv{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mstat .ml{font-size:9.5px;font-weight:600;color:var(--text-muted);margin-top:2px}
+
+/* plan footer meta */
+.planfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:11px;font-weight:600;color:var(--text-muted)}
+
+/* chips / pills */
+.planchip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:14px;background:var(--coral-glow);color:var(--coral-deep)}
+.planchip.neutral{background:var(--sand-light);color:var(--text-muted);border:1px solid var(--border)}
+.planchip.green{background:var(--green-bg);color:var(--green)}
+.planchip.sky{background:var(--sky-bg);color:var(--sky-text)}
+.phone.dark .planchip.neutral{background:var(--card-elevated)}
+
+/* bristol strip */
+.bstrip{display:flex;justify-content:space-between;gap:2px;margin-top:12px}
+.bcell{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.bglyph{width:36px;height:36px;border-radius:50%;background:var(--sand-light);border:1.5px solid transparent;display:flex;align-items:center;justify-content:center;color:var(--stool);opacity:.45}
+.bglyph.on{opacity:1;background:var(--coral-glow);border-color:var(--coral);box-shadow:0 0 0 3px var(--coral-glow)}
+.bcell .bc{font-size:9px;font-weight:700;color:var(--text-hint)}
+.bcell.on .bc{color:var(--coral-deep)}
+.breadout{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+.breadout .bt{font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--text-primary)}
+.breadout .bd{font-size:11px;color:var(--text-muted);margin-top:1px}
+.statuspill{font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px}
+.statuspill.ok{background:var(--green-bg);color:var(--green)}
+.statuspill.warn{background:var(--amber-bg);color:var(--amber-text)}
+
+/* week rhythm grid */
+.wklabel{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-hint);margin-top:14px;padding-top:12px;border-top:1px dashed var(--border)}
+.wkgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.wkcell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.wkcell .wd{font-size:9px;font-weight:700;color:var(--text-hint)}
+.wkcell .wslot{height:26px;display:flex;align-items:center;justify-content:center;color:var(--stool)}
+.wkcell .wn{font-size:9.5px;font-weight:700;color:var(--text-secondary)}
+.wkcell .wn.zero{color:var(--border-hover)}
+.wdot{width:8px;height:8px;border-radius:50%;background:var(--coral)}
+.wdot.sev-low{background:var(--amber)}
+.wknone{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border)}
+
+/* symptom rows + severity segment bar */
+.symrow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--border)}
+.symrow:last-child{border-bottom:none}
+.symrow .sn{flex:1;min-width:0}
+.symrow .snm{font-size:13px;font-weight:600;color:var(--text-primary)}
+.symrow .sd{font-size:10.5px;color:var(--text-muted);margin-top:1px}
+.sevbar{display:flex;gap:2px;width:74px;flex-shrink:0}
+.sevbar i{height:5px;flex:1;border-radius:2px;background:var(--border)}
+.sevbar i.on{background:var(--coral)}
+.sevbar i.on.low{background:var(--amber)}
+.symrow .arr{font-size:12px;font-weight:700;width:26px;text-align:right;flex-shrink:0}
+
+/* foundation bars */
+.frow{display:flex;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid var(--border)}
+.frow:last-child{border-bottom:none}
+.frow .fl{width:64px;flex-shrink:0}
+.frow .fv{font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--text-primary)}
+.frow .fn{font-size:10px;color:var(--text-muted);margin-top:1px}
+.fbars{display:flex;align-items:flex-end;gap:3px;height:36px;flex:1}
+.fbars i{flex:1;border-radius:3px 3px 1px 1px;background:var(--sand);border:1px solid var(--border);min-height:3px}
+.fbars i.full{background:var(--coral-light);border-color:transparent}
+
+/* paired evidence rows */
+.pairrow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--border)}
+.pairrow:last-child{border-bottom:none}
+.pairrow .pdots{display:flex;gap:3.5px;flex-shrink:0}
+.pdot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--border-hover)}
+.pdot.fill{background:var(--green);border-color:var(--green)}
+.pdot.bad{background:var(--red);border-color:var(--red)}
+.pdot.na{background:var(--sand);border-color:var(--border)}
+.pairrow .pt{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--text-primary);line-height:1.3}
+.pairrow .pt span{color:var(--text-muted);font-weight:500}
+.pairpill{font-size:9.5px;font-weight:700;padding:3.5px 9px;border-radius:10px;flex-shrink:0}
+.pairpill.ok{background:var(--green-bg);color:var(--green)}
+.pairpill.mix{background:var(--amber-bg);color:var(--amber-text)}
+.pairpill.low{background:var(--sand-light);color:var(--text-muted);border:1px solid var(--border)}
+.pairpill.bad{background:var(--red-bg);color:var(--red)}
+.pairpill.care{background:var(--sky-bg);color:var(--sky-text)}
+.phone.dark .pairpill.low{background:var(--card-elevated)}
+
+/* habit week dots */
+.hdots{display:flex;gap:4px;flex-shrink:0}
+.hdot{width:9px;height:9px;border-radius:50%;background:var(--green)}
+.hdot.off{background:var(--sand);border:1.5px solid var(--border)}
+.phone.dark .hdot.off{background:var(--card-elevated)}
+
+/* next rows */
+.nextrow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--border)}
+.nextrow:last-child{border-bottom:none}
+.nextrow .nic{width:26px;height:26px;border-radius:8px;background:var(--coral-glow);color:var(--coral-deep);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nextrow .nt{flex:1;font-size:12.5px;font-weight:600;color:var(--text-primary);line-height:1.3}
+.nchip{font-size:10px;font-weight:700;padding:3.5px 9px;border-radius:10px;background:var(--sand-light);border:1px solid var(--border);color:var(--text-muted);flex-shrink:0;white-space:nowrap}
+.nchip.coral{background:var(--coral-glow);border-color:var(--coral-light);color:var(--coral-deep)}
+.phone.dark .nchip{background:var(--card-elevated)}
+.phone.dark .nchip.coral{background:var(--coral-glow)}
+
+/* tool rows */
+.toolrow{display:flex;align-items:center;gap:11px;padding:10px 2px;border-bottom:1px solid var(--border);cursor:pointer}
+.toolrow:last-child{border-bottom:none}
+.toolrow .tic{width:28px;height:28px;border-radius:9px;background:var(--sand-light);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);flex-shrink:0}
+.phone.dark .toolrow .tic{background:var(--card-elevated)}
+.toolrow .tt{flex:1;min-width:0}
+.toolrow .tn{font-size:12.5px;font-weight:600;color:var(--text-primary)}
+.toolrow .tm{font-size:10.5px;color:var(--text-muted);margin-top:1px}
+.toolrow>.ch{color:var(--text-hint);flex-shrink:0}
+
+/* care cards */
+.card.care-visit{border-color:var(--sky-text);border-left-width:3px}
+.card.care-treat{border-color:var(--amber);border-left-width:3px}
+.card.care-concern{border-color:var(--coral);border-left-width:3px;background:linear-gradient(160deg,var(--card),var(--coral-glow))}
+.card.care-concern .eyebrow{color:var(--coral-deep)}
+.evrow{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.45;color:var(--text-secondary);margin-top:7px}
+.evrow svg{flex-shrink:0;margin-top:1px;color:var(--text-hint)}
+
+/* CTA */
+.cta{margin-top:13px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--coral);color:var(--on-coral);border-radius:14px;padding:12px;font-weight:600;font-size:13.5px;font-family:var(--font-d);cursor:pointer;transition:transform .15s}
+.cta:active{transform:scale(.98)}
+.cta2{margin-top:8px;text-align:center;font-size:12.5px;font-weight:600;color:var(--text-muted);cursor:pointer;padding:6px}
+.correct{margin-top:10px;font-size:11.5px;font-weight:600;color:var(--text-hint);display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.card.dimmed{opacity:.55}
+.dimnote{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--amber-text);background:var(--amber-bg);border-radius:10px;padding:8px 11px;margin-bottom:9px}
+
+/* story timeline */
+.storyrow{display:flex;gap:10px;align-items:flex-start;position:relative;padding-bottom:12px}
+.storyrow:last-child{padding-bottom:2px}
+.storyrow::before{content:'';position:absolute;left:11px;top:25px;bottom:0;width:1.5px;background:var(--border)}
+.storyrow:last-child::before{display:none}
+.sicon{width:23px;height:23px;border-radius:50%;background:var(--sand-light);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-muted);flex-shrink:0;z-index:1}
+.phone.dark .sicon{background:var(--card-elevated)}
+.sicon.coral{background:var(--coral-glow);border-color:var(--coral-light);color:var(--coral-deep)}
+.storyrow .stext{font-size:12.5px;line-height:1.4;color:var(--text-secondary);padding-top:3px}
+.storyrow .stext b{color:var(--text-primary);font-weight:600}
+.storyrow .sdate{font-size:10px;font-weight:600;color:var(--text-hint);margin-left:auto;flex-shrink:0;padding-top:5px}
+
+/* view-all link */
+.viewall{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:12px;font-weight:600;color:var(--coral-deep);cursor:pointer}
+
+/* plan verdict + routine week dots */
+.verdict{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:12px;font-weight:700}
+.verdict svg{flex-shrink:0}
+.verdict.green{color:var(--green)}
+.verdict.mix{color:var(--amber-text)}
+.verdict.sky{color:var(--sky-text)}
+.rdots{display:flex;gap:3.5px;flex-shrink:0}
+.rdot{width:8px;height:8px;border-radius:50%;background:var(--sand);border:1.5px solid var(--border)}
+.rdot.relief{background:var(--green);border-color:var(--green)}
+.rdot.other{background:var(--amber);border-color:var(--amber)}
+
+/* time spent bars (followed card) */
+.trow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--border)}
+.trow:last-child{border-bottom:none}
+.trow .tn{flex:1;min-width:0}
+.trow .tnm{font-size:13px;font-weight:600;color:var(--text-primary)}
+.trow .tmeta{font-size:10.5px;color:var(--text-muted);margin-top:1px}
+.tbar{height:6px;background:var(--sand);border-radius:4px;margin-top:5px;overflow:hidden}
+.phone.dark .tbar{background:var(--card-elevated)}
+.tbar i{display:block;height:100%;background:var(--coral);border-radius:4px}
+.trow .tmins{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--text-primary);flex-shrink:0;min-width:42px;text-align:right}
+
+/* CTA-only slide */
+.card.cta-slide{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 20px;min-height:180px}
+.card.cta-slide h3{margin-top:8px}
+.card.cta-slide .cta{width:100%;margin-top:16px}
+.card.cta-slide .cta2{margin-top:10px}
+
+/* premium / locked */
+.pluschip{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:800;letter-spacing:.05em;padding:3.5px 9px;border-radius:11px;background:var(--amber-bg);color:var(--amber-text)}
+.lockwrap{position:relative;margin-top:12px}
+.lockbody{filter:blur(3.5px);opacity:.5;pointer-events:none;user-select:none}
+.lockveil{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:10px}
+.lockveil .lk{width:34px;height:34px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--amber-text);box-shadow:var(--shadow-md)}
+.lockveil .lt{font-size:12.5px;font-weight:700;color:var(--text-primary)}
+.lockveil .lm{font-size:10.5px;color:var(--text-muted);line-height:1.4;max-width:210px}
+.cta.plus{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff}
+.toolrow .lkic{color:var(--amber-text);flex-shrink:0}
+
+/* specialist guide notes (multidisciplinary review) */
+.guidenote{display:flex;gap:10px;align-items:flex-start;padding:11px 2px;border-bottom:1px solid var(--border);border-left:3px solid transparent;padding-left:8px;margin-left:-2px}
+.guidenote:last-child{border-bottom:none}
+.gav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;letter-spacing:.02em;flex-shrink:0;border:1.5px solid var(--border);background:var(--sand-light);color:var(--text-secondary)}
+.phone.dark .gav{background:var(--card-elevated)}
+.guidenote .gb{flex:1;min-width:0}
+.guidenote .gn{font-size:12.5px;font-weight:700;color:var(--text-primary);line-height:1.25}
+.guidenote .gs{font-size:10px;font-weight:600;color:var(--text-hint);margin-top:1px}
+.guidenote .gc{font-size:12.5px;line-height:1.45;color:var(--text-secondary);margin-top:5px}
+.guidenote .gc b{color:var(--text-primary);font-weight:600}
+.discchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.discchip{font-size:9.5px;font-weight:700;padding:3.5px 9px;border-radius:10px;background:var(--sand-light);border:1px solid var(--border);color:var(--text-muted)}
+.phone.dark .discchip{background:var(--card-elevated)}
+
+/* Patterns onboarding / report preparation */
+.ob{min-height:100%;padding:8px 18px 24px;background:var(--warm-cream)}
+.obtop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:3px 2px 13px}
+.obback,.obexit{border:0;background:transparent;color:var(--text-muted);font:600 11px var(--font-b);padding:5px 0;cursor:pointer}
+.obprog{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-hint)}
+.obbar{display:flex;gap:4px;margin:0 0 18px}
+.obbar i{height:4px;flex:1;border-radius:4px;background:var(--border)}
+.obbar i.on{background:var(--coral)}
+.obhero{padding:7px 2px 14px}
+.obhero .oicon{width:48px;height:48px;border-radius:15px;background:var(--coral-glow);color:var(--coral-deep);display:flex;align-items:center;justify-content:center;margin-bottom:15px}
+.obhero h2{font-family:var(--font-d);font-size:23px;line-height:1.15;letter-spacing:-.025em;color:var(--text-primary)}
+.obhero p{font-size:13px;line-height:1.55;color:var(--text-secondary);margin-top:8px}
+.obpoints{display:grid;gap:7px;margin:6px 0 14px}
+.obpoint{display:flex;gap:9px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:9px 11px;font-size:12px;font-weight:600;color:var(--text-primary)}
+.obpoint svg{color:var(--coral-deep);flex-shrink:0}
+.obnav{display:flex;gap:8px;margin-top:14px}
+.obnav .cta{flex:1;margin:0}
+.obsecondary{border:1px solid var(--border);background:var(--card);color:var(--text-secondary);border-radius:14px;padding:11px 13px;font:600 12px var(--font-b);cursor:pointer}
+
+.readyhead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.readynum{width:58px;height:58px;border-radius:50%;border:6px solid var(--coral-light);display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--card);flex-shrink:0}
+.readynum b{font:700 18px var(--font-d);color:var(--text-primary);line-height:1}
+.readynum span{font-size:8px;font-weight:700;color:var(--text-muted);margin-top:2px}
+.readycopy h3{font-size:15px;color:var(--text-primary)}
+.readycopy p{font-size:11px;line-height:1.4;color:var(--text-muted);margin-top:3px}
+.domainlist{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.domain{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px}
+.domain .dh{display:flex;justify-content:space-between;align-items:center;gap:5px}
+.domain .dn{font-size:11.5px;font-weight:700;color:var(--text-primary)}
+.domain .dm{font-size:9.5px;color:var(--text-muted);margin-top:4px;line-height:1.3}
+.dst{width:7px;height:7px;border-radius:50%;background:var(--border-hover);flex-shrink:0}
+.dst.ready{background:var(--green)}
+.dst.partial{background:var(--amber)}
+.dst.confirm{background:var(--coral)}
+
+.oblabel{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-hint);margin:14px 2px 7px}
+.choicegrid{display:grid;gap:7px}
+.choice{display:flex;align-items:center;gap:10px;border:1.5px solid var(--border);background:var(--card);border-radius:12px;padding:10px 11px;cursor:pointer;color:var(--text-primary)}
+.choice.on{border-color:var(--coral);background:var(--coral-glow)}
+.choice .cr{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--border-hover);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.choice.on .cr{border-color:var(--coral);box-shadow:inset 0 0 0 3px var(--card);background:var(--coral)}
+.choice .ct{font-size:12px;font-weight:600;line-height:1.3}
+.choice .cm{font-size:9.5px;color:var(--text-muted);margin-top:2px}
+.multis{display:flex;flex-wrap:wrap;gap:5px}
+.multi{border:1px solid var(--border);background:var(--card);border-radius:14px;padding:6px 9px;font:600 10.5px var(--font-b);color:var(--text-secondary);cursor:pointer}
+.multi.on{border-color:var(--coral);background:var(--coral-glow);color:var(--coral-deep)}
+.obtextarea{width:100%;min-height:58px;resize:none;border:1px solid var(--border);background:var(--card);color:var(--text-primary);border-radius:12px;padding:10px;font:12px/1.4 var(--font-b);outline:none}
+.obtextarea:focus{border-color:var(--coral)}
+.privacy{font-size:9.5px;color:var(--text-hint);line-height:1.35;margin-top:5px}
+
+.taskgroup{margin-top:11px}
+.tasklabel{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin:0 2px 6px;color:var(--text-hint)}
+.tasklabel.safety{color:var(--coral-deep)}
+.task{display:flex;gap:9px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:6px;cursor:pointer}
+.task.done{opacity:.62}
+.task.done .taskname{text-decoration:line-through}
+.taskcheck{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border-hover);display:flex;align-items:center;justify-content:center;color:transparent;flex-shrink:0;margin-top:1px}
+.task.done .taskcheck{background:var(--green);border-color:var(--green);color:#fff}
+.task.safety .taskcheck{border-color:var(--coral)}
+.taskbody{flex:1;min-width:0}
+.taskname{font-size:12px;font-weight:700;color:var(--text-primary);line-height:1.25}
+.taskwhy{font-size:10px;color:var(--text-muted);line-height:1.35;margin-top:2px}
+.taskeffort{font-size:9px;font-weight:700;color:var(--text-hint);white-space:nowrap;padding-top:2px}
+
+.reviewrows{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:4px 12px}
+.reviewrow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.reviewrow:last-child{border-bottom:0}
+.reviewrow .rl{font-size:10.5px;color:var(--text-muted)}
+.reviewrow .rv{font-size:11.5px;font-weight:700;color:var(--text-primary);text-align:right;max-width:62%}
+.missing{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.generating{text-align:center;padding:52px 12px 20px}
+.genring{width:62px;height:62px;border-radius:50%;border:5px solid var(--coral-light);border-top-color:var(--coral);margin:0 auto 18px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.genstage{font-size:15px;font-weight:700;color:var(--text-primary)}
+.gensub{font-size:11px;color:var(--text-muted);margin-top:5px}
+.oldreport{font-size:10px;color:var(--green);font-weight:600;margin-top:16px}
+
+.fresh{margin:0 0 10px;border:1px solid var(--border);border-radius:14px;padding:11px 12px;background:var(--card);display:flex;gap:10px;align-items:center}
+.fresh.update{border-color:var(--coral-light);background:var(--coral-glow)}
+.fresh .fic{width:29px;height:29px;border-radius:9px;background:var(--sand-light);display:flex;align-items:center;justify-content:center;color:var(--text-muted);flex-shrink:0}
+.phone.dark .fresh .fic{background:var(--card-elevated)}
+.fresh.update .fic{color:var(--coral-deep);background:var(--card)}
+.fresh .fb{flex:1;min-width:0}
+.fresh .ft{font-size:11.5px;font-weight:700;color:var(--text-primary)}
+.fresh .fm{font-size:9.5px;color:var(--text-muted);margin-top:2px}
+.fresh .fa{font-size:10px;font-weight:700;color:var(--coral-deep);cursor:pointer;white-space:nowrap}
+.delta{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:9px 0 13px}
+.deltabox{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:9px;text-align:center}
+.deltabox b{font:700 18px var(--font-d);color:var(--text-primary)}
+.deltabox span{display:block;font-size:9px;color:var(--text-muted);margin-top:2px}
+
+/* tab bar */
+.tabbar{flex-shrink:0;border-top:1px solid var(--border);background:var(--nav-bg);backdrop-filter:blur(24px) saturate(180%);padding:5px 6px 9px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;z-index:10}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:14px;padding:6px 1px;font-size:9.5px;font-weight:600;color:var(--text-secondary)}
+.tab.act{background:var(--nav-active);box-shadow:var(--shadow-sm);color:var(--coral-deep);font-weight:700}
+
+.phone-caption{max-width:340px;text-align:center;font-size:11px;color:#57534E;line-height:1.5}
+.phone-caption code{background:#fff;border:1px solid #E7E0DA;border-radius:6px;padding:1px 5px;font-size:10px}
+
+/* ─────────────── Control panel ─────────────── */
+.panel{width:392px;position:sticky;top:20px;background:#fff;border:1px solid #E7E0DA;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.08);padding:18px 18px 14px;max-height:calc(100vh - 60px);overflow-y:auto}
+.panel h2{font-family:var(--font-d);font-size:15px;letter-spacing:-.01em;color:#1C1917}
+.panel .psub{font-size:11.5px;color:#57534E;margin-top:3px;line-height:1.45}
+.pgroup{margin-top:16px}
+.plabel{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8A817A;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.plabel .tag{font-weight:600;letter-spacing:0;text-transform:none;color:#C7323A;font-size:10px}
+
+.persona{display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:10px;border:1.5px solid #E7E0DA;border-radius:13px;padding:8px 11px;cursor:pointer;background:#fff;transition:.15s;text-align:left;width:100%;font-family:var(--font-b)}
+.prow:hover{border-color:#D4CCC5}
+.prow.on{border-color:#D93A3E;background:rgba(217,58,62,.04)}
+.prow .pav{width:29px;height:29px;border-radius:50%;background:rgba(217,58,62,.08);border:1.5px solid rgba(217,58,62,.16);color:#C7323A;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.prow .pn{font-size:12.5px;font-weight:700;color:#1C1917}
+.prow .pd{font-size:10.5px;color:#57534E;line-height:1.35;margin-top:1px}
+
+.segs{display:flex;flex-wrap:wrap;gap:5px}
+.seg{border:1.5px solid #E7E0DA;background:#fff;font-family:var(--font-b);font-size:11.5px;font-weight:600;color:#57534E;padding:6px 11px;border-radius:20px;cursor:pointer;transition:.15s}
+.seg:hover{border-color:#D4CCC5}
+.seg.on{background:#D93A3E;border-color:#D93A3E;color:#fff}
+
+.togglerow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tgl{position:relative;width:42px;height:24px;flex-shrink:0;cursor:pointer}
+.tgl input{opacity:0;width:0;height:0}
+.tgl .tk{position:absolute;inset:0;background:#E7E0DA;border-radius:24px;transition:.2s}
+.tgl .tk::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tgl input:checked + .tk{background:#D93A3E}
+.tgl input:checked + .tk::before{transform:translateX(18px)}
+.tgllabel{font-size:12px;font-weight:600;color:#1C1917}
+.tglhint{font-size:10.5px;color:#57534E;margin-top:1px}
+
+.dataview{margin-top:18px;background:#1C1917;border-radius:14px;padding:12px 13px}
+.dataview .dlabel{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#A8A29E;margin-bottom:7px;display:flex;justify-content:space-between}
+.dataview .dlabel span:last-child{color:#F87171}
+.dataview pre{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:9.5px;line-height:1.55;color:#D6D3D1;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;margin:0}
+.dataview pre b{color:#FCA5A5;font-weight:600}
+
+.scenario{margin-top:14px;background:#FAF6F2;border:1px solid #E7E0DA;border-radius:14px;padding:12px 13px}
+.scenario .slabel{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8A817A;margin-bottom:6px}
+.scenario .stext{font-size:11.5px;line-height:1.6;color:#1C1917;font-family:ui-monospace,'SF Mono',Menlo,monospace}
+.scenario .stext b{font-weight:700;color:#C7323A}
+.scenario .sintent{font-size:11px;line-height:1.5;color:#57534E;margin-top:7px;padding-top:7px;border-top:1px dashed #E7E0DA;font-family:var(--font-b)}
+.panel .foot{margin-top:14px;font-size:10px;color:#8A817A;line-height:1.5}
+
+@media (max-width:900px){ .panel{position:static;width:100%;max-width:420px} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Gut<span>Sphere</span> · Patterns — deterministic template lab</div>
+  <div class="sub">Swipeable card carousels per section. Plan carousel ends on a CTA slide. Deeper section is a multidisciplinary specialist review (Gastroenterology, Nutrition, Pelvic Floor, GI Psychology, …) — Plus-gated. Free metrics stay deterministic.</div>
+</div>
+
+<div class="stage">
+
+  <!-- ══════════ Phone ══════════ -->
+  <div class="phone-col">
+    <div class="phone" id="phone">
+      <div class="notch"></div>
+      <div class="status">
+        <span id="status-time">21:05</span>
+        <span class="sicons">
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="0.5"/><rect x="4.5" y="4.5" width="3" height="6.5" rx="0.5"/><rect x="9" y="2" width="3" height="9" rx="0.5"/><rect x="13" y="0" width="3" height="11" rx="0.5" opacity=".35"/></svg>
+          <svg width="22" height="11" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="14" height="8" rx="1.5" fill="currentColor"/><path d="M23 4v4c1-.2 1.6-1 1.6-2S24 4.2 23 4z" fill="currentColor" opacity=".4"/></svg>
+        </span>
+      </div>
+      <div class="app">
+        <div class="appheader">
+          <div class="avatar" id="hdr-avatar">MY</div>
+          <div class="ttl">Patterns</div>
+          <div class="bell">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 20a2 2 0 0 1-3.4 0"/></svg>
+            <span class="bdg">1</span>
+          </div>
+        </div>
+        <div class="scroll" id="screen"></div>
+        <div class="tabbar" id="tabbar"></div>
+      </div>
+    </div>
+    <div class="phone-caption">Every string follows a copy-grammar template with a computed value: <code>{symptom} · {k} of {n} {scope}</code>, <code>{v}/wk · usual {b}/wk</code>, <code>Type {mode} · {pct}% of {n}</code>, <code>{action} → {outcome} · {k} of {n}</code>. Vague phrases are unrepresentable.</div>
+  </div>
+
+  <!-- ══════════ Controls ══════════ -->
+  <div class="panel">
+    <h2>Situation switches</h2>
+    <p class="psub">Each switch mutates the raw event dataset. The engine recomputes every number on the phone — the templates never change.</p>
+
+    <div class="pgroup">
+      <div class="plabel">Patterns entry <span class="tag">onboarding lifecycle</span></div>
+      <div class="segs" id="ctl-entry"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">Preparation data <span class="tag">readiness rules</span></div>
+      <div class="segs" id="ctl-prep"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">Onboarding step <span class="tag" id="ctl-step-label">1 of 5</span></div>
+      <div class="segs" id="ctl-obstep"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">Preparation tasks <span class="tag">simulate completion</span></div>
+      <div class="segs" id="ctl-taskstate"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">Persona dataset <span class="tag">swaps all rows</span></div>
+      <div class="persona" id="ctl-persona"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">State rows <span class="tag">flare / steady data</span></div>
+      <div class="segs" id="ctl-state"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">Plan record <span class="tag">§2 plan cards</span></div>
+      <div class="segs" id="ctl-plan"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">Outcome rows <span class="tag">worked / didn't</span></div>
+      <div class="segs" id="ctl-learning"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">Care rows <span class="tag">safety first</span></div>
+      <div class="segs" id="ctl-care"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">Time of day</div>
+      <div class="segs" id="ctl-tod"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">Account tier <span class="tag">paid teases</span></div>
+      <div class="segs" id="ctl-tier"></div>
+    </div>
+
+    <div class="pgroup">
+      <div class="plabel">Appearance</div>
+      <div class="togglerow">
+        <div>
+          <div class="tgllabel">Dark mode</div>
+          <div class="tglhint">Remaps the same tokens, like <code>dark_theme.css</code></div>
+        </div>
+        <label class="tgl"><input type="checkbox" id="ctl-dark"><span class="tk"></span></label>
+      </div>
+    </div>
+
+    <div class="dataview">
+      <div class="dlabel"><span>Active dataset → engine</span><span id="dv-count"></span></div>
+      <pre id="dataview"></pre>
+    </div>
+
+    <div class="scenario">
+      <div class="slabel">Computed state</div>
+      <div class="stext" id="scenario-text"></div>
+      <div class="sintent" id="scenario-intent"></div>
+    </div>
+
+    <div class="foot">Mechanics catalog is documented at the top of the script in this file, with each metric mapped to its Rails source (<code>BowelMovementWeeklySnapshotService</code>, <code>Health::DailyMetricBaseline</code>, <code>Patterns::WeeklySummary</code>, rule engines). Demo data only — not clinically reviewed.</div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   MECHANICS CATALOG — every slot on the phone is computed, never written.
+
+   slot / metric              computation (this file)        Rails port (existing code)
+   ─────────────────────      ─────────────────────────────  ───────────────────────────────
+   bm_count_7d                count bm rows d<7              bowel_movement_entries.where(event_datetime: 7.days.ago..)
+   bm_usual_wk                count bm rows 7<=d<21 / 2      Health::DailyMetricBaseline#baseline_median
+   bristol_mode / pct         mode of bm.type, d<7           BowelMovementWeeklySnapshotService#shape_values_from_entry / #consistency_metric
+   straining_avg / trend      mean(straining), split-half    BowelMovementWeeklySnapshotService#straining_metric / #compute_trend
+   symptom breakdown          group sym rows: days, avg sev  symptoms + symptom_details; Patterns::WeeklySummary#symptom_days
+   sleep / stress avg+bars    per-day values, mean           Patterns::WeeklySummary#avg_sleep_minutes / #avg_stress
+   paired k of n              rout rows: relief count / n    new: routine_outcome_logs table (planned)
+   habit kept/slipping        habit rows: done k of 7        user_habits.completed; UserHabit#calculate_consecutive_days
+   stress ∩ symptom overlap   days stress>=6 within sym days rule engine join (SignalEngine style)
+   plan_day / review_due      plan.started, plan.len         plan record dates (planned Plan model)
+   state (footing/pattern/    rules: red<=7d or flare<=2d    FlareSupport::Personalization /
+     baseline)                  -> footing; no flare 14d &     GiKnowledgeBase::SignalEngine
+                                 sym days<=1 -> baseline
+   worth_discussing           sym distinct days >=5 of 14    rule engine threshold
+   what's next                rules: review/visit/discuss/   deterministic scheduler
+                               next-routine priority
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ═════════════════ Icons ═════════════════ */
+const I = (p, s=14) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const IC = {
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  chart:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 16v-4m4 4V8m4 8v-6"/>',
+  heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/>',
+  chat:'<path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.4 8.9 8.9 0 0 1-3.8-.8L3 21l1.9-5.7a8.3 8.3 0 0 1-.9-3.8A8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5Z"/>',
+  chev:'<path d="m9 6 6 6-6 6"/>',
+  cal:'<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  compass:'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5Z"/>',
+  act:'<path d="M22 12h-4l-3 8-6-16-3 8H2"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  check:'<path d="m5 13 4 4L19 7"/>',
+  bulb:'<path d="M9 18h6m-5 3h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3Z"/>',
+  shield:'<path d="M12 3l7 3v5c0 4.4-3 8.4-7 10-4-1.6-7-5.6-7-10V6Z"/><path d="M12 9v4m0 3h.01"/>',
+  pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+  doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 13h6m-6 4h4"/>',
+  edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z"/>',
+  target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+  kit:'<rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M12 11v5m-2.5-2.5h5"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+  share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>',
+  print:'<path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
+  bed:'<path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M2 17h20"/>',
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'
+};
+
+/* ═════════════════ Bristol glyphs (inline SVG, types 1–7) ═════════════════ */
+const GLYPHS = {
+  1:'<circle cx="7" cy="9" r="3"/><circle cx="14.5" cy="14.5" r="2.6"/><circle cx="16.5" cy="7" r="2.2"/>',
+  2:'<rect x="4" y="9" width="16" height="7" rx="3.5"/><circle cx="9" cy="8.4" r="2.2"/><circle cx="14.5" cy="16.2" r="2.2"/>',
+  3:'<rect x="4" y="9" width="16" height="7" rx="3.5"/><path d="M10 9.5v6M15 9.5v6" stroke="var(--card)" stroke-width="1.5" fill="none"/>',
+  4:'<path d="M5 15c3-7 6 2 9-4s4 3 6 0" stroke="currentColor" stroke-width="4.2" fill="none" stroke-linecap="round"/>',
+  5:'<circle cx="8" cy="10" r="3.6"/><circle cx="15.5" cy="14" r="4"/><circle cx="17" cy="6.5" r="2.4"/>',
+  6:'<path d="M5 8l3.2-1.2L10.5 9l-1 3.2-3.2 1L4 11.2z"/><path d="M13 12l3.2-1.2L19.5 13l-1 3.2-3.2 1L13 15.2z"/>',
+  7:'<path d="M6.5 5.5c2.2 2.4 2.2 4.6 0 5.8s-3.4-.8-2.2-3.2z"/><path d="M13.5 9.5c2.6 2.8 2.6 5.4 0 6.8s-4-1-2.6-3.8z"/><circle cx="17.5" cy="5" r="1.8"/>'
+};
+const bristol = (t, size=20) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="currentColor">${GLYPHS[t]}</svg>`;
+const B_DESC = {1:'Separate hard lumps',2:'Lumpy sausage',3:'Cracked surface',4:'Smooth + soft',5:'Soft blobs',6:'Mushy pieces',7:'Watery'};
+const B_STATUS = t => t<=2 ? ['Slow','warn'] : t<=5 ? ['Typical','ok'] : ['Fast','warn'];
+
+/* ═════════════════ Date helpers (real calendar) ═════════════════ */
+const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dayDate = d => { const t=new Date(); t.setDate(t.getDate()-d); return t; };
+const fmtD = d => { const t=dayDate(d); return `${WD[t.getDay()]} ${t.getDate()} ${MN[t.getMonth()]}`; };
+const wdIn  = n => { const t=new Date(); t.setDate(t.getDate()+n); return WD[t.getDay()]; };
+const fmtIn = n => { const t=new Date(); t.setDate(t.getDate()+n); return `${WD[t.getDay()]} ${t.getDate()} ${MN[t.getMonth()]}`; };
+
+/* ═════════════════ Copy grammar — the ONLY way strings are built ═════════════════ */
+const G = {
+  kOfN:      (label,k,n,scope) => `${label} · ${k} of ${n} ${scope}`,
+  vsUsual:   (v,u,b) => b==null ? `${v}${u}` : `${v}${u} · usual ${b}${u}`,
+  modePct:   (m,pct,n) => `Type ${m} most common · ${pct}% of ${n} logs`,
+  paired:    (a,r,k,n) => `${a} → ${r} · ${k} of ${n}`,
+  noData:    n => `Not enough data · n=${n}`,
+  dayOf:     (i,n) => `Day ${i} of ${n}`,
+  reviewIn:  n => n<=0 ? 'Review due today' : `Review due ${wdIn(n)}`,
+  inDays:    n => n===0 ? 'today' : n===1 ? 'tomorrow' : `in ${n}d`,
+  daysAgo:   d => d===0 ? 'today' : d===1 ? 'yesterday' : `${d}d ago`,
+  steadyWks: w => `Steady · ${w}w`
+};
+
+/* ═════════════════ Engine — deterministic metrics over raw rows ═════════════════
+   Row types (field names echo real schema):
+   {t:'bm',   d, type:1..7, straining:0..10}      bowel_movement_entries
+   {t:'sym',  d, name, sev:0..10, scope}          symptom_details (+symptoms.date)
+   {t:'sleep',d, hours}                           sleeps
+   {t:'stress',d, level:1..9}                     stress_logs
+   {t:'rout', d, name, outcome, result, mins, felt, abandoned}
+        outcome: relief|nochange|impractical|worse
+        felt: better|same|worse (session reflection)
+        mins: session duration; abandoned: dropped mid-routine
+   {t:'habit',d, name, done}                      user_habits
+   {t:'flare',d}  {t:'blood',d}                   flare / red-flag logs
+   {t:'visit',inDays}  {t:'treat',d,name}         care events
+   {t:'ep',   d}  {t:'q',d}                       captured episodes / questions      */
+const E = {
+  rows:      (rs,t) => rs.filter(r=>r.t===t),
+  count:     (rs,t,a,b) => E.rows(rs,t).filter(r=>r.d>=a && r.d<b).length,
+  distinctD: (rs,t,a,b) => new Set(E.rows(rs,t).filter(r=>r.d>=a && r.d<b).map(r=>Math.floor(r.d))).size,
+  usualWk:   (rs,t) => { const c=E.count(rs,t,7,21); return c? +(c/2).toFixed(1) : null; },
+  mode:      (rs,a,b) => {
+    const xs=E.rows(rs,'bm').filter(r=>r.d>=a&&r.d<b&&r.type); if(!xs.length) return null;
+    const f={}; xs.forEach(r=>f[r.type]=(f[r.type]||0)+1);
+    const m=+Object.keys(f).sort((x,y)=>f[y]-f[x])[0];
+    return { type:m, pct:Math.round(f[m]/xs.length*100), n:xs.length, dist:f };
+  },
+  avg:       (rs,t,key,a,b) => { const xs=E.rows(rs,t).filter(r=>r.d>=a&&r.d<b); if(!xs.length) return null; return +(xs.reduce((s,r)=>s+r[key],0)/xs.length).toFixed(1); },
+  trend:     (rs,t,key) => {
+    const hi=E.avg(rs,t,key,0,4), lo=E.avg(rs,t,key,4,8);
+    if(hi==null||lo==null) return null;
+    return hi<lo-0.5 ? 'down' : hi>lo+0.5 ? 'up' : 'flat';
+  },
+  paired:    (rs) => {
+    const g={};
+    E.rows(rs,'rout').forEach(r=>{ (g[r.name]=g[r.name]||[]).push(r); });
+    return Object.entries(g).map(([name,xs])=>E.sessionAgg(name,xs));
+  },
+  sessionAgg: (name,xs) => {
+    if (!xs.length) return {
+      name, result:'', n:0, k:0, better:0, same:0, worse:0, imp:0,
+      abandoned:0, totalMins:0, avgMins:null, sessions:[]
+    };
+    const done=xs.filter(r=>!r.abandoned);
+    const mins=done.filter(r=>r.mins!=null).map(r=>r.mins);
+    return {
+      name, result:xs[0].result, n:xs.length,
+      k:xs.filter(r=>r.outcome==='relief'||r.felt==='better').length,
+      better:xs.filter(r=>r.felt==='better'||r.outcome==='relief').length,
+      same:xs.filter(r=>r.felt==='same'||r.outcome==='nochange').length,
+      worse:xs.filter(r=>r.felt==='worse'||r.outcome==='worse').length,
+      imp:xs.filter(r=>r.outcome==='impractical').length,
+      abandoned:xs.filter(r=>r.abandoned).length,
+      totalMins:mins.reduce((s,m)=>s+m,0),
+      avgMins:mins.length? Math.round(mins.reduce((s,m)=>s+m,0)/mins.length) : null,
+      sessions:xs
+    };
+  },
+  nameMatch: (a,b) => {
+    if (!a||!b) return false;
+    const na=a.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    const nb=b.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    if (na===nb) return true;
+    if (na.includes(nb)||nb.includes(na)) return true;
+    return false;
+  },
+  routKey: (r) => r.key || r.name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''),
+  planKeys: (plan) => new Set((plan?.routines||[]).map(r=>E.routKey(r))),
+  inPlan: (nameOrRow, plan) => {
+    if (!plan) return false;
+    const key = typeof nameOrRow==='string' ? E.routKey({name:nameOrRow}) : E.routKey(nameOrRow);
+    if (E.planKeys(plan).has(key)) return true;
+    return plan.routines.some(r=>E.nameMatch(r.name, typeof nameOrRow==='string'?nameOrRow:nameOrRow.name));
+  },
+  routFor: (rs,planRoutine) => {
+    const key=E.routKey(typeof planRoutine==='string'?{name:planRoutine}:planRoutine);
+    const name=typeof planRoutine==='string'?planRoutine:planRoutine.name;
+    return E.rows(rs,'rout').filter(r=>E.routKey(r)===key || E.nameMatch(r.name,name));
+  },
+  planSessions: (rs, plan) => {
+    if (!plan) return [];
+    return plan.routines.map(r=>{
+      const xs=E.routFor(rs,r);
+      const agg=E.sessionAgg(r.name,xs);
+      return {...agg, key:E.routKey(r), meta:r.meta, plannedMins:r.mins||null};
+    });
+  },
+  alsoTried: (rs, plan) => {
+    const keys=E.planKeys(plan);
+    const g={};
+    E.rows(rs,'rout').filter(r=>!keys.has(E.routKey(r)) && !E.inPlan(r,plan)).forEach(r=>{ (g[r.name]=g[r.name]||[]).push(r); });
+    return Object.entries(g).map(([name,xs])=>E.sessionAgg(name,xs)).sort((a,b)=>b.n-a.n);
+  },
+  totalPlanMins: (rs, plan) => E.planSessions(rs,plan).reduce((s,p)=>s+p.totalMins,0),
+  triedCount: (rs, plan) => E.planSessions(rs,plan).filter(p=>p.n>0).length,
+  timeSkew: (rs, plan) => {
+    const xs=E.rows(rs,'rout').filter(r=>!plan||E.inPlan(r.name,plan));
+    if (xs.length<2) return null;
+    const morn=xs.filter(r=>(r.tod||'any')==='morning').length;
+    const eve=xs.filter(r=>(r.tod||'any')==='evening').length;
+    if (morn>=eve+2) return {label:'Mostly mornings', k:morn, n:xs.length};
+    if (eve>=morn+2) return {label:'Mostly evenings', k:eve, n:xs.length};
+    return null;
+  },
+  symBreakdown: rs => {
+    const g={};
+    E.rows(rs,'sym').filter(r=>r.d<7).forEach(r=>{ (g[r.name]=g[r.name]||[]).push(r); });
+    return Object.entries(g).map(([name,xs])=>({
+      name, days:new Set(xs.map(r=>Math.floor(r.d))).size,
+      sev:+(xs.reduce((s,r)=>s+r.sev,0)/xs.length).toFixed(1)
+    })).sort((a,b)=>b.days-a.days||b.sev-a.sev).slice(0,3);
+  },
+  dayVals:   (rs,t,key) => Array.from({length:7},(_,i)=>{ const d=6-i; const r=E.rows(rs,t).find(x=>Math.floor(x.d)===d); return r?r[key]:null; }),
+  habits:    rs => {
+    const g={};
+    E.rows(rs,'habit').forEach(r=>{ (g[r.name]=g[r.name]||[]).push(r); });
+    return Object.entries(g).map(([name,xs])=>({
+      name, n:7, done:xs.filter(r=>r.done).length,
+      week:Array.from({length:7},(_,i)=>{ const d=6-i; return xs.some(r=>Math.floor(r.d)===d&&r.done); })
+    }));
+  },
+  kept:      h => h.done>=Math.ceil(h.n*0.6),
+  stressOverlap: rs => {
+    const symDays=new Set(E.rows(rs,'sym').filter(r=>r.d<7).map(r=>Math.floor(r.d)));
+    if(!symDays.size) return null;
+    const hi=new Set(E.rows(rs,'stress').filter(r=>r.d<7&&r.level>=6).map(r=>Math.floor(r.d)));
+    const k=[...symDays].filter(d=>hi.has(d)).length;
+    return k>=1 ? {k,n:symDays.size} : null;
+  },
+  tracked7:  rs => new Set(rs.filter(r=>['bm','sym','sleep','stress','rout','habit'].includes(r.t)&&r.d<7).map(r=>Math.floor(r.d))).size,
+  span:      rs => rs.reduce((m,r)=>Math.max(m,r.d||0),0),
+  deriveState: rs => {
+    const blood=E.rows(rs,'blood').find(r=>r.d<=7);
+    if (blood) return { s:'footing', why:`red<=${blood.d}d` };
+    const flare=E.rows(rs,'flare').find(r=>r.d<=2);
+    if (flare) return { s:'footing', why:`flare d-${flare.d}` };
+    const sym7=E.distinctD(rs,'sym',0,7), noFlare14=!E.rows(rs,'flare').some(r=>r.d<=14);
+    if (noFlare14 && sym7<=1 && E.span(rs)>=14) return { s:'baseline', why:`no flare 14d · sym ${sym7}/7d` };
+    return { s:'pattern', why:`sym ${sym7}/7d · in flux` };
+  },
+  discuss:   rs => E.distinctD(rs,'sym',0,14)>=5 ? E.distinctD(rs,'sym',0,14) : null
+};
+
+/* ═════════════════ Patterns onboarding readiness / lifecycle ═════════════════
+   Readiness is descriptive, never a clinical score and never a hard gate. */
+const DOMAIN_LABELS = {
+  bowel:'Bowel', symptoms:'Symptoms', foundations:'Foundations',
+  routines:'Plan + routines', habits:'Habits', care:'Care context'
+};
+
+function readinessFor(rs, plan, ctx={}){
+  const win=ctx.window||7;
+  const done=new Set(ctx.taskDone||[]);
+  const within=r=>r.d==null || r.d<win;
+  const bowel=E.rows(rs,'bm').filter(within);
+  const syms=E.rows(rs,'sym').filter(within);
+  const sleepDays=E.distinctD(rs,'sleep',0,win);
+  const stressDays=E.distinctD(rs,'stress',0,win);
+  const sessions=E.rows(rs,'rout').filter(within);
+  const reflections=sessions.filter(r=>r.felt).length;
+  const habits=E.rows(rs,'habit').filter(within);
+  const careRows=rs.filter(r=>['blood','visit','treat'].includes(r.t));
+  const planSessions=E.planSessions(rs,plan);
+  const habitDays=new Set(habits.map(r=>Math.floor(r.d))).size;
+
+  const status=(key,raw,partial,meta)=>{
+    const forced=done.has(key);
+    return {status:forced?'ready':raw?'ready':partial?'partial':'empty',meta};
+  };
+
+  const domains={
+    bowel:status('bm_log',bowel.length>=3,bowel.length>0,`${bowel.length} entries · ${win}d`),
+    symptoms:status('sym_detail',syms.length>0&&syms.every(r=>r.sev!=null),syms.length>0,
+      syms.length?`${new Set(syms.map(r=>Math.floor(r.d))).size} days · severity ${syms.every(r=>r.sev!=null)?'included':'missing'}`:'No symptom rows'),
+    foundations:status('foundation_log',sleepDays>=3||stressDays>=3,sleepDays+stressDays>0,
+      `${sleepDays} sleep days · ${stressDays} stress days`),
+    routines:plan
+      ? status('routine_reflection',sessions.length>0&&reflections===sessions.length,sessions.length>0,
+          `${E.triedCount(rs,plan)} of ${plan.routines.length} routines · ${reflections}/${sessions.length} reflections`)
+      : {status:'empty',meta:'No active plan'},
+    habits:status('habit_checkin',habitDays>=Math.min(win,5),habitDays>0,`${habitDays} days checked`),
+    care:careRows.length
+      ? {status:done.has('care_confirm')?'ready':'confirm',meta:`${careRows.length} item${careRows.length===1?'':'s'} to confirm`}
+      : {status:'ready',meta:'No change reported'}
+  };
+
+  const represented=Object.values(domains).filter(d=>d.status!=='empty').length;
+  const ready=Object.values(domains).filter(d=>d.status==='ready').length;
+  const missing=Object.entries(domains).filter(([,d])=>d.status==='empty').map(([k])=>DOMAIN_LABELS[k]);
+  const records=rs.filter(r=>within(r)&&['bm','sym','sleep','stress','rout','habit','treat','blood'].includes(r.t)).length;
+  const safety=E.rows(rs,'blood').some(r=>r.d<=win);
+  const tasks=preparationTasks(rs,plan,{...ctx,domains,safety,win});
+  return {domains,represented,ready,missing,records,safety,tasks,win,planSessions};
+}
+
+function preparationTasks(rs,plan,ctx){
+  const {domains,safety,win}=ctx;
+  const done=new Set(ctx.taskDone||[]);
+  const tasks=[];
+  const add=(key,kind,title,why,effort,already=false)=>tasks.push({
+    key,kind,title,why,effort,done:already||done.has(key)
+  });
+
+  if (safety) add('care_confirm','safety','Confirm the concerning change',
+    'Keeps care options first and pauses self-care suggestions.','1 min');
+  else if (domains.care.status==='confirm') add('care_confirm','recommended','Confirm your care context',
+    'Keeps treatment or visit details current.','1 min');
+
+  if (domains.bowel.status!=='ready') add('bm_log','recommended','Add one current bowel log',
+    'Adds bowel-form and frequency context.','≈30 sec');
+  if (domains.symptoms.status==='partial') add('sym_detail','recommended','Add symptom severity',
+    'Separates a mild day from a disruptive one.','≈20 sec');
+  if (plan && domains.routines.status!=='ready') add('routine_reflection','recommended','Reflect on a recent routine',
+    'Adds better / same / worse to plan progress.','≈20 sec');
+  if (plan && plan.len-plan.started<=0) add('plan_review','recommended','Confirm the plan review',
+    'Marks keep, adapt, or stop for this plan.','2 min');
+  if (domains.habits.status!=='ready') add('habit_checkin','recommended','Complete today’s habit check-in',
+    'Clarifies followed versus skipped days.','≈20 sec');
+  if (domains.foundations.status!=='ready') add('foundation_log','optional','Add sleep or stress',
+    'Adds foundation context around symptom days.','≈30 sec');
+  const visit=E.rows(rs,'visit')[0];
+  if (visit && E.count(rs,'q',0,30)<3) add('visit_questions','optional','Draft one visit question',
+    `Adds to your visit in ${visit.inDays}d.`,'1 min');
+  if (!E.rows(rs,'diet').length) add('meal_timing','optional','Add meal timing if relevant',
+    'Useful only when symptoms cluster near meals.','≈30 sec');
+  return tasks;
+}
+
+function lifecycleFor(rs,plan){
+  if (S.entry==='first') return {hasReport:false,generatedAgo:null,newRows:0,newReflections:0,material:true};
+  const generatedAgo=S.entry==='current'?0:3;
+  const recent=rs.filter(r=>r.d!=null&&r.d<generatedAgo);
+  const newReflections=recent.filter(r=>r.t==='rout'&&r.felt).length;
+  const changed=[...new Set(recent.map(r=>{
+    if (r.t==='bm') return 'Bowel';
+    if (r.t==='sym') return 'Symptoms';
+    if (['sleep','stress'].includes(r.t)) return 'Foundations';
+    if (r.t==='rout') return 'Routines';
+    if (r.t==='habit') return 'Habits';
+    if (['blood','treat','visit'].includes(r.t)) return 'Care';
+    return null;
+  }).filter(Boolean))];
+  const material=S.entry==='refresh'||S.entry==='regen'||
+    recent.some(r=>['blood','flare','treat'].includes(r.t))||
+    (plan&&plan.len-plan.started<=0);
+  return {hasReport:true,generatedAgo,newRows:recent.length,newReflections,changed,material};
+}
+
+function applyPreparationRows(rs,mode){
+  if (mode==='ready') return rs;
+  if (mode==='safety'){
+    const out=rs.filter(r=>r.t!=='blood');
+    out.push({t:'blood',d:1});
+    return out;
+  }
+  if (mode==='sparse'){
+    const keep={bm:2,sym:1,sleep:1,stress:0,rout:1,habit:1};
+    const seen={};
+    return rs.filter(r=>{
+      if (['visit','treat','blood','flare','q','ep'].includes(r.t)) return true;
+      if (!(r.t in keep)) return false;
+      seen[r.t]=(seen[r.t]||0)+1;
+      return seen[r.t]<=keep[r.t] && (r.d==null||r.d<7);
+    });
+  }
+  /* Partial: enough to explain the product, but leaves high-value gaps. */
+  const seen={};
+  return rs.filter(r=>{
+    if (r.d!=null&&r.d>=14) return false;
+    if (r.t==='habit' && Math.floor(r.d)>2) return false;
+    if (r.t==='sleep' && (seen.sleep=(seen.sleep||0)+1)>2) return false;
+    if (r.t==='stress' && (seen.stress=(seen.stress||0)+1)>2) return false;
+    return true;
+  });
+}
+
+/* ═════════════════ Datasets — raw rows, no sentences ═════════════════ */
+const PERSONAS = {
+  maya: {
+    name:'Maya', ini:'MY', plabel:'Undiagnosed & confused',
+    pdesc:'Recurring bloating for months, no satisfying explanation',
+    intent:'Leads with the working picture, one feasible next step, and what is still uncertain.',
+    focus:{ label:'Bloating', name:'bloating', scope:'dinners' },
+    tiles:['symDays','bmFreq','sleepH','stress'],
+    glance:'symptom',
+    plan:{ name:'Build my digestive picture', len:14, started:3, status:'active', nextIdx:1,
+           routines:[
+             { key:'meaningful_day', name:'Meaningful-day check-in', meta:'≈30s · evenings', mins:1 },
+             { key:'evening_wind_down', name:'Evening wind-down', meta:'2 min · before bed', mins:2 },
+             { key:'baseline_check', name:'Baseline-vs-change check', meta:'1 min · Sundays', mins:1 } ] },
+    rows:[
+      {t:'bm',d:0,type:4,straining:2},{t:'bm',d:1,type:4,straining:2},{t:'bm',d:2,type:3,straining:3},
+      {t:'bm',d:4,type:4,straining:2},{t:'bm',d:5,type:5,straining:2},{t:'bm',d:6,type:4,straining:1},
+      {t:'bm',d:9,type:4,straining:2},{t:'bm',d:12,type:3,straining:3},{t:'bm',d:16,type:4,straining:2},
+      {t:'sym',d:0,name:'bloating',sev:6,scope:'dinner'},{t:'sym',d:2,name:'bloating',sev:5,scope:'dinner'},
+      {t:'sym',d:4,name:'bloating',sev:6,scope:'dinner'},{t:'sym',d:5,name:'bloating',sev:4,scope:'dinner'},
+      {t:'sym',d:10,name:'bloating',sev:5,scope:'dinner'},
+      {t:'sym',d:3,name:'cramps',sev:3,scope:'afternoon'},
+      {t:'sleep',d:0,hours:6.5},{t:'sleep',d:1,hours:7.2},{t:'sleep',d:2,hours:6.8},{t:'sleep',d:3,hours:7.0},{t:'sleep',d:5,hours:6.9},
+      {t:'stress',d:0,level:5},{t:'stress',d:1,level:6},{t:'stress',d:2,level:7},{t:'stress',d:4,level:4},{t:'stress',d:5,level:6},{t:'stress',d:6,level:5},
+      {t:'rout',d:0,key:'evening_wind_down',name:'Evening wind-down',outcome:'relief',result:'calmer evening',mins:2,felt:'better',tod:'evening'},
+      {t:'rout',d:1,key:'evening_wind_down',name:'Evening wind-down',outcome:'relief',result:'calmer evening',mins:2,felt:'better',tod:'evening'},
+      {t:'rout',d:3,key:'evening_wind_down',name:'Evening wind-down',outcome:'nochange',result:'calmer evening',mins:2,felt:'same',tod:'evening'},
+      {t:'rout',d:5,key:'evening_wind_down',name:'Evening wind-down',outcome:'relief',result:'calmer evening',mins:3,felt:'better',tod:'evening'},
+      {t:'rout',d:2,key:'meaningful_day',name:'Meaningful-day check-in',outcome:'relief',result:'pattern noted',mins:1,felt:'better',tod:'evening'},
+      {t:'rout',d:4,key:'meaningful_day',name:'Meaningful-day check-in',outcome:'nochange',result:'pattern noted',mins:1,felt:'same',tod:'evening'},
+      {t:'rout',d:1,key:'post_meal_walk',name:'Post-meal walk',outcome:'relief',result:'easier after dinner',mins:10,felt:'better',tod:'evening'},
+      {t:'rout',d:3,key:'post_meal_walk',name:'Post-meal walk',outcome:'nochange',result:'easier after dinner',mins:12,felt:'same',tod:'evening'},
+      {t:'rout',d:2,key:'bowel_relaxation',name:'Bowel relaxation',outcome:'relief',result:'less gripping',mins:8,felt:'better',tod:'morning'},
+      {t:'habit',d:0,name:'Evening wind-down',done:true},{t:'habit',d:1,name:'Evening wind-down',done:true},
+      {t:'habit',d:2,name:'Evening wind-down',done:false},{t:'habit',d:3,name:'Evening wind-down',done:true},
+      {t:'habit',d:4,name:'Evening wind-down',done:true},{t:'habit',d:5,name:'Evening wind-down',done:false},
+      {t:'habit',d:6,name:'Evening wind-down',done:true},
+      {t:'habit',d:1,name:'Dinner walk',done:true},{t:'habit',d:3,name:'Dinner walk',done:true},
+      {t:'habit',d:0,name:'Dinner walk',done:false},{t:'habit',d:2,name:'Dinner walk',done:false},
+      {t:'habit',d:4,name:'Dinner walk',done:false},{t:'habit',d:5,name:'Dinner walk',done:false},{t:'habit',d:6,name:'Dinner walk',done:false}
+    ],
+    storyExtra:[{d:37,icon:'act',text:'Bloating became more disruptive'}]
+  },
+
+  sam: {
+    name:'Sam', ini:'SM', plabel:'In a flare / low energy',
+    pdesc:'Loose stools + urgency since yesterday; exhausted',
+    intent:'Leads with the immediate relief action and safety visibility. History and detail stay inside.',
+    focus:{ label:'Urgency', name:'urgency', scope:'episodes' },
+    tiles:['loose2d','symDays','tracked','sleepH'],
+    glance:'bristol',
+    plan:{ name:'Manageable bowel days', len:7, started:1, status:'active', nextIdx:0,
+           routines:[
+             { key:'urgency_calming', name:'Urgency calming', meta:'1 min · in the moment', mins:1 },
+             { key:'grounding', name:'Grounding', meta:'2 min · sensory', mins:2 },
+             { key:'rehydration', name:'Rehydration', meta:'after episodes', mins:3 } ] },
+    rows:[
+      {t:'flare',d:1},
+      {t:'bm',d:0,type:6,straining:2},{t:'bm',d:0.3,type:7,straining:1},{t:'bm',d:1,type:7,straining:1},{t:'bm',d:1.4,type:6,straining:2},{t:'bm',d:2,type:6,straining:2},
+      {t:'bm',d:8,type:4,straining:2},{t:'bm',d:10,type:4,straining:2},{t:'bm',d:13,type:5,straining:2},{t:'bm',d:15,type:4,straining:2},{t:'bm',d:18,type:4,straining:1},
+      {t:'sym',d:0,name:'urgency',sev:8,scope:'episode'},{t:'sym',d:0.3,name:'urgency',sev:7,scope:'episode'},{t:'sym',d:1,name:'cramps',sev:7,scope:'episode'},{t:'sym',d:2,name:'urgency',sev:6,scope:'episode'},
+      {t:'sleep',d:0,hours:5.4},{t:'sleep',d:1,hours:6.1},{t:'sleep',d:3,hours:7.4},{t:'sleep',d:5,hours:7.0},
+      {t:'stress',d:0,level:7},{t:'stress',d:1,level:8},
+      {t:'rout',d:0,key:'urgency_calming',name:'Urgency calming',outcome:'relief',result:'edge off urgency',mins:1,felt:'better',tod:'morning'},
+      {t:'rout',d:1,key:'urgency_calming',name:'Urgency calming',outcome:'nochange',result:'edge off urgency',mins:1,felt:'same',tod:'morning'},
+      {t:'rout',d:0.5,key:'urgency_calming',name:'Urgency calming',outcome:'nochange',result:'edge off urgency',mins:0,felt:'same',abandoned:true,tod:'morning'},
+      {t:'rout',d:1,key:'constipation_support',name:'Constipation support',outcome:'nochange',result:'not the fit today',mins:6,felt:'same',tod:'morning'},
+      {t:'habit',d:0,name:'Rehydration',done:true},{t:'habit',d:1,name:'Rehydration',done:true},
+      {t:'habit',d:2,name:'Rehydration',done:false},{t:'habit',d:3,name:'Rehydration',done:false},
+      {t:'habit',d:4,name:'Rehydration',done:false},{t:'habit',d:5,name:'Rehydration',done:false},{t:'habit',d:6,name:'Rehydration',done:false}
+    ],
+    storyExtra:[{d:9,icon:'pencil',text:'Travel noted before flare'}]
+  },
+
+  alex: {
+    name:'Alex', ini:'AX', plabel:'Managing an IBS-C diagnosis',
+    pdesc:'Diagnosed last year; constipation-dominant, working on mornings',
+    intent:'Leads with the current outcome, plan status, and the strongest learning.',
+    focus:{ label:'Straining', name:'straining', scope:'mornings' },
+    tiles:['bmFreq','bristolMode','straining','sleepH'],
+    glance:'bristol',
+    plan:{ name:'Gentler bowel rhythm', len:10, started:5, status:'active', nextIdx:1,
+           routines:[
+             { key:'morning_settling', name:'Morning body-settling', meta:'2 min · on waking', mins:2 },
+             { key:'post_breakfast', name:'Post-breakfast window', meta:'10 min · unhurried', mins:10 },
+             { key:'hydration_rhythm', name:'Hydration rhythm', meta:'with meals', mins:1 } ] },
+    rows:[
+      {t:'bm',d:0,type:3,straining:3},{t:'bm',d:1,type:4,straining:2},{t:'bm',d:2,type:3,straining:3},{t:'bm',d:4,type:4,straining:2},{t:'bm',d:6,type:3,straining:4},
+      {t:'bm',d:8,type:2,straining:7},{t:'bm',d:11,type:2,straining:6},{t:'bm',d:14,type:3,straining:6},{t:'bm',d:17,type:2,straining:7},
+      {t:'sym',d:2,name:'discomfort',sev:4,scope:'morning'},{t:'sym',d:6,name:'discomfort',sev:3,scope:'morning'},
+      {t:'sleep',d:0,hours:7.1},{t:'sleep',d:1,hours:6.9},{t:'sleep',d:2,hours:7.3},{t:'sleep',d:4,hours:7.0},{t:'sleep',d:5,hours:6.8},
+      {t:'stress',d:1,level:4},{t:'stress',d:3,level:5},{t:'stress',d:5,level:4},
+      {t:'rout',d:1,key:'morning_settling',name:'Morning body-settling',outcome:'relief',result:'easier morning',mins:2,felt:'better',tod:'morning'},
+      {t:'rout',d:2,key:'morning_settling',name:'Morning body-settling',outcome:'relief',result:'easier morning',mins:2,felt:'better',tod:'morning'},
+      {t:'rout',d:4,key:'morning_settling',name:'Morning body-settling',outcome:'relief',result:'easier morning',mins:3,felt:'better',tod:'morning'},
+      {t:'rout',d:0,key:'post_breakfast',name:'Post-breakfast window',outcome:'relief',result:'easier morning',mins:10,felt:'better',tod:'morning'},
+      {t:'rout',d:3,key:'post_breakfast',name:'Post-breakfast window',outcome:'nochange',result:'easier morning',mins:8,felt:'same',tod:'morning'},
+      {t:'rout',d:5,key:'post_breakfast',name:'Post-breakfast window',outcome:'relief',result:'easier morning',mins:12,felt:'better',tod:'morning'},
+      {t:'rout',d:6,key:'post_breakfast',name:'Post-breakfast window',outcome:'nochange',result:'easier morning',mins:0,felt:'same',abandoned:true,tod:'morning'},
+      {t:'rout',d:2,key:'bowel_relaxation',name:'Bowel relaxation',outcome:'relief',result:'less strain',mins:7,felt:'better',tod:'morning'},
+      {t:'rout',d:4,key:'bowel_relaxation',name:'Bowel relaxation',outcome:'relief',result:'less strain',mins:8,felt:'better',tod:'morning'},
+      {t:'habit',d:0,name:'Morning window',done:true},{t:'habit',d:1,name:'Morning window',done:true},
+      {t:'habit',d:2,name:'Morning window',done:true},{t:'habit',d:3,name:'Morning window',done:false},
+      {t:'habit',d:4,name:'Morning window',done:true},{t:'habit',d:5,name:'Morning window',done:false},
+      {t:'habit',d:6,name:'Morning window',done:true},
+      {t:'habit',d:0,name:'Hydration cue',done:true},{t:'habit',d:1,name:'Hydration cue',done:true},
+      {t:'habit',d:2,name:'Hydration cue',done:true},{t:'habit',d:3,name:'Hydration cue',done:true},
+      {t:'habit',d:4,name:'Hydration cue',done:false},{t:'habit',d:5,name:'Hydration cue',done:true},
+      {t:'habit',d:6,name:'Hydration cue',done:false}
+    ],
+    storyExtra:[{d:340,icon:'doc',text:'IBS-C diagnosed'}]
+  },
+
+  robin: {
+    name:'Robin', ini:'RB', plabel:'Preparing for a visit',
+    pdesc:'Gastroenterology appointment in 6 days, symptoms persisting',
+    intent:'Leads with the upcoming care event and one preparation action.',
+    focus:{ label:'Loose stools', name:'loose stool', scope:'days' },
+    tiles:['episodes','questions','symDays','visitIn'],
+    glance:'symptom',
+    plan:{ name:'Prepare for the conversation', len:10, started:2, status:'active', nextIdx:0,
+           routines:[
+             { key:'episode_capture', name:'Episode capture', meta:'≈2 min · one example', mins:2 },
+             { key:'med_history', name:'Medication history check', meta:'3 min', mins:3 },
+             { key:'draft_questions', name:'Draft 3 questions', meta:'with your records', mins:4 } ] },
+    rows:[
+      {t:'visit',inDays:6},
+      {t:'bm',d:0,type:6,straining:1},{t:'bm',d:2,type:6,straining:1},{t:'bm',d:4,type:5,straining:2},{t:'bm',d:6,type:4,straining:2},
+      {t:'bm',d:8,type:5,straining:2},{t:'bm',d:12,type:6,straining:1},{t:'bm',d:15,type:4,straining:2},{t:'bm',d:18,type:4,straining:2},
+      {t:'sym',d:0,name:'loose stool',sev:5,scope:'day'},{t:'sym',d:2,name:'loose stool',sev:6,scope:'day'},
+      {t:'sym',d:4,name:'loose stool',sev:4,scope:'day'},{t:'sym',d:8,name:'loose stool',sev:5,scope:'day'},{t:'sym',d:11,name:'loose stool',sev:5,scope:'day'},
+      {t:'sleep',d:0,hours:6.2},{t:'sleep',d:1,hours:6.8},{t:'sleep',d:3,hours:5.9},{t:'sleep',d:5,hours:7.1},
+      {t:'ep',d:0},{t:'ep',d:2},{t:'ep',d:5},
+      {t:'q',d:1},{t:'q',d:1},
+      {t:'rout',d:1,key:'episode_capture',name:'Episode capture',outcome:'relief',result:'details kept',mins:2,felt:'better',tod:'evening'},
+      {t:'rout',d:3,key:'episode_capture',name:'Episode capture',outcome:'relief',result:'details kept',mins:3,felt:'better',tod:'evening'},
+      {t:'rout',d:5,key:'episode_capture',name:'Episode capture',outcome:'nochange',result:'details kept',mins:2,felt:'same',tod:'evening'},
+      {t:'rout',d:2,key:'urgency_calming',name:'Urgency calming',outcome:'relief',result:'edge off',mins:1,felt:'better',tod:'morning'}
+    ],
+    storyExtra:[{d:61,icon:'act',text:'Symptoms persisted through two plans'}]
+  },
+
+  jules: {
+    name:'Jules', ini:'JL', plabel:'Returning after many attempts',
+    pdesc:'Years of on-and-off tracking; sceptical, tired of homework',
+    intent:'Leads with clear learning — may help, mixed, impractical, or stopped. No new programme.',
+    focus:{ label:'Bloating', name:'bloating', scope:'days' },
+    tiles:['supports','symDays','tracked','bmFreq'],
+    glance:'symptom',
+    plan:{ name:'Settle bloating + discomfort', len:10, started:10, status:'active', nextIdx:2,
+           routines:[
+             { key:'post_meal_walk', name:'Post-meal walk', meta:'10 min · after dinner', mins:10 },
+             { key:'meal_pacing', name:'Meal pacing', meta:'weekdays · often impractical', mins:5 },
+             { key:'fibre_increase', name:'Fibre increase', meta:'stopped · felt worse', mins:0 } ] },
+    rows:[
+      {t:'bm',d:1,type:4,straining:2},{t:'bm',d:3,type:4,straining:2},{t:'bm',d:5,type:5,straining:2},
+      {t:'bm',d:9,type:4,straining:2},{t:'bm',d:13,type:4,straining:2},{t:'bm',d:16,type:5,straining:3},{t:'bm',d:19,type:4,straining:2},
+      {t:'sym',d:1,name:'bloating',sev:5,scope:'day'},{t:'sym',d:3,name:'bloating',sev:6,scope:'day'},{t:'sym',d:6,name:'bloating',sev:4,scope:'day'},
+      {t:'sym',d:9,name:'bloating',sev:5,scope:'day'},{t:'sym',d:14,name:'bloating',sev:5,scope:'day'},
+      {t:'sleep',d:0,hours:6.8},{t:'sleep',d:2,hours:7.0},{t:'sleep',d:4,hours:6.5},{t:'sleep',d:6,hours:7.2},
+      {t:'rout',d:1,key:'post_meal_walk',name:'Post-meal walk',outcome:'relief',result:'easier evening',mins:10,felt:'better',tod:'evening'},
+      {t:'rout',d:3,key:'post_meal_walk',name:'Post-meal walk',outcome:'nochange',result:'easier evening',mins:12,felt:'same',tod:'evening'},
+      {t:'rout',d:5,key:'post_meal_walk',name:'Post-meal walk',outcome:'relief',result:'easier evening',mins:10,felt:'better',tod:'evening'},
+      {t:'rout',d:7,key:'post_meal_walk',name:'Post-meal walk',outcome:'nochange',result:'easier evening',mins:9,felt:'same',tod:'evening'},
+      {t:'rout',d:2,key:'meal_pacing',name:'Meal pacing',outcome:'impractical',result:'fits weekdays',mins:5,felt:'same',tod:'evening'},
+      {t:'rout',d:4,key:'meal_pacing',name:'Meal pacing',outcome:'impractical',result:'fits weekdays',mins:4,felt:'same',tod:'evening'},
+      {t:'rout',d:8,key:'fibre_increase',name:'Fibre increase',outcome:'worse',result:'bloated days',mins:0,felt:'worse',tod:'morning'},
+      {t:'rout',d:9,key:'fibre_increase',name:'Fibre increase',outcome:'worse',result:'bloated days',mins:0,felt:'worse',tod:'morning'},
+      {t:'rout',d:3,key:'constipation_support',name:'Constipation support',outcome:'nochange',result:'not the fit',mins:6,felt:'same',tod:'morning'},
+      {t:'habit',d:1,name:'Post-meal walk',done:true},{t:'habit',d:3,name:'Post-meal walk',done:true},
+      {t:'habit',d:5,name:'Post-meal walk',done:true},{t:'habit',d:0,name:'Post-meal walk',done:false},
+      {t:'habit',d:2,name:'Post-meal walk',done:false},{t:'habit',d:4,name:'Post-meal walk',done:false},{t:'habit',d:6,name:'Post-meal walk',done:false}
+    ],
+    storyExtra:[{d:720,icon:'act',text:'Many approaches tried over the years'},{d:21,icon:'pause',text:'Two supports parked · not practical'}]
+  },
+
+  noor: {
+    name:'Noor', ini:'NR', plabel:'Stable · protecting a baseline',
+    pdesc:'Symptoms settled; wants the app quiet, not gone',
+    intent:'Leads with baseline status and whether anything needs changing. Quiet is the success state.',
+    focus:{ label:'Symptoms', name:'symptom', scope:'days' },
+    tiles:['steadyWks','bmFreq','symDays','sleepH'],
+    glance:'bristol',
+    plan:{ name:'Keep my baseline clear', len:14, started:14, status:'maintenance', nextIdx:0,
+           routines:[
+             { key:'reset_kit', name:'Reset kit', meta:'saved · for disruptions', mins:5 },
+             { key:'fit_check', name:'Monthly fit check', meta:'quiet · 1 min', mins:1 } ] },
+    rows:[
+      {t:'bm',d:0,type:4,straining:1},{t:'bm',d:1,type:4,straining:2},{t:'bm',d:3,type:4,straining:1},{t:'bm',d:4,type:5,straining:2},{t:'bm',d:6,type:4,straining:1},
+      {t:'bm',d:8,type:4,straining:2},{t:'bm',d:10,type:4,straining:1},{t:'bm',d:13,type:4,straining:2},{t:'bm',d:15,type:5,straining:2},{t:'bm',d:18,type:4,straining:1},{t:'bm',d:20,type:4,straining:2},
+      {t:'sym',d:16,name:'bloating',sev:3,scope:'day'},
+      {t:'sleep',d:0,hours:7.4},{t:'sleep',d:1,hours:7.1},{t:'sleep',d:2,hours:7.6},{t:'sleep',d:4,hours:7.2},{t:'sleep',d:5,hours:7.5},
+      {t:'stress',d:1,level:3},{t:'stress',d:3,level:2},{t:'stress',d:5,level:3},
+      {t:'rout',d:2,key:'evening_wind_down',name:'Evening wind-down',outcome:'relief',result:'calm morning',mins:2,felt:'better',tod:'evening'},
+      {t:'rout',d:4,key:'evening_wind_down',name:'Evening wind-down',outcome:'relief',result:'calm morning',mins:2,felt:'better',tod:'evening'},
+      {t:'rout',d:6,key:'evening_wind_down',name:'Evening wind-down',outcome:'relief',result:'calm morning',mins:2,felt:'better',tod:'evening'},
+      {t:'habit',d:0,name:'Evening wind-down',done:true},{t:'habit',d:1,name:'Evening wind-down',done:true},
+      {t:'habit',d:2,name:'Evening wind-down',done:true},{t:'habit',d:3,name:'Evening wind-down',done:true},
+      {t:'habit',d:4,name:'Evening wind-down',done:true},{t:'habit',d:5,name:'Evening wind-down',done:true},
+      {t:'habit',d:6,name:'Evening wind-down',done:true}
+    ],
+    storyExtra:[{d:96,icon:'check',text:'Baseline saved · usual pattern'},{d:52,icon:'act',text:'Travel disruption · reset kit used'},{d:45,icon:'check',text:'Back at baseline · 7d'}]
+  }
+};
+
+/* ═════════════════ Dataset mutators — switches change ROWS, never templates ═════════════════ */
+function steadied(rs){
+  let kept=false;
+  return rs.map(r=>{
+    if (r.t==='flare'||r.t==='blood') return null;
+    if (r.t==='bm'&&r.d<7) return {...r,type:4,straining:Math.min(r.straining??2,2)};
+    if (r.t==='sym'&&r.d<7){ if(kept) return null; kept=true; return {...r,sev:3,d:Math.max(r.d,6)}; }
+    return r;
+  }).filter(Boolean);
+}
+function flared(rs){
+  return [...rs.filter(r=>!(r.t==='flare')),
+    {t:'flare',d:1},
+    {t:'sym',d:0,name:'urgency',sev:8,scope:'episode'},
+    {t:'sym',d:1,name:'cramps',sev:7,scope:'episode'},
+    {t:'bm',d:0,type:6,straining:2},{t:'bm',d:1,type:7,straining:1}];
+}
+const STATE_MUT = {
+  footing:  (rs,home) => home==='footing' ? rs : flared(rs),
+  pattern:  (rs,home) => home==='footing' ? rs.filter(r=>r.t!=='flare'&&!(r.t==='sym'&&r.d<2)) : rs,
+  baseline: (rs,home) => steadied(rs)
+};
+
+const LEARN_MUT = {
+  helping:     ['relief','relief','relief','nochange'],
+  mixed:       ['relief','nochange','relief','nochange'],
+  impractical: ['impractical','impractical','relief'],
+  worse:       ['worse','worse','nochange'],
+  care:        ['relief','nochange','relief'],
+  unknown:     ['relief','nochange']
+};
+function applyLearning(rs, primary, signal){
+  const oc = LEARN_MUT[signal];
+  const sample = rs.find(r=>r.t==='rout'&&r.name===primary) || {};
+  let out = rs.filter(r=>!(r.t==='rout'&&r.name===primary));
+  oc.forEach((o,i)=>out.push({
+    t:'rout', d:i+1, name:primary, key:sample.key,
+    outcome:o,
+    result:sample.result || 'helped the day',
+    mins:sample.mins ?? 5,
+    felt: o==='relief'?'better':o==='worse'?'worse':'same',
+    tod:sample.tod || 'evening'
+  }));
+  if (signal==='care'){
+    const p = PERSONAS[S.persona].focus.name;
+    const cand=[0,2,5,8,10,12];
+    for (const d of cand){
+      if (E.distinctD(out,'sym',0,14)>=5) break;
+      if (!out.some(r=>r.t==='sym'&&r.d===d)) out.push({t:'sym',d,name:p,sev:5,scope:'day'});
+    }
+  }
+  return out;
+}
+
+const CARE_MUT = {
+  none:      rs => rs.filter(r=>!['visit','treat','blood'].includes(r.t)),
+  visit:     rs => [...CARE_MUT.none(rs), {t:'visit',inDays:6}],
+  treatment: rs => [...CARE_MUT.none(rs), {t:'treat',d:9,name:'treatment change'}],
+  concern:   rs => [...CARE_MUT.none(rs), {t:'blood',d:2}]
+};
+
+const PLAN_MUT = {
+  active:      p => p && {...p, status:'active'},
+  review:      p => p && {...p, status:'active', started:p.len},
+  none:        () => null,
+  paused:      p => p && {...p, status:'paused'},
+  maintenance: p => p && {...p, status:'maintenance'}
+};
+
+/* ═════════════════ Tiles registry — each tile computes from rows ═════════════════ */
+const TILES = {
+  symDays:     (rs,ds) => { const k=E.distinctD(rs,'sym',0,7), b=E.distinctD(rs,'sym',7,21);
+    return { v:k, u:'/7d', l:`${ds.focus.label} days`, d: b? (k>b? ['up',`usual ${b}/2wk`] : ['down',`usual ${b}/2wk`]) : null }; },
+  bmFreq:      rs => { const c=E.count(rs,'bm',0,7), b=E.usualWk(rs,'bm');
+    return { v:c, u:'/wk', l:'Bowel movements', d: b!=null? (c>b+0.5?['up',`usual ${b}`]:c<b-0.5?['down',`usual ${b}`]:['same',`usual ${b}`]) : null }; },
+  bristolMode: rs => { const m=E.mode(rs,0,7); return m? { v:'T'+m.type, u:'', l:'Most common', d:['info',`${m.pct}% of ${m.n}`] } : { v:'—', u:'', l:'No logs 7d', d:null }; },
+  straining:   rs => { const a=E.avg(rs,'bm','straining',0,7), t=E.trend(rs,'bm','straining');
+    return { v:a??'—', u:a!=null?'/10':'', l:'Straining avg', d: t==='down'?['down','easing ▼']:t==='up'?['up','rising ▲']:t?['same','flat']:null }; },
+  sleepH:      rs => { const a=E.avg(rs,'sleep','hours',0,7); return { v:a??'—', u:a!=null?'h':'', l:'Sleep avg', d:null }; },
+  stress:      rs => { const a=E.avg(rs,'stress','level',0,7); return { v:a??'—', u:a!=null?'/9':'', l:'Stress avg', d:null }; },
+  tracked:     rs => { const k=E.tracked7(rs); return { v:k, u:'/7d', l:'Days tracked', d:null }; },
+  episodes:    rs => { const k=E.count(rs,'ep',0,30); return { v:k, u:'', l:'Episodes captured', d:null }; },
+  questions:   rs => { const k=E.count(rs,'q',0,30); return { v:k, u:'', l:'Questions drafted', d:null }; },
+  visitIn:     rs => { const v=E.rows(rs,'visit')[0]; return { v:v?G.inDays(v.inDays):'—', u:'', l:'Gastro visit', d:['info','prep open'] }; },
+  supports:    rs => { const k=E.paired(rs).length; return { v:k, u:'', l:'Supports tried', d:null }; },
+  steadyWks:   rs => { const f=E.rows(rs,'flare'); const last=f.length?Math.min(...f.map(r=>r.d)):E.span(rs);
+    return { v:Math.max(1,Math.round(last/7)), u:'w', l:'Steady', d:['down','baseline holds'] }; },
+  loose2d:     rs => { const k=E.rows(rs,'bm').filter(r=>r.d<2&&r.type>=6).length; return { v:k, u:'', l:'Loose stools 2d', d:k>=3?['up','flare band']:null }; }
+};
+
+/* ═════════════════ Blocks ═════════════════ */
+const tile = t => `<div class="tile">
+  <div class="tv">${t.v}<span class="tu">${t.u||''}</span></div>
+  <div class="tl">${t.l}</div>
+  ${t.d?`<div class="td ${t.d[0]}">${t.d[1]}</div>`:''}
+</div>`;
+
+const numrow = (r,i,state,tag,mut) => `<div class="numrow ${state}">
+  <div class="nn">${state==='done'?'✓':String(i+1).padStart(2,'0')}</div>
+  <div class="nr-t"><div class="nr-name">${r.name}</div><div class="nr-meta">${r.meta}</div></div>
+  ${tag?`<div class="nr-tag ${mut?'mut':''}">${tag}</div>`:''}
+</div>`;
+
+const bristolStrip = m => `<div class="bstrip">${[1,2,3,4,5,6,7].map(t=>{
+  const on = m && t===m.type;
+  return `<div class="bcell ${on?'on':''}">
+    <div class="bglyph ${on?'on':''}">${bristol(t,19)}</div>
+    <div class="bc">${m&&m.dist[t]?m.dist[t]:''}</div>
+  </div>`; }).join('')}</div>`;
+
+const weekGridBm = rs => {
+  let cells='';
+  for (let d=6; d>=0; d--){
+    const day=E.rows(rs,'bm').filter(r=>Math.floor(r.d)===d);
+    const wd=WD[dayDate(d).getDay()][0];
+    cells += `<div class="wkcell">
+      <div class="wslot">${day.length? bristol(day[0].type,18) : '<div class="wknone"></div>'}</div>
+      <div class="wn ${day.length?'':'zero'}">${day.length||'·'}</div>
+      <div class="wd">${wd}</div>
+    </div>`;
+  }
+  return `<div class="wklabel">Week rhythm</div><div class="wkgrid">${cells}</div>`;
+};
+
+const weekGridSym = (rs,ds) => {
+  let cells='';
+  for (let d=6; d>=0; d--){
+    const day=E.rows(rs,'sym').filter(r=>Math.floor(r.d)===d);
+    const wd=WD[dayDate(d).getDay()][0];
+    const sev=day.length? Math.max(...day.map(r=>r.sev)) : 0;
+    cells += `<div class="wkcell">
+      <div class="wslot">${day.length? `<div class="wdot ${sev<=4?'sev-low':''}"></div>` : '<div class="wknone"></div>'}</div>
+      <div class="wn ${day.length?'':'zero'}">${day.length? sev : '·'}</div>
+      <div class="wd">${wd}</div>
+    </div>`;
+  }
+  return `<div class="wklabel">Week rhythm · ${ds.focus.label.toLowerCase()}</div><div class="wkgrid">${cells}</div>`;
+};
+
+const pairrow = p => {
+  const dots = Array.from({length:p.n},(_,i)=>{
+    if (p.worse>0) return `<div class="pdot ${i<p.worse?'bad':''}"></div>`;
+    if (p.imp>p.k) return `<div class="pdot ${i<p.imp?'na':''}"></div>`;
+    return `<div class="pdot ${i<p.k?'fill':''}"></div>`;
+  }).join('');
+  let pill, txt;
+  if (p.worse>0)            { pill='bad';  txt='stopped'; }
+  else if (p.imp>p.k)       { pill='mix';  txt='not practical'; }
+  else if (p.n<3)           { pill='low';  txt=`n=${p.n}`; }
+  else if (p.k/p.n>=0.6)    { pill='ok';   txt='consistent'; }
+  else                      { pill='mix';  txt='mixed'; }
+  return `<div class="pairrow">
+    <div class="pdots">${dots}</div>
+    <div class="pt">${G.paired(p.name,p.result,p.k,p.n)}</div>
+    <div class="pairpill ${pill}">${txt}</div>
+  </div>`;
+};
+
+const habitrow = h => `<div class="pairrow">
+  <div class="hdots">${h.week.map(d=>`<div class="hdot ${d?'':'off'}"></div>`).join('')}</div>
+  <div class="pt">${h.name} · ${h.done} of ${h.n} days</div>
+  <div class="pairpill ${E.kept(h)?'ok':'mix'}">${E.kept(h)?'kept':'slipping'}</div>
+</div>`;
+
+const fbars = (vals,max,lo) => vals.map(v=>{
+  const h = v==null ? 8 : Math.max(10,Math.round((v-lo)/(max-lo)*100));
+  return `<i class="${v==null?'':'full'}" style="height:${h}%"></i>`;
+}).join('');
+
+/* ═════════════════ §1 Right now — carousel cards ═════════════════ */
+function cardFocus(rs, ds, st){
+  const tiles = ds.tiles.map(k=>TILES[k](rs,ds)).map(tile).join('');
+  const ptr = topSignal(rs,ds);
+  return `<div class="card">
+    <div class="eyebrow"><span>Snapshot</span></div>
+    <span class="statechip ${st.s}">${I(st.s==='footing'?IC.act:st.s==='baseline'?IC.shield:IC.compass,12)} ${{footing:'Finding your footing',pattern:'Understanding your pattern',baseline:'Protecting your baseline'}[st.s]}</span>
+    <div class="pointer">${I(IC.target,15)} ${ptr}</div>
+    <div class="tiles">${tiles}</div>
+    <div class="correct">${I(IC.edit,12)} Correct · something changed</div>
+  </div>`;
+}
+function topSignal(rs,ds){
+  const blood=E.rows(rs,'blood')[0];
+  if (blood) return `Concerning change · logged ${G.daysAgo(blood.d)}`;
+  const flare=E.rows(rs,'flare').find(r=>r.d<=2);
+  if (flare){ const loose=E.rows(rs,'bm').filter(r=>r.d<2&&r.type>=6).length;
+    return `Flare · day ${flare.d+1}${loose?` · ${loose} loose in 2d`:''}`; }
+  const sym7=E.distinctD(rs,'sym',0,7), visit=E.rows(rs,'visit')[0];
+  if (visit && visit.inDays<=7 && E.count(rs,'ep',0,30)<3) return `Visit ${G.inDays(visit.inDays)} · ${E.count(rs,'ep',0,30)} episodes captured`;
+  if (sym7>=3) return G.kOfN(ds.focus.label,sym7,7,'days');
+  const c=E.count(rs,'bm',0,7), b=E.usualWk(rs,'bm');
+  if (b!=null && Math.abs(c-b)>1) return `Bowel movements · ${G.vsUsual(c,'/wk',b)}`;
+  const m=E.mode(rs,0,7);
+  if (m && m.n>=3) return G.modePct(m.type,m.pct,m.n);
+  if (sym7===0 && E.tracked7(rs)>=4) return `0 symptom days · ${E.tracked7(rs)} of 7 tracked`;
+  return G.noData(sym7+E.count(rs,'bm',0,7));
+}
+
+function cardGlance(rs, ds){
+  if (ds.glance==='bristol'){
+    const m=E.mode(rs,0,7), c=E.count(rs,'bm',0,7);
+    if (!m) return '';
+    const [slbl,scls]=B_STATUS(m.type);
+    return `<div class="card">
+      <div class="eyebrow"><span>At a glance</span><span class="planchip neutral">${c}×/wk</span></div>
+      <h3>Mostly Type ${m.type}</h3>
+      ${bristolStrip(m)}
+      <div class="breadout">
+        <div><div class="bt">TYPE ${m.type}</div><div class="bd">${B_DESC[m.type]} · ${m.pct}% of ${m.n} logs</div></div>
+        <span class="statuspill ${scls}">${slbl}</span>
+      </div>
+      ${weekGridBm(rs)}
+    </div>`;
+  }
+  const k=E.distinctD(rs,'sym',0,7);
+  const sevAvg=E.avg(rs,'sym','sev',0,7);
+  if (k===0) return '';
+  return `<div class="card">
+    <div class="eyebrow"><span>At a glance</span><span class="planchip neutral">${k} of 7d</span></div>
+    <h3>${ds.focus.label} · ${k} of 7 days</h3>
+    <div class="tiles">
+      ${tile({v:k,u:'/7d',l:'Days this week',d:null})}
+      ${tile({v:sevAvg??'—',u:sevAvg!=null?'/10':'',l:'Severity avg',d:null})}
+    </div>
+    ${weekGridSym(rs,ds)}
+  </div>`;
+}
+
+function cardSymptoms(rs, ds){
+  const syms=E.symBreakdown(rs);
+  if (!syms.length) return '';
+  return `<div class="card">
+    <div class="eyebrow"><span>Symptoms · 7d</span><span class="planchip neutral">${syms.length}</span></div>
+    ${syms.map(s=>{
+      const on=Math.round(s.sev);
+      const bars=Array.from({length:10},(_,i)=>`<i class="${i<on?'on':''} ${s.sev<=4?'low':''}"></i>`).join('');
+      const col=s.sev>=6?'var(--coral-deep)':s.sev>=4?'var(--amber-text)':'var(--green)';
+      return `<div class="symrow">
+        <div class="sn"><div class="snm">${s.name}</div><div class="sd">${s.days} of 7 days</div></div>
+        <div class="sevbar">${bars}</div>
+        <div class="arr" style="color:${col}">${s.sev}</div>
+      </div>`;
+    }).join('')}
+    <div class="correct">${I(IC.edit,12)} From your logs · severity 0–10</div>
+  </div>`;
+}
+
+function cardFoundations(rs, ds){
+  const sleep=E.dayVals(rs,'sleep','hours'), stress=E.dayVals(rs,'stress','level');
+  const sAvg=E.avg(rs,'sleep','hours',0,7), tAvg=E.avg(rs,'stress','level',0,7);
+  const ov=E.stressOverlap(rs);
+  if (sAvg==null && tAvg==null) return '';
+  return `<div class="card">
+    <div class="eyebrow"><span>Foundations · 7d</span></div>
+    ${sAvg!=null?`<div class="frow">
+      <div class="fl"><div class="fv">${sAvg}h</div><div class="fn">Sleep avg</div></div>
+      <div class="fbars">${fbars(sleep,9,4)}</div>
+    </div>`:''}
+    ${tAvg!=null?`<div class="frow">
+      <div class="fl"><div class="fv">${tAvg}/9</div><div class="fn">Stress avg</div></div>
+      <div class="fbars">${fbars(stress,9,0)}</div>
+    </div>`:''}
+    ${ov?`<div class="evrow" style="margin-top:10px">${I(IC.act)}<span>Stress ≥6 · ${ov.k} of ${ov.n} ${ds.focus.label.toLowerCase()} days</span></div>`:''}
+  </div>`;
+}
+
+/* ═════════════════ §2 Plan — carousel cards ═════════════════ */
+function cardPlanNone(rs){
+  const k=E.tracked7(rs);
+  return `<div class="card">
+    <div class="eyebrow"><span>Plan</span><span class="planchip neutral">No plan</span></div>
+    <h3>Tracking only · ${k} of 7 days</h3>
+    <div class="numrows">
+      ${numrow({name:'Trackers open', meta:'free · no plan needed'},0,'','')}
+      ${numrow({name:'One suggestion if signals repeat', meta:'never more than one plan'},1,'','')}
+    </div>
+  </div>`;
+}
+function planVerdict(rs, plan){
+  const stats=E.planSessions(rs,plan);
+  const tried=stats.filter(s=>s.n>0).length;
+  const cons=stats.filter(s=>s.n>0 && s.better>0 && s.better>=s.n/2 && s.worse===0).length;
+  if (!tried) return { label:'Just started · n=0', cls:'sky' };
+  if (cons>=Math.ceil(tried*0.6)) return { label:`On track · ${cons} of ${tried} consistent`, cls:'green' };
+  return { label:`Mixed · ${cons} of ${tried} consistent`, cls:'mix' };
+}
+function cardPlanSnap(rs, ds, plan, concern){
+  const day=Math.min(plan.started+1,plan.len), rem=plan.len-plan.started;
+  const due=rem<=0;
+  const v=planVerdict(rs,plan);
+  const tried=E.triedCount(rs,plan), total=plan.routines.length;
+  const mins=E.totalPlanMins(rs,plan);
+  const segs=Array.from({length:plan.len},(_,i)=>`<i class="${i<day?'on':''}"></i>`).join('');
+  return `<div class="card ${concern?'dimmed':''}">
+    ${concern?`<div class="dimnote">${I(IC.pause,12)} Self-care suggestions pause until you’ve seen the care options.</div>`:''}
+    <div class="eyebrow"><span>Plan snapshot</span><span class="planchip">${due?'Review due':G.dayOf(day,plan.len)}</span></div>
+    <h3>${plan.name}</h3>
+    <div class="segbar">${segs}</div>
+    <div class="verdict ${v.cls}">${I(v.cls==='green'?IC.check:v.cls==='mix'?IC.act:IC.compass,13)} ${v.label}</div>
+    <div class="tiles">
+      ${tile({v:`${tried}/${total}`,u:'',l:'Routines tried',d:null})}
+      ${tile({v:mins||'—',u:mins?' min':'',l:'Time this plan',d:null})}
+    </div>
+    <div class="ministats">
+      <div class="mstat"><div class="mv">${due?'today':wdIn(rem)}</div><div class="ml">Review · keep / adapt / stop</div></div>
+      <div class="mstat"><div class="mv">${plan.routines[plan.nextIdx].name.split('·')[0]}</div><div class="ml">Next up</div></div>
+    </div>
+  </div>`;
+}
+function planPairrow(p, pillExtra){
+  const dots = Array.from({length:Math.max(p.n,1)},(_,i)=>{
+    if (p.abandoned>0 && i<p.abandoned) return `<div class="pdot na"></div>`;
+    if (p.worse>0) return `<div class="pdot ${i<p.worse?'bad':''}"></div>`;
+    if (p.imp>p.better) return `<div class="pdot ${i<p.imp?'na':''}"></div>`;
+    return `<div class="pdot ${i<p.better?'fill':''}"></div>`;
+  }).join('');
+  let pill, txt;
+  if (p.n===0)              { pill='low';  txt='not tried'; }
+  else if (p.worse>0)       { pill='bad';  txt='stopped'; }
+  else if (p.abandoned>0)   { pill='mix';  txt=`abandoned ${p.abandoned}`; }
+  else if (p.imp>p.better)  { pill='mix';  txt='not practical'; }
+  else if (p.better/p.n>=0.6){ pill='ok';  txt='consistent'; }
+  else                      { pill='mix';  txt='mixed'; }
+  if (pillExtra) { pill=pillExtra.pill; txt=pillExtra.txt; }
+  const meta = p.n===0 ? `${p.name} · not tried`
+    : G.paired(p.name, p.result||'session', p.better, p.n);
+  return `<div class="pairrow">
+    <div class="pdots">${dots}</div>
+    <div class="pt">${meta}${p.avgMins!=null?` <span>· ~${p.avgMins} min</span>`:''}</div>
+    <div class="pairpill ${pill}">${txt}</div>
+  </div>`;
+}
+function cardPlanWorking(rs, ds, plan){
+  const sessions=E.planSessions(rs,plan).filter(p=>p.n>0 && p.better>0 && p.worse===0 && p.imp<=p.better);
+  const planHabitNames=plan.routines.map(r=>r.name);
+  const habits=E.habits(rs).filter(h=>E.kept(h) && planHabitNames.some(n=>E.nameMatch(n,h.name)||E.nameMatch(h.name,n)));
+  let rows=sessions.map(p=>planPairrow(p)).join('') + habits.map(habitrow).join('');
+  if (!rows) rows=`<div class="pairrow"><div class="pt">${G.noData(0)}</div><div class="pairpill low">n=0</div></div>`;
+  return `<div class="card">
+    <div class="eyebrow"><span>Working · this plan</span>${I(IC.check,13)}</div>
+    ${rows}
+  </div>`;
+}
+function cardPlanNotWorking(rs, ds, plan){
+  const sessions=E.planSessions(rs,plan);
+  const bad=sessions.filter(p=>p.n>0 && (p.worse>0||p.imp>p.better||p.abandoned>0||(p.better/p.n<0.5 && p.n>=2)));
+  const untried=sessions.filter(p=>p.n===0);
+  const planHabitNames=plan.routines.map(r=>r.name);
+  const slipping=E.habits(rs).filter(h=>!E.kept(h) && planHabitNames.some(n=>E.nameMatch(n,h.name)||E.nameMatch(h.name,n)));
+  let rows=bad.map(p=>planPairrow(p)).join('')
+    + untried.map(p=>planPairrow(p,{pill:'low',txt:'in plan'})).join('')
+    + slipping.map(habitrow).join('');
+  if (!rows) rows=`<div class="pairrow"><div class="pt">Nothing flagged · n=0</div><div class="pairpill ok">clean</div></div>`;
+  return `<div class="card">
+    <div class="eyebrow"><span>Not working · this plan</span>${I(IC.pause,13)}</div>
+    ${rows}
+  </div>`;
+}
+function cardPlanFollowed(rs, ds, plan){
+  const sessions=E.planSessions(rs,plan).filter(p=>p.n>0).sort((a,b)=>b.n-a.n||b.totalMins-a.totalMins);
+  const maxMins=Math.max(...sessions.map(p=>p.totalMins),1);
+  const skew=E.timeSkew(rs,plan);
+  const total=E.totalPlanMins(rs,plan);
+  if (!sessions.length) return `<div class="card">
+    <div class="eyebrow"><span>Followed · time</span></div>
+    <div class="pairrow"><div class="pt">${G.noData(0)}</div><div class="pairpill low">n=0</div></div>
+  </div>`;
+  return `<div class="card">
+    <div class="eyebrow"><span>Followed · time</span><span class="planchip neutral">${total} min</span></div>
+    ${sessions.map((p,i)=>`<div class="trow">
+      <div class="nn" style="min-width:22px;font-family:var(--font-d);font-size:14px;font-weight:800;color:var(--text-hint)">${String(i+1).padStart(2,'0')}</div>
+      <div class="tn">
+        <div class="tnm">${p.name}</div>
+        <div class="tmeta">${p.n}× · ~${p.avgMins??'—'} min avg${p.abandoned?` · ${p.abandoned} abandoned`:''}</div>
+        <div class="tbar"><i style="width:${Math.round(p.totalMins/maxMins*100)}%"></i></div>
+      </div>
+      <div class="tmins">${p.totalMins}<span style="font-size:10px;font-weight:600;color:var(--text-muted)">m</span></div>
+    </div>`).join('')}
+    ${skew?`<div class="evrow" style="margin-top:10px">${I(IC.clock)}<span>${skew.label} · ${skew.k} of ${skew.n} sessions</span></div>`:''}
+  </div>`;
+}
+function cardPlanAlsoTried(rs, ds, plan){
+  const also=E.alsoTried(rs,plan);
+  if (!also.length) return '';
+  return `<div class="card">
+    <div class="eyebrow"><span>Also tried · outside this plan</span><span class="planchip neutral">${also.length}</span></div>
+    ${also.map(p=>planPairrow(p,{pill:'care',txt:'also tried'})).join('')}
+  </div>`;
+}
+function cardPlanCta(rs, ds, plan){
+  const day=plan?Math.min(plan.started+1,plan.len):null;
+  const rem=plan?plan.len-plan.started:null;
+  const mins=plan?E.totalPlanMins(rs,plan):0;
+  const tried=plan?E.triedCount(rs,plan):0;
+  if (!plan) return `<div class="card cta-slide">
+    <div class="eyebrow" style="justify-content:center"><span>Next step</span></div>
+    <h3>Preview a plan</h3>
+    <p>One suggestion when signals repeat · never more than one plan.</p>
+    <div class="cta">Preview a plan</div>
+  </div>`;
+  if (plan.status==='paused') return `<div class="card cta-slide">
+    <div class="eyebrow" style="justify-content:center"><span>Paused · ${G.dayOf(day,plan.len)}</span></div>
+    <h3>${plan.name}</h3>
+    <p>${tried} routines tried · ${mins} min logged</p>
+    <div class="cta">Resume · day ${day}</div>
+    <div class="cta2">Full plan progress →</div>
+  </div>`;
+  if (plan.status==='maintenance') return `<div class="card cta-slide">
+    <div class="eyebrow" style="justify-content:center"><span>Baseline</span></div>
+    <h3>Keep it quiet</h3>
+    <p>Fit check ${wdIn(21)} · reset kit on standby</p>
+    <div class="cta">Open baseline plan</div>
+  </div>`;
+  const due=rem<=0;
+  return `<div class="card cta-slide">
+    <div class="eyebrow" style="justify-content:center"><span>${due?'Review due':G.dayOf(day,plan.len)}</span></div>
+    <h3>See full plan progress</h3>
+    <p>${tried} of ${plan.routines.length} routines · ${mins} min · ${due?'decide keep / adapt / stop':`review ${wdIn(rem)}`}</p>
+    <div class="cta">${due?'Review · 3 questions':'Open plan progress'}</div>
+  </div>`;
+}
+function cardPlanPaused(rs, ds, plan){
+  const day=Math.min(plan.started+1,plan.len);
+  const mins=E.totalPlanMins(rs,plan);
+  return `<div class="card dimmed">
+    <div class="eyebrow"><span>Plan</span><span class="planchip neutral">Paused · ${G.dayOf(day,plan.len)}</span></div>
+    <h3>${plan.name}</h3>
+    <div class="tiles">
+      ${tile({v:E.triedCount(rs,plan),u:`/${plan.routines.length}`,l:'Routines tried',d:null})}
+      ${tile({v:mins||'—',u:mins?' min':'',l:'Time logged',d:null})}
+    </div>
+    <div class="planfoot"><span>Paused · nothing due</span></div>
+  </div>`;
+}
+function cardPlanMaint(rs, ds, plan){
+  const f=E.rows(rs,'flare'); const w=Math.max(1,Math.round((f.length?Math.min(...f.map(r=>r.d)):E.span(rs))/7));
+  const c=E.count(rs,'bm',0,7), b=E.usualWk(rs,'bm');
+  return `<div class="card">
+    <div class="eyebrow"><span>Baseline plan</span><span class="planchip green">${G.steadyWks(w)}</span></div>
+    <h3>${plan.name}</h3>
+    <div class="ministats">
+      <div class="mstat"><div class="mv">${b!=null&&Math.abs(c-b)<=0.5?'holds':'shifting'}</div><div class="ml">BM ${G.vsUsual(c,'/wk',b)}</div></div>
+      <div class="mstat"><div class="mv">${E.distinctD(rs,'sym',0,7)} /7d</div><div class="ml">Symptom days</div></div>
+      <div class="mstat"><div class="mv">${wdIn(21)}</div><div class="ml">Fit check</div></div>
+    </div>
+  </div>`;
+}
+function cardResetKit(rs){
+  return `<div class="card">
+    <div class="eyebrow"><span>Reset kit</span>${I(IC.kit,13)}</div>
+    <div class="numrows">
+      ${numrow({name:'Evening wind-down', meta:'your most reliable cue · 7 of 7'},0,'','')}
+      ${numrow({name:'Return-to-basics', meta:'after travel, poor sleep, stress'},1,'','')}
+    </div>
+    <div class="planfoot"><span>only when something shifts</span></div>
+  </div>`;
+}
+
+function planCarousel(rs, ds, plan, concern){
+  if (!plan) return [cardPlanNone(rs), cardPlanCta(rs,ds,null)];
+  if (plan.status==='paused') return [cardPlanPaused(rs,ds,plan), cardPlanCta(rs,ds,plan)];
+  if (plan.status==='maintenance') return [cardPlanMaint(rs,ds,plan), cardResetKit(rs), cardPlanCta(rs,ds,plan)];
+  return [
+    cardPlanSnap(rs,ds,plan,concern),
+    cardPlanWorking(rs,ds,plan),
+    cardPlanNotWorking(rs,ds,plan),
+    cardPlanFollowed(rs,ds,plan),
+    cardPlanAlsoTried(rs,ds,plan),
+    cardPlanCta(rs,ds,plan)
+  ];
+}
+
+/* ═════════════════ Vertical sections ═════════════════ */
+function cardCare(rs){
+  const blood=E.rows(rs,'blood')[0], visit=E.rows(rs,'visit')[0], treat=E.rows(rs,'treat')[0];
+  if (blood) return `<div class="card care-concern">
+    <div class="eyebrow"><span>Act on</span>${I(IC.shield,13)}</div>
+    <h3>Concerning change · ${G.daysAgo(blood.d)}</h3>
+    <div class="evrow">${I(IC.shield)}<span>Blood logged · care options come first</span></div>
+    <div class="evrow">${I(IC.pause)}<span>Self-care suggestions paused</span></div>
+    <div class="cta">See care options</div>
+    <div class="cta2">Already spoke to a clinician</div>
+  </div>`;
+  if (visit) return `<div class="card care-visit">
+    <div class="eyebrow"><span>Visit ${G.inDays(visit.inDays)}</span>${I(IC.cal,13)}</div>
+    <h3>Gastroenterology · ${fmtIn(visit.inDays)}</h3>
+    <div class="evrow">${I(IC.doc)}<span>${E.count(rs,'ep',0,30)} episodes captured · ${E.count(rs,'q',0,30)} questions drafted</span></div>
+    <div class="evrow">${I(IC.clock)}<span>≈4 min to prepare</span></div>
+    <div class="cta">Prepare · 3 questions</div>
+  </div>`;
+  if (treat) return `<div class="card care-treat">
+    <div class="eyebrow"><span>Treatment changed · ${G.daysAgo(treat.d)}</span>${I(IC.doc,13)}</div>
+    <h3>Note what feels different</h3>
+    <div class="evrow">${I(IC.edit)}<span>1 tap when something changes · nothing daily</span></div>
+    <div class="evrow">${I(IC.cal)}<span>Feeds your next review</span></div>
+    <div class="cta">Note a change</div>
+  </div>`;
+  return '';
+}
+
+function cardStory(rs, ds, plan){
+  const items=[];
+  ds.storyExtra.forEach(x=>items.push({d:x.d,icon:x.icon,text:x.text}));
+  if (plan && plan.status!=='maintenance' && plan.started>0) items.push({d:plan.started,icon:'compass',text:`Plan started · <b>${plan.name}</b>`,coral:1});
+  E.rows(rs,'flare').forEach(r=>items.push({d:r.d,icon:'act',text:'Flare started',coral:1}));
+  E.rows(rs,'blood').forEach(r=>items.push({d:r.d,icon:'shield',text:'Concerning change logged',coral:1}));
+  E.rows(rs,'treat').forEach(r=>items.push({d:r.d,icon:'doc',text:'Treatment changed'}));
+  E.rows(rs,'visit').forEach(r=>items.push({d:-r.inDays,icon:'cal',text:'Gastroenterology visit',coral:1}));
+  const eps=E.count(rs,'ep',0,30); if (eps) items.push({d:0,icon:'edit',text:`${eps} episodes captured`});
+  if (plan && plan.len-plan.started<=0 && plan.status==='active') items.push({d:0,icon:'cal',text:'Plan review due',coral:1});
+  items.sort((a,b)=>b.d-a.d);
+  const top=items.slice(0,4);
+  return `<div class="card">
+    <div class="eyebrow"><span>Timeline · latest ${top.length} of ${items.length}</span></div>
+    ${top.map(m=>`<div class="storyrow">
+      <div class="sicon ${m.coral?'coral':''}">${I(IC[m.icon]||IC.act,12)}</div>
+      <div class="stext">${m.text}</div>
+      <div class="sdate">${m.d<0?fmtIn(-m.d):fmtD(m.d)}</div>
+    </div>`).join('')}
+    <div class="viewall">View full timeline ${I(IC.chev,13)}</div>
+  </div>`;
+}
+
+function cardWorked(rs, ds, plan){
+  /* Plan owns routine outcomes — vertical keeps tracking + non-plan habits */
+  const good=E.habits(rs).filter(h=>E.kept(h) && !(plan && E.inPlan(h.name,plan)));
+  const disc=E.discuss(rs);
+  const sleep=E.avg(rs,'sleep','hours',0,7);
+  let rows=good.map(habitrow).join('');
+  if (disc) rows += `<div class="pairrow">
+    <div class="pdots">${'<div class="pdot fill"></div>'.repeat(Math.min(disc,6))}</div>
+    <div class="pt">${ds.focus.label} · ${disc} of 14 days</div>
+    <div class="pairpill care">worth discussing</div>
+  </div>`;
+  if (sleep!=null && sleep>=7) rows += `<div class="pairrow">
+    <div class="pdots"><div class="pdot fill"></div><div class="pdot fill"></div></div>
+    <div class="pt">Sleep avg · ${sleep}h / 7d</div>
+    <div class="pairpill ok">holds</div>
+  </div>`;
+  if (!rows) rows=`<div class="pairrow"><div class="pt">Tracking signals · see plan for routines</div><div class="pairpill low">n=0</div></div>`;
+  return `<div class="card">
+    <div class="eyebrow"><span>Tracking · habits outside plan</span>${I(IC.check,13)}</div>
+    ${rows}
+  </div>`;
+}
+
+function cardDidnt(rs, ds, plan){
+  /* Plan owns routine worse/untried — vertical keeps slipping non-plan habits + tracking */
+  const slipping=E.habits(rs).filter(h=>!E.kept(h) && !(plan && E.inPlan(h.name,plan)));
+  const sleep=E.avg(rs,'sleep','hours',0,7);
+  const stress=E.avg(rs,'stress','level',0,7);
+  let rows=slipping.map(habitrow).join('');
+  if (sleep!=null && sleep<6.5) rows += `<div class="pairrow">
+    <div class="pdots"><div class="pdot bad"></div><div class="pdot"></div></div>
+    <div class="pt">Sleep avg · ${sleep}h / 7d</div>
+    <div class="pairpill mix">low</div>
+  </div>`;
+  if (stress!=null && stress>=6) rows += `<div class="pairrow">
+    <div class="pdots"><div class="pdot bad"></div><div class="pdot bad"></div></div>
+    <div class="pt">Stress avg · ${stress}/9 · 7d</div>
+    <div class="pairpill mix">elevated</div>
+  </div>`;
+  if (!rows) rows=`<div class="pairrow"><div class="pt">Nothing flagged outside plan</div><div class="pairpill ok">clean</div></div>`;
+  return `<div class="card">
+    <div class="eyebrow"><span>Tracking · habits outside plan</span>${I(IC.pause,13)}</div>
+    ${rows}
+  </div>`;
+}
+
+function cardNext(rs, ds, plan){
+  const items=[];
+  const v=E.rows(rs,'visit')[0];
+  if (plan){
+    const rem=plan.len-plan.started;
+    if (plan.status==='maintenance'){
+      items.push({icon:'shield',text:`Monthly fit check · ${fmtIn(21)}`,chip:'3w'});
+      items.push({icon:'check',text:'Nothing else scheduled',chip:'quiet'});
+    } else if (plan.status==='paused'){
+      items.push({icon:'pause',text:'Plan paused · resume when useful',chip:'your call'});
+    } else {
+      items.push({icon:'cal',text:`Plan review · ${rem<=0?'decide keep / adapt / stop':fmtIn(rem)}`,chip:rem<=0?'today':G.inDays(rem),hot:rem<=0});
+      const nx=plan.routines[plan.nextIdx];
+      if (nx) items.push({icon:'target',text:`Next · ${nx.name.split('·')[0]}`,chip:nx.meta.split('·')[1]?.trim()||'next'});
+    }
+  } else {
+    items.push({icon:'pencil',text:'Trackers open · log when useful',chip:'free'});
+  }
+  if (v) items.push({icon:'heart',text:`Gastroenterology · ${fmtIn(v.inDays)}`,chip:G.inDays(v.inDays),hot:v.inDays<=3});
+  const disc=E.discuss(rs);
+  if (disc && !v) items.push({icon:'doc',text:`${ds.focus.label} ${disc} of 14 days · care prep suggested`,chip:'rule'});
+  const blood=E.rows(rs,'blood')[0];
+  if (blood) items.unshift({icon:'shield',text:'Care options first · self-care paused',chip:'now',hot:true});
+  return `<div class="card">
+    <div class="eyebrow"><span>Scheduled · suggested</span></div>
+    ${items.slice(0,4).map(x=>`<div class="nextrow">
+      <div class="nic">${I(IC[x.icon],13)}</div>
+      <div class="nt">${x.text}</div>
+      <div class="nchip ${x.hot?'coral':''}">${x.chip}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function specialistCarousel(rs, ds){
+  /* One horizontal slide per discipline so the next guide peeks —
+     mirrors ChatThread::SPECIALISTS_FOR_HUB (discipline voice, not a fake doctor). */
+  const SPECIALISTS = [
+    { key:'gastroenterology_guide', ini:'GI',  label:'Gastroenterology Guide', sub:'Clinically anchored GI perspective', accent:'#1E40AF' },
+    { key:'nutrition_guide',        ini:'NU',  label:'Nutrition Guide',        sub:'Diet, triggers, and meal timing', accent:'#B45309' },
+    { key:'pelvic_floor_guide',     ini:'PF',  label:'Pelvic Floor Guide',     sub:'Motility, strain, and pelvic floor', accent:'#4F46E5' },
+    { key:'gi_psychology_guide',    ini:'PSY', label:'GI Psychology Guide',    sub:'Gut–brain connection', accent:'#DB2777' },
+    { key:'functional_medicine_guide', ini:'FM', label:'Functional Medicine Guide', sub:'Root-cause and systems view', accent:'#0891B2' },
+    { key:'pharmacy_guide',         ini:'RX',  label:'Pharmacy Guide',         sub:'Medications and adherence', accent:'#22C55E' },
+    { key:'ayurveda_guide',         ini:'AY',  label:'Ayurveda Guide',         sub:'Traditional Ayurvedic perspective', accent:'#D97706' }
+  ];
+
+  const notes = specialistNotes(rs, ds);
+  const free = S.tier==='free';
+  const peekWords = (html, n=4) => {
+    const plain = String(html).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    const parts = plain.split(' ').filter(Boolean);
+    if (!parts.length) return '…';
+    return parts.slice(0,n).join(' ') + (parts.length>n ? '…' : '');
+  };
+
+  return SPECIALISTS.map((g,i)=>{
+    const note = notes[g.key];
+    const hasSignal = !!note;
+    const comment = note || `No strong signal for this lens this week · still available to ask in Chat.`;
+    const shortLabel = g.label.replace(' Guide','');
+
+    if (free){
+      /* Messenger-style: heading clear, ~4-word peek of the note, unlock for the rest */
+      return `<div class="card" style="border-left:3px solid ${g.accent}">
+        <div class="eyebrow">
+          <span class="pluschip">${I(IC.lock,10)} PLUS</span>
+          <span style="font-size:10px;font-weight:600;color:var(--text-hint)">${i+1}/${SPECIALISTS.length}</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:2px">
+          <div class="gav" style="color:${g.accent};border-color:${g.accent}33;background:${g.accent}14">${g.ini}</div>
+          <div style="min-width:0;flex:1">
+            <div style="font-size:14px;font-weight:700;color:var(--text-primary);line-height:1.25">${shortLabel}</div>
+            <div style="font-size:11px;color:var(--text-hint);margin-top:1px">${g.sub}</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:13px;line-height:1.4;color:var(--text-secondary)">
+          ${peekWords(comment,4)}
+          <span style="color:var(--amber-text);font-weight:700;margin-left:2px">Unlock to see more</span>
+        </div>
+      </div>`;
+    }
+
+    return `<div class="card" style="border-left:3px solid ${g.accent}">
+      <div class="eyebrow">
+        <span>${hasSignal?'Note on your week':'Available'}</span>
+        <span class="planchip ${hasSignal?'green':'neutral'}">${i+1} of ${SPECIALISTS.length}</span>
+      </div>
+      <div class="guidenote" style="border-left-color:${g.accent};border-bottom:none;padding-top:2px">
+        <div class="gav" style="color:${g.accent};border-color:${g.accent}33;background:${g.accent}14">${g.ini}</div>
+        <div class="gb">
+          <div class="gn">${g.label}</div>
+          <div class="gs">${g.sub}</div>
+          <div class="gc">${comment}</div>
+        </div>
+      </div>
+      <div class="viewall">Ask ${shortLabel} ${I(IC.chev,13)}</div>
+    </div>`;
+  });
+}
+
+function specialistNotes(rs, ds){
+  /* Returns map key → comment. Always emit core disciplines when possible. */
+  const out={};
+  const m=E.mode(rs,0,7);
+  const strain=E.avg(rs,'bm','straining',0,7);
+  const tr=E.trend(rs,'bm','straining');
+  const sym7=E.distinctD(rs,'sym',0,7);
+  const sev=E.avg(rs,'sym','sev',0,7);
+  const ov=E.stressOverlap(rs);
+  const disc=E.discuss(rs);
+  const visit=E.rows(rs,'visit')[0];
+  const treat=E.rows(rs,'treat')[0];
+  const c=E.count(rs,'bm',0,7), b=E.usualWk(rs,'bm');
+  const sleep=E.avg(rs,'sleep','hours',0,7);
+  const stress=E.avg(rs,'stress','level',0,7);
+
+  if (m || c){
+    let comment = m
+      ? `<b>${G.modePct(m.type,m.pct,m.n)}</b> · ${B_DESC[m.type].toLowerCase()}.`
+      : `Bowel movements · <b>${G.vsUsual(c,'/wk',b)}</b>.`;
+    if (tr==='down') comment += ` Straining easing · recent half vs earlier.`;
+    if (tr==='up') comment += ` Straining rising · recent half vs earlier.`;
+    if (strain!=null) comment += ` Straining avg <b>${strain}/10</b>.`;
+    out.gastroenterology_guide = comment;
+  }
+
+  if (sym7>0){
+    let comment = `<b>${ds.focus.label}</b> · ${sym7} of 7 days` + (sev!=null?` · severity avg <b>${sev}/10</b>`:'') + `.`;
+    if (ds.focus.scope) comment += ` Scope noted as ${ds.focus.scope}.`;
+    comment += ` Worth lining meal timing against those days.`;
+    out.nutrition_guide = comment;
+  }
+
+  if ((strain!=null && strain>=3) || (m && m.type<=2) || (m && m.type>=6)){
+    let comment = strain!=null
+      ? `Straining avg <b>${strain}/10</b> this week.`
+      : `Mostly Type ${m.type}.`;
+    if (m && m.type<=2) comment += ` Slow band · outlet / pelvic-floor lens may apply.`;
+    if (m && m.type>=6) comment += ` Fast band · coordination + urgency context.`;
+    out.pelvic_floor_guide = comment;
+  }
+
+  if (ov){
+    out.gi_psychology_guide = `Stress ≥6 on <b>${ov.k} of ${ov.n}</b> ${ds.focus.label.toLowerCase()} days. Gut–brain load is worth naming alongside the physical logs.`;
+  } else if (stress!=null && stress>=5){
+    out.gi_psychology_guide = `Stress avg <b>${stress}/9</b> over 7d. High enough to review with this guide.`;
+  }
+
+  if (disc || (sym7>=3 && sleep!=null && sleep<6.5) || (sym7>=3 && stress!=null && stress>=5)){
+    out.functional_medicine_guide = disc
+      ? `<b>${ds.focus.label}</b> · ${disc} of 14 days · persistent enough for a systems view.`
+      : `More than one domain moving together` + (sleep!=null?` · sleep ${sleep}h avg`:'') + (stress!=null?` · stress ${stress}/9`:'') + `.`;
+  }
+
+  if (treat){
+    out.pharmacy_guide = `Treatment changed · <b>${G.daysAgo(treat.d)}</b>. Note what feels different against your next review — not a dose change.`;
+  }
+
+  /* Ayurveda: gentle lifestyle rhythm cue when sleep/stress present */
+  if (sleep!=null || stress!=null){
+    out.ayurveda_guide = `Rhythm signals · sleep ${sleep!=null?`<b>${sleep}h</b>`:'—'} · stress ${stress!=null?`<b>${stress}/9</b>`:'—'}. Traditional pacing lens available if you want it.`;
+  }
+
+  return out;
+}
+
+function cardTools(rs){
+  const events=rs.filter(r=>(r.d??0)<=30&&['bm','sym','rout','sleep','stress','habit'].includes(r.t)).length;
+  const rows=[
+    ['download','Create GI Visit Brief','Configure · review · PDF',0,'gi-visit-brief-lab.html'],
+    ['chart','Full timeline',`${events} events on record`,0],
+    ['target','Plan progress','day-by-day',0],
+    ['download','Download full report','PDF · from your records',1],
+    ['image','Save summary snapshot','share-ready',1],
+    ['share','Share with clinician','link or print',1],
+    ['print','Print report','physical copy',1]
+  ];
+  const free=S.tier==='free';
+  return `<div class="card">
+    <div class="eyebrow"><span>Reports · sharing · detail</span>${free?`<span class="pluschip">${I(IC.lock,10)} PLUS</span>`:''}</div>
+    ${rows.map(r=>{
+      const locked=free&&r[3];
+      return `<div class="toolrow"${r[4]?` role="link" tabindex="0" onclick="location.href='${r[4]}'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='${r[4]}'}" style="cursor:pointer"`:''}>
+      <div class="tic">${I(IC[r[0]],15)}</div>
+      <div class="tt"><div class="tn">${r[1]}</div><div class="tm">${r[2]}${locked?' · Plus':''}</div></div>
+      ${locked?`<span class="lkic">${I(IC.lock,14)}</span>`:`<span class="ch">${I(IC.chev,15)}</span>`}
+    </div>`;}).join('')}
+  </div>`;
+}
+
+/* ═════════════════ Patterns onboarding screens ═════════════════ */
+const PURPOSES = {
+  symptoms:['Understand current symptoms','Foreground symptom and bowel changes'],
+  plan:['Check plan progress','Foreground routines, habits, and reflections'],
+  care:['Prepare for care','Foreground timeline and visit-ready details'],
+  baseline:['Protect my baseline','Foreground meaningful changes from usual']
+};
+const CHANGE_OPTIONS = [
+  ['symptoms','Symptoms'],['plan','Routine / plan'],['treatment','Treatment / medication'],
+  ['diet','Diet'],['foundations','Stress / sleep'],['travel','Travel / illness'],['none','Nothing notable']
+];
+
+function obFrame(body,step,total,mode='first'){
+  const bars=Array.from({length:total},(_,i)=>`<i class="${i<step?'on':''}"></i>`).join('');
+  const canBack=step>1;
+  return `<div class="ob">
+    <div class="obtop">
+      <button class="obback" data-ob-action="${canBack?'back':'noop'}">${canBack?'← Back':''}</button>
+      <span class="obprog">${mode==='regen'?'Update review':'First review'} · ${step} of ${total}</span>
+      <button class="obexit" data-ob-action="exit">Save & exit</button>
+    </div>
+    <div class="obbar">${bars}</div>
+    ${body}
+  </div>`;
+}
+
+function obWelcome(ds){
+  return obFrame(`
+    <div class="obhero">
+      <div class="oicon">${I(IC.chart,23)}</div>
+      <h2>Build your first Patterns review.</h2>
+      <p>We’ll organize the records you already have. Partial data is okay — you decide whether to add anything before generation.</p>
+    </div>
+    <div class="obpoints">
+      <div class="obpoint">${I(IC.target,15)} Current snapshot + plan progress</div>
+      <div class="obpoint">${I(IC.check,15)} What worked and what didn’t</div>
+      <div class="obpoint">${I(IC.chat,15)} Specialist perspectives from your guides</div>
+      <div class="obpoint">${I(IC.compass,15)} Concrete next steps</div>
+    </div>
+    ${S.obSaved?`<div class="dimnote">${I(IC.check,12)} Your earlier preparation was saved.</div>`:''}
+    <div class="obnav"><button class="cta" data-ob-action="next">Check my records</button></div>
+  `,1,5);
+}
+
+function readinessBlock(rd){
+  const cls={ready:'ready',partial:'partial',empty:'',confirm:'confirm'};
+  const label={ready:'Ready',partial:'Some data',empty:'No data',confirm:'Confirm'};
+  return `<div class="readyhead">
+    <div class="readynum"><b>${rd.represented}/6</b><span>represented</span></div>
+    <div class="readycopy"><h3>${rd.represented} areas represented</h3><p>This describes coverage, not clinical quality. Missing areas do not block generation.</p></div>
+  </div>
+  <div class="domainlist">${Object.entries(rd.domains).map(([k,d])=>`
+    <div class="domain">
+      <div class="dh"><span class="dn">${DOMAIN_LABELS[k]}</span><i class="dst ${cls[d.status]}"></i></div>
+      <div class="dm">${label[d.status]} · ${d.meta}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function obReadiness(rs,plan){
+  const rd=readinessFor(rs,plan,{window:S.context.window,taskDone:S.taskDone});
+  return obFrame(`
+    <div class="obhero"><h2>Here’s what we can use.</h2><p>The scan is deterministic and updates as records or confirmations change.</p></div>
+    ${readinessBlock(rd)}
+    ${rd.safety?`<div class="dimnote" style="margin-top:10px">${I(IC.shield,12)} A concerning change needs confirmation. Care options stay first.</div>`:''}
+    <div class="obnav">
+      <button class="obsecondary" data-ob-action="generate-now">Generate now</button>
+      <button class="cta" data-ob-action="next">Add context</button>
+    </div>
+  `,2,5);
+}
+
+function purposeChoices(){
+  return `<div class="choicegrid">${Object.entries(PURPOSES).map(([k,v])=>`
+    <div class="choice ${S.context.purpose===k?'on':''}" data-purpose="${k}">
+      <span class="cr"></span><span><span class="ct">${v[0]}</span><span class="cm" style="display:block">${v[1]}</span></span>
+    </div>`).join('')}</div>`;
+}
+
+function contextForm(ds,plan,regen=false){
+  const changes=new Set(S.context.changes);
+  const visit=currentData().rs.find(r=>r.t==='visit');
+  return `
+    <div class="obhero"><h2>${regen?'Why update now?':'What should this review focus on?'}</h2><p>${regen?'Your previous choices are preserved. Change only what matters now.':'We only ask for context that your trackers cannot reliably infer.'}</p></div>
+    ${regen?`<div class="oblabel">Update reason</div>
+    <div class="multis">
+      ${[['routine','Routine refresh'],['symptom','Symptom change'],['plan_review','Plan review'],['visit','Upcoming visit'],['treatment','Treatment change']].map(([k,l])=>
+        `<button class="multi ${S.context.reason===k?'on':''}" data-reason="${k}">${l}</button>`).join('')}
+    </div>`:''}
+    <div class="oblabel">Main purpose</div>
+    ${purposeChoices()}
+    <div class="oblabel">Primary focus</div>
+    <div class="multis">
+      <button class="multi ${S.context.priority==='current'?'on':''}" data-priority="current">${ds.focus.label}</button>
+      <button class="multi ${S.context.priority==='bowel'?'on':''}" data-priority="bowel">Bowel pattern</button>
+      ${plan?`<button class="multi ${S.context.priority==='plan'?'on':''}" data-priority="plan">${plan.name}</button>`:''}
+    </div>
+    <div class="oblabel">Review window</div>
+    <div class="multis">
+      <button class="multi ${S.context.window===7?'on':''}" data-window="7">Last 7 days</button>
+      <button class="multi ${S.context.window===14?'on':''}" data-window="14">Last 14 days</button>
+    </div>
+    <div class="oblabel">What changed recently?</div>
+    <div class="multis">${CHANGE_OPTIONS.map(([k,l])=>`<button class="multi ${changes.has(k)?'on':''}" data-change="${k}">${l}</button>`).join('')}</div>
+    <div class="oblabel">Optional note</div>
+    <textarea class="obtextarea" id="ob-note" maxlength="160" placeholder="One detail you want the review to keep in view…">${S.context.note||''}</textarea>
+    <div class="privacy">${I(IC.lock,10)} Avoid names or contact details · 160 characters max</div>
+    <div class="oblabel">Detected context</div>
+    <div class="multis">
+      ${plan?`<button class="multi ${S.context.planConfirmed?'on':''}" data-confirm="plan">${plan.name} · ${S.context.planConfirmed?'confirmed':'confirm'}</button>`:''}
+      ${visit?`<button class="multi ${S.context.visitConfirmed?'on':''}" data-confirm="visit">Visit ${G.inDays(visit.inDays)} · ${S.context.visitConfirmed?'confirmed':'confirm'}</button>`:''}
+    </div>`;
+}
+
+function obContext(rs,plan,ds){
+  return obFrame(`
+    ${contextForm(ds,plan,false)}
+    <div class="obnav"><button class="cta" data-ob-action="next">See preparation tasks</button></div>
+  `,3,5);
+}
+
+function taskList(rd){
+  const groups=[
+    ['safety','Safety first'],['recommended','Recommended before generating'],['optional','Optional enrichment']
+  ];
+  return groups.map(([kind,label])=>{
+    const xs=rd.tasks.filter(t=>t.kind===kind);
+    if(!xs.length) return '';
+    return `<div class="taskgroup">
+      <div class="tasklabel ${kind}">${label}</div>
+      ${xs.map(t=>`<div class="task ${kind} ${t.done?'done':''}" data-task="${t.key}">
+        <span class="taskcheck">${I(IC.check,12)}</span>
+        <span class="taskbody"><span class="taskname">${t.title}</span><span class="taskwhy" style="display:block">${t.why}</span></span>
+        <span class="taskeffort">${t.effort}</span>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function obTasks(rs,plan){
+  const rd=readinessFor(rs,plan,{window:S.context.window,taskDone:S.taskDone});
+  const open=rd.tasks.filter(t=>!t.done&&t.kind!=='optional').length;
+  return obFrame(`
+    <div class="obhero"><h2>${open?`${open} useful action${open===1?'':'s'} before your review.`:'Your preparation is current.'}</h2>
+      <p>These improve context; they are not requirements. Only confirm what is true now — never backfill from memory.</p></div>
+    ${taskList(rd)}
+    <div class="obnav">
+      <button class="obsecondary" data-ob-action="generate-now">Generate now</button>
+      <button class="cta" data-ob-action="next">Review inputs</button>
+    </div>
+  `,4,5);
+}
+
+function reviewSummary(rs,plan,ds,regen=false){
+  const rd=readinessFor(rs,plan,{window:S.context.window,taskDone:S.taskDone});
+  const sessions=E.rows(rs,'rout').filter(r=>r.d<S.context.window).length;
+  const purpose=PURPOSES[S.context.purpose][0];
+  const changed=S.context.changes.length?S.context.changes.map(k=>CHANGE_OPTIONS.find(x=>x[0]===k)?.[1]||k).join(', '):'Nothing selected';
+  return `
+    <div class="reviewrows">
+      <div class="reviewrow"><span class="rl">Purpose</span><span class="rv">${purpose}</span></div>
+      ${regen?`<div class="reviewrow"><span class="rl">Update reason</span><span class="rv">${String(S.context.reason).replace('_',' ')}</span></div>`:''}
+      <div class="reviewrow"><span class="rl">Primary focus</span><span class="rv">${S.context.priority==='current'?ds.focus.label:S.context.priority==='bowel'?'Bowel pattern':plan?.name||ds.focus.label}</span></div>
+      <div class="reviewrow"><span class="rl">Window</span><span class="rv">Last ${S.context.window} days</span></div>
+      <div class="reviewrow"><span class="rl">Coverage</span><span class="rv">${rd.represented} of 6 areas · ${rd.records} records</span></div>
+      <div class="reviewrow"><span class="rl">Plan + routines</span><span class="rv">${plan?`${E.triedCount(rs,plan)}/${plan.routines.length} routines · ${sessions} sessions`:'No active plan'}</span></div>
+      <div class="reviewrow"><span class="rl">Recent change</span><span class="rv">${changed}</span></div>
+      <div class="reviewrow"><span class="rl">Your note</span><span class="rv">${S.context.note||'None added'}</span></div>
+    </div>
+    ${rd.missing.length?`<div class="oblabel">Not represented</div><div class="missing">${rd.missing.map(x=>`<span class="discchip">${x}</span>`).join('')}</div>`:''}
+    ${regen?`<div class="dimnote" style="margin-top:11px">${I(IC.shield,12)} Your current report stays available until this update is ready.</div>`:''}`;
+}
+
+function obReview(rs,plan,ds){
+  return obFrame(`
+    <div class="obhero"><h2>Review what we’ll use.</h2><p>Missing areas stay visible. You can generate now or go back and add context.</p></div>
+    ${reviewSummary(rs,plan,ds,false)}
+    ${S.tier==='free'?`
+      <div class="card" style="margin-top:12px">
+        <div class="eyebrow"><span>Specialist perspectives</span><span class="pluschip">${I(IC.lock,10)} PLUS</span></div>
+        <h3>Multidisciplinary review is locked</h3>
+        <p>Your deterministic snapshot stays available. Plus adds notes from specialist guides.</p>
+      </div>
+      <div class="obnav"><button class="cta plus" data-ob-action="upgrade">Unlock to generate</button></div>
+    `:`
+      <div class="obnav"><button class="cta" data-ob-action="generate">Generate my Patterns review</button></div>
+    `}
+  `,5,5);
+}
+
+function regenDelta(rs,plan,life){
+  const bm=rs.filter(r=>r.t==='bm'&&r.d<life.generatedAgo).length;
+  const sy=rs.filter(r=>r.t==='sym'&&r.d<life.generatedAgo).length;
+  const ro=rs.filter(r=>r.t==='rout'&&r.d<life.generatedAgo).length;
+  return obFrame(`
+    <div class="obhero"><div class="oicon">${I(IC.act,23)}</div><h2>Update your Patterns review.</h2>
+      <p>Your current report remains visible until the replacement is ready.</p></div>
+    <div class="card">
+      <div class="eyebrow"><span>Since the last review</span><span class="planchip neutral">${life.generatedAgo}d</span></div>
+      <div class="delta">
+        <div class="deltabox"><b>${bm}</b><span>Bowel logs</span></div>
+        <div class="deltabox"><b>${sy}</b><span>Symptom logs</span></div>
+        <div class="deltabox"><b>${ro}</b><span>Routine sessions</span></div>
+      </div>
+      <div class="evrow">${I(IC.check)}<span>${life.newReflections} new routine reflections</span></div>
+      <div class="evrow">${I(IC.chart)}<span>${life.changed.length?life.changed.join(' · '):'No material domain change'}</span></div>
+    </div>
+    <div class="obnav"><button class="cta" data-ob-action="next">Choose update focus</button></div>
+  `,1,4,'regen');
+}
+
+function regenContext(rs,plan,ds){
+  return obFrame(`
+    ${contextForm(ds,plan,true)}
+    <div class="obnav"><button class="cta" data-ob-action="next">Check useful actions</button></div>
+  `,2,4,'regen');
+}
+
+function regenTasks(rs,plan){
+  const rd=readinessFor(rs,plan,{window:S.context.window,taskDone:S.taskDone});
+  const material=rd.tasks.filter(t=>t.kind!=='optional'||S.context.changes.includes('foundations'));
+  const view={...rd,tasks:material};
+  return obFrame(`
+    <div class="obhero"><h2>Only tasks relevant to this update.</h2><p>Completed items stay checked. You can skip every recommendation.</p></div>
+    ${taskList(view)}
+    <div class="obnav"><button class="obsecondary" data-ob-action="generate-now">Skip</button><button class="cta" data-ob-action="next">Review update</button></div>
+  `,3,4,'regen');
+}
+
+function regenReview(rs,plan,ds){
+  return obFrame(`
+    <div class="obhero"><h2>Review the update.</h2><p>New records will be added; unchanged sections remain available.</p></div>
+    ${reviewSummary(rs,plan,ds,true)}
+    ${S.tier==='free'?`
+      <div class="obnav"><button class="cta plus" data-ob-action="upgrade">Unlock to regenerate</button></div>
+    `:`
+      <div class="obnav"><button class="cta" data-ob-action="generate">Regenerate review</button></div>
+    `}
+  `,4,4,'regen');
+}
+
+function generatingScreen(regen=false){
+  const stages=['Organizing your records','Calculating deterministic trends','Preparing specialist perspectives','Review ready'];
+  const i=Math.min(S.genStage||0,stages.length-1);
+  return `<div class="ob"><div class="generating">
+    ${i<3?'<div class="genring"></div>':`<div class="oicon" style="margin:0 auto 18px">${I(IC.check,24)}</div>`}
+    <div class="genstage">${stages[i]}</div>
+    <div class="gensub">${i+1} of ${stages.length} · ${i<3?'Your data stays organized by report window.':'Opening your review…'}</div>
+    ${regen?`<div class="oldreport">${I(IC.shield,11)} Previous report remains available</div>`:''}
+    ${i<3&&regen?`<button class="obsecondary" style="margin-top:18px" data-ob-action="cancel-generate">Cancel update</button>`:''}
+  </div></div>`;
+}
+
+function pausedPreparation(){
+  return `<div class="ob"><div class="obhero" style="padding-top:38px">
+    <div class="oicon">${I(IC.check,23)}</div><h2>Preparation saved.</h2>
+    <p>Your answers and completed tasks are kept in this demo state. No report was generated.</p>
+  </div><div class="obnav"><button class="cta" data-ob-action="resume">Resume preparation</button></div></div>`;
+}
+
+function renderOnboarding(rs,plan,ds){
+  if (S.genStage!=null) return generatingScreen(S.entry==='regen');
+  if (S.obPaused) return pausedPreparation();
+  if (S.entry==='regen'){
+    const life=lifecycleFor(rs,plan);
+    return [
+      ()=>regenDelta(rs,plan,life),()=>regenContext(rs,plan,ds),
+      ()=>regenTasks(rs,plan),()=>regenReview(rs,plan,ds)
+    ][Math.max(0,Math.min(3,S.obStep-1))]();
+  }
+  return [
+    ()=>obWelcome(ds),()=>obReadiness(rs,plan),()=>obContext(rs,plan,ds),
+    ()=>obTasks(rs,plan),()=>obReview(rs,plan,ds)
+  ][Math.max(0,Math.min(4,S.obStep-1))]();
+}
+
+function freshBanner(rs,plan){
+  const life=lifecycleFor(rs,plan);
+  if (S.generatedFlash) return `<div class="fresh">
+    <div class="fic">${I(IC.check,14)}</div><div class="fb"><div class="ft">Review updated</div><div class="fm">Generated today · last ${S.context.window} days</div></div>
+  </div>`;
+  if (S.entry==='refresh') return `<div class="fresh update">
+    <div class="fic">${I(IC.act,14)}</div><div class="fb"><div class="ft">${life.newRows} new records · ${life.newReflections} reflections</div>
+    <div class="fm">${life.changed.join(' · ')||'Readiness improved'} · current report remains available</div></div>
+    <span class="fa" data-ob-action="open-regen">Update review</span>
+  </div>`;
+  return `<div class="fresh">
+    <div class="fic">${I(IC.check,14)}</div><div class="fb"><div class="ft">Up to date</div><div class="fm">Generated today · last ${S.context.window} days</div></div>
+  </div>`;
+}
+
+function wireOnboarding(){
+  document.querySelectorAll('[data-ob-action]').forEach(el=>el.onclick=()=>{
+    const a=el.dataset.obAction;
+    const total=S.entry==='regen'?4:5;
+    if(a==='next') S.obStep=Math.min(total,S.obStep+1);
+    if(a==='back') S.obStep=Math.max(1,S.obStep-1);
+    if(a==='generate-now') S.obStep=total;
+    if(a==='exit'){
+      if(S.entry==='regen'){ S.entry='refresh'; S.obStep=1; }
+      else S.obPaused=true;
+    }
+    if(a==='resume') S.obPaused=false;
+    if(a==='open-regen'){ S.entry='regen'; S.obStep=1; S.generatedFlash=false; }
+    if(a==='upgrade') S.tier='plus';
+    if(a==='generate') startGeneration();
+    if(a==='cancel-generate'){ S.genToken++; S.genStage=null; S.entry='refresh'; S.obStep=1; }
+    sync();
+  });
+  document.querySelectorAll('[data-purpose]').forEach(el=>el.onclick=()=>{ S.context.purpose=el.dataset.purpose; sync(); });
+  document.querySelectorAll('[data-reason]').forEach(el=>el.onclick=()=>{ S.context.reason=el.dataset.reason; sync(); });
+  document.querySelectorAll('[data-priority]').forEach(el=>el.onclick=()=>{ S.context.priority=el.dataset.priority; sync(); });
+  document.querySelectorAll('[data-window]').forEach(el=>el.onclick=()=>{ S.context.window=+el.dataset.window; sync(); });
+  document.querySelectorAll('[data-change]').forEach(el=>el.onclick=()=>{
+    const k=el.dataset.change, xs=new Set(S.context.changes);
+    if(k==='none') xs.clear();
+    else { xs.delete('none'); xs.has(k)?xs.delete(k):xs.add(k); }
+    S.context.changes=[...xs]; sync();
+  });
+  document.querySelectorAll('[data-confirm]').forEach(el=>el.onclick=()=>{
+    const k=el.dataset.confirm;
+    if(k==='plan') S.context.planConfirmed=!S.context.planConfirmed;
+    if(k==='visit') S.context.visitConfirmed=!S.context.visitConfirmed;
+    sync();
+  });
+  document.querySelectorAll('[data-task]').forEach(el=>el.onclick=()=>{
+    const k=el.dataset.task, xs=new Set(S.taskDone);
+    xs.has(k)?xs.delete(k):xs.add(k); S.taskDone=[...xs]; sync();
+  });
+  const note=document.getElementById('ob-note');
+  if(note) note.oninput=e=>{ S.context.note=e.target.value.slice(0,160); };
+}
+
+function startGeneration(){
+  const token=++S.genToken;
+  S.genStage=0; renderScreen(); renderPanel();
+  [1,2,3].forEach((stage,i)=>setTimeout(()=>{
+    if(token!==S.genToken) return;
+    S.genStage=stage;
+    if(stage===3){
+      setTimeout(()=>{
+        if(token!==S.genToken) return;
+        S.genStage=null; S.entry='current'; S.obStep=1; S.obPaused=false; S.generatedFlash=true;
+        sync();
+      },500);
+    }
+    renderScreen(); renderPanel();
+  },(i+1)*650));
+}
+
+/* ═════════════════ Screen assembly ═════════════════ */
+const TOD = {
+  morning:{greet:'Good morning',ctx:'Morning',time:'9:41'},
+  afternoon:{greet:'Good afternoon',ctx:'Afternoon',time:'14:20'},
+  evening:{greet:'Good evening',ctx:'Evening',time:'21:05'}
+};
+
+function sec(label, inner, hint){
+  return `<div class="sechead"><span>${label}</span>${hint?`<span class="sechint">${hint}</span>`:''}</div>${inner}`;
+}
+function carousel(slides, id, opts={}){
+  slides=slides.filter(Boolean);
+  const peek=opts.peek?'peek':'';
+  const dots=slides.length>1?`<div class="ldots" id="${id}">${slides.map((_,i)=>`<div class="ld ${i===0?'on':''}"></div>`).join('')}</div>`:'';
+  return `<div class="carousel" data-dots="${id}">${slides.map(s=>`<div class="cslide ${slides.length===1?'solo':peek}">${s}</div>`).join('')}</div>${dots}`;
+}
+
+function currentData(){
+  const ds=PERSONAS[S.persona];
+  let rs=ds.rows.map(r=>({...r}));
+  const primary=E.paired(rs)[0]?.name || ds.focus.label;
+  rs=LEARN_MUT[S.learning] ? applyLearning(rs, primary, S.learning) : rs;
+  rs=STATE_MUT[S.state](rs, ds.defaults.state);
+  rs=CARE_MUT[S.care](rs);
+  rs=applyPreparationRows(rs,S.prep);
+  const plan=PLAN_MUT[S.plan](ds.plan ? {...ds.plan, routines:ds.plan.routines.map(r=>({...r}))} : null);
+  return { rs, plan, ds };
+}
+
+function renderScreen(){
+  const {rs, plan, ds}=currentData();
+  const st=E.deriveState(rs);
+  const t=TOD[S.tod];
+  const concern=S.care==='concern'||E.rows(rs,'blood').some(r=>r.d<=7);
+  document.getElementById('status-time').textContent=t.time;
+  document.getElementById('hdr-avatar').textContent=ds.ini;
+
+  if (S.entry==='first'||S.entry==='regen'||S.genStage!=null||S.obPaused){
+    document.getElementById('screen').innerHTML=renderOnboarding(rs,plan,ds);
+    document.getElementById('tabbar').innerHTML='';
+    wireOnboarding();
+    return;
+  }
+
+  let h=`<div class="greet"><div class="ctx">${t.ctx} · ${fmtD(0)}</div><h1>${t.greet}, ${ds.name}.</h1></div>`;
+  h+=freshBanner(rs,plan);
+  if (concern) h+=cardCare(rs);
+
+  const s1=[cardFocus(rs,ds,st), cardGlance(rs,ds), cardSymptoms(rs,ds), cardFoundations(rs,ds)];
+  h+=sec('Right now', carousel(s1,'c1'), s1.filter(Boolean).length>1?'swipe →':'');
+
+  if (!concern) h+=cardCare(rs);
+
+  const s2 = planCarousel(rs, ds, plan, concern);
+  const s2label = !plan ? 'Plan' : plan.status==='maintenance' ? 'Baseline' : 'Your plan';
+  h+=sec(s2label, carousel(s2,'c2'), s2.filter(Boolean).length>1?'swipe →':'');
+
+  h+=sec('What we’ve tried', cardStory(rs,ds,plan));
+  h+=sec('What worked', cardWorked(rs,ds,plan));
+  h+=sec('What didn’t work', cardDidnt(rs,ds,plan));
+  const s3 = specialistCarousel(rs, ds);
+  h+=sec('Specialist perspectives', carousel(s3,'c3',{peek:true}), S.tier==='free'?'PLUS · swipe →':'swipe →');
+  h+=sec('What’s next', cardNext(rs,ds,plan));
+  h+=sec('Tools', cardTools(rs));
+  h+=`<div style="height:12px"></div>
+  <div style="text-align:center;font-size:10px;color:var(--text-hint);padding-bottom:8px">Based on your records — not a diagnosis.</div>`;
+  document.getElementById('screen').innerHTML=h;
+
+  const tabs=[['sun','Today'],['pencil','Track'],['chart','Pattern'],['heart','Care'],['chat','Chat']];
+  document.getElementById('tabbar').innerHTML=tabs.map(tb=>
+    `<div class="tab ${tb[1]==='Pattern'?'act':''}">${I(IC[tb[0]],19)}<span>${tb[1]}</span></div>`).join('');
+
+  wireCarousels();
+  wireOnboarding();
+}
+
+function wireCarousels(){
+  document.querySelectorAll('.carousel').forEach(c=>{
+    const dots=document.querySelectorAll('#'+c.dataset.dots+' .ld');
+    if (!dots.length) return;
+    c.addEventListener('scroll',()=>{
+      const slide=c.querySelector('.cslide');
+      if (!slide) return;
+      const i=Math.min(dots.length-1, Math.round(c.scrollLeft/(slide.offsetWidth+10)));
+      dots.forEach((d,j)=>d.classList.toggle('on', j===i));
+    },{passive:true});
+  });
+}
+
+function renderPanel(){
+  const {rs, plan, ds}=currentData();
+  const st=E.deriveState(rs);
+  const m=E.mode(rs,0,7);
+  const rd=readinessFor(rs,plan,{window:S.context.window,taskDone:S.taskDone});
+  const life=lifecycleFor(rs,plan);
+  const planTxt = !plan ? 'plan: none'
+    : plan.status==='maintenance' ? 'plan: maintenance'
+    : `plan: ${G.dayOf(Math.min(plan.started+1,plan.len),plan.len)}${plan.status==='paused'?' · paused':''}`;
+  document.getElementById('scenario-text').innerHTML=
+    `<b>${ds.name}</b> · entry: <b>${S.entry}</b> · prep: <b>${S.prep}</b> · tier: <b>${S.tier}</b>`+
+    ` · coverage ${rd.represented}/6 · ready ${rd.ready}/6 · tasks ${rd.tasks.filter(t=>!t.done).length}`+
+    ` · new rows ${life.newRows} · state: <b>${st.s}</b> · ${planTxt}`+
+    (m?` · T${m.type} ${m.pct}%`:'');
+  document.getElementById('scenario-intent').innerHTML=
+    `<b>Lifecycle:</b> ${life.hasReport?'Existing report preserved':'No report yet'} · window ${S.context.window}d · purpose ${S.context.purpose}.<br><b>Design intent:</b> ${ds.intent}`;
+
+  document.getElementById('dv-count').textContent=`${rs.length} rows`;
+  const lines=rs.slice().sort((a,b)=>(a.d??0)-(b.d??0)).map(r=>{
+    const d=('d' in r)?`d${String(r.d).padStart(4,' ')}`:'    ';
+    switch(r.t){
+      case 'bm':    return `${d}  bm      T${r.type} strain ${r.straining}`;
+      case 'sym':   return `${d}  sym     ${r.name} sev ${r.sev}`;
+      case 'sleep': return `${d}  sleep   ${r.hours}h`;
+      case 'stress':return `${d}  stress  ${r.level}/9`;
+      case 'rout':  return `${d}  rout    ${r.name} → ${r.outcome}${r.mins!=null?` ${r.mins}m`:''}${r.felt?` felt:${r.felt}`:''}${r.abandoned?' ABANDON':''}`;
+      case 'habit': return `${d}  habit   ${r.name} ${r.done?'done':'skip'}`;
+      case 'flare': return `${d}  <b>FLARE</b>`;
+      case 'blood': return `${d}  <b>RED FLAG</b>`;
+      case 'visit': return `      visit   in ${r.inDays}d`;
+      case 'treat': return `${d}  treat   ${r.name}`;
+      case 'ep':    return `${d}  episode captured`;
+      case 'q':     return `${d}  question drafted`;
+      default:      return `${d}  ${r.t}`;
+    }
+  });
+  document.getElementById('dataview').innerHTML=lines.join('\n');
+}
+
+/* ═════════════════ Controls ═════════════════ */
+let S={
+  persona:'maya', state:'pattern', plan:'active', learning:'unknown', care:'none', tod:'evening', tier:'free',
+  entry:'first', prep:'partial', obStep:1, obPaused:false, obSaved:false,
+  taskState:'none', taskDone:[], genStage:null, genToken:0, generatedFlash:false,
+  context:{
+    purpose:'symptoms', priority:'current', reason:'routine', window:7, changes:['symptoms'], note:'',
+    planConfirmed:false, visitConfirmed:false
+  }
+};
+PERSONAS.maya.defaults  ={ state:'pattern',  plan:'active',      learning:'unknown', care:'none',  tod:'evening'   };
+PERSONAS.sam.defaults   ={ state:'footing',  plan:'active',      learning:'unknown', care:'none',  tod:'morning'   };
+PERSONAS.alex.defaults  ={ state:'pattern',  plan:'active',      learning:'helping', care:'none',  tod:'morning'   };
+PERSONAS.robin.defaults ={ state:'pattern',  plan:'active',      learning:'care',    care:'visit', tod:'afternoon' };
+PERSONAS.jules.defaults ={ state:'pattern',  plan:'review',      learning:'mixed',   care:'none',  tod:'evening'   };
+PERSONAS.noor.defaults  ={ state:'baseline', plan:'maintenance', learning:'helping', care:'none',  tod:'afternoon' };
+
+function segGroup(elId, labels, key){
+  const el=document.getElementById(elId);
+  el.innerHTML=Object.entries(labels).map(([k,l])=>
+    `<button class="seg ${S[key]===k?'on':''}" data-k="${k}">${l}</button>`).join('');
+  el.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{ S[key]=b.dataset.k; sync(); });
+}
+function entryGroup(){
+  const el=document.getElementById('ctl-entry');
+  const labels={first:'First visit',current:'Returning · current',refresh:'Refresh available',regen:'Regenerate'};
+  el.innerHTML=Object.entries(labels).map(([k,l])=>`<button class="seg ${S.entry===k?'on':''}" data-k="${k}">${l}</button>`).join('');
+  el.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+    S.entry=b.dataset.k; S.obStep=1; S.obPaused=false; S.genStage=null; S.genToken++; S.generatedFlash=false; sync();
+  });
+}
+function prepGroup(){
+  const el=document.getElementById('ctl-prep');
+  const labels={sparse:'Sparse',partial:'Partial',ready:'Ready',safety:'Safety concern'};
+  el.innerHTML=Object.entries(labels).map(([k,l])=>`<button class="seg ${S.prep===k?'on':''}" data-k="${k}">${l}</button>`).join('');
+  el.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+    S.prep=b.dataset.k; S.taskDone=[]; S.taskState='none'; sync();
+  });
+}
+function stepGroup(){
+  const el=document.getElementById('ctl-obstep');
+  const total=S.entry==='regen'?4:5;
+  el.innerHTML=Array.from({length:total},(_,i)=>`<button class="seg ${S.obStep===i+1?'on':''}" data-k="${i+1}">${i+1}</button>`).join('');
+  el.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{ S.obStep=+b.dataset.k; S.obPaused=false; sync(); });
+  document.getElementById('ctl-step-label').textContent=`${S.obStep} of ${total}`;
+}
+function taskStateGroup(){
+  const el=document.getElementById('ctl-taskstate');
+  const labels={none:'None done',recommended:'Recommended done',all:'All done'};
+  el.innerHTML=Object.entries(labels).map(([k,l])=>`<button class="seg ${S.taskState===k?'on':''}" data-k="${k}">${l}</button>`).join('');
+  el.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+    S.taskState=b.dataset.k;
+    if(S.taskState==='none') S.taskDone=[];
+    else {
+      const {rs,plan}=currentData();
+      const rd=readinessFor(rs,plan,{window:S.context.window,taskDone:[]});
+      S.taskDone=rd.tasks.filter(t=>S.taskState==='all'||t.kind!=='optional').map(t=>t.key);
+    }
+    sync();
+  });
+}
+function renderPersonas(){
+  const el=document.getElementById('ctl-persona');
+  el.innerHTML=Object.entries(PERSONAS).map(([k,p])=>
+    `<button class="prow ${S.persona===k?'on':''}" data-k="${k}">
+      <span class="pav">${p.ini}</span>
+      <span><span class="pn">${p.name} · ${p.plabel}</span><span class="pd" style="display:block">${p.pdesc}</span></span>
+    </button>`).join('');
+  el.querySelectorAll('.prow').forEach(b=>b.onclick=()=>{
+    S.persona=b.dataset.k; Object.assign(S,PERSONAS[S.persona].defaults);
+    S.taskDone=[]; S.taskState='none'; S.generatedFlash=false; sync();
+  });
+}
+function sync(){
+  entryGroup();
+  prepGroup();
+  stepGroup();
+  taskStateGroup();
+  renderPersonas();
+  segGroup('ctl-state', {footing:'Find footing',pattern:'Understand pattern',baseline:'Protect baseline'}, 'state');
+  segGroup('ctl-plan', {active:'Active plan',review:'Review due',none:'No plan · tracking',paused:'Paused',maintenance:'Quiet maintenance'}, 'plan');
+  segGroup('ctl-learning', {helping:'Mostly relief',mixed:'Mixed',impractical:'Not practical',worse:'Felt worse',care:'Persistent symptoms',unknown:'Sparse (n=2)'}, 'learning');
+  segGroup('ctl-care', {none:'None',visit:'Visit coming up',treatment:'Treatment changed',concern:'Concerning change'}, 'care');
+  segGroup('ctl-tod', {morning:'Morning',afternoon:'Afternoon',evening:'Evening'}, 'tod');
+  segGroup('ctl-tier', {free:'Free',plus:'Plus'}, 'tier');
+  renderScreen();
+  renderPanel();
+}
+document.getElementById('ctl-dark').onchange=e=>{
+  document.getElementById('phone').classList.toggle('dark',e.target.checked);
+};
+sync();
+</script>
+</body>
+</html>

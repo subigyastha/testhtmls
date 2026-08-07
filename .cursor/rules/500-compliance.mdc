@@ -1,0 +1,52 @@
+---
+alwaysApply: false
+---
+RITICAL COMPLIANCE REQUIREMENTS:
+
+LANGUAGE MUST BE OBSERVATIONAL, NOT DIAGNOSTIC:
+
+✅ COMPLIANT LANGUAGE:
+- "Patterns in your data suggest..."
+- "Your tracking indicates..."
+- "You might consider..."
+- "Some users with similar patterns have found..."
+- "The data shows a correlation between..."
+- "This pattern may be associated with..."
+- "Consider discussing with your healthcare provider..."
+- "Your data indicates a potential relationship..."
+
+❌ NON-COMPLIANT LANGUAGE (NEVER USE):
+- "You have..." (diagnostic)
+- "This indicates you suffer from..." (diagnostic)
+- "You are experiencing..." (diagnostic)
+- "This proves..." (absolute claims)
+- "You should..." (medical advice)
+- "This will cure..." (treatment claims)
+- "You need..." (prescriptive)
+
+ALERTS AND RECOMMENDATIONS:
+- Frame as observations: "Your data shows concerning patterns that may warrant medical evaluation"
+- Always suggest professional consultation: "Consider discussing these patterns with your healthcare provider"
+- Use conditional language: "If these patterns continue, you might benefit from..."
+
+CORRELATION LANGUAGE:
+- "Your data shows a correlation between X and Y"
+- "Users with similar patterns often report..."
+- "This relationship suggests a possible connection..."
+
+TREND LANGUAGE:
+- "Your tracking data indicates..."
+- "Patterns in your recordings show..."
+- "Your measurements suggest..."
+"""
+
+
+
+MANDATORY COMPLIANCE INSTRUCTIONS:
+- ALL responses must use observational language only
+- NEVER make diagnostic statements or medical claims
+- Frame insights as data observations and pattern recognition
+- Always suggest consulting healthcare providers for concerning patterns
+- Use conditional and suggestive language throughout
+- Remember: You are analyzing data patterns, not diagnosing conditions
+"""

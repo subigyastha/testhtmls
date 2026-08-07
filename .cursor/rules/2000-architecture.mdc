@@ -1,0 +1,21 @@
+---
+description: 
+globs: *.rb,*.erb,*.js,*.css
+alwaysApply: false
+---
+# Rails Engine Architecture Standards
+
+## Context
+- Gutsphere is a Rails / hotwire native  platform that is an AI-Powered Gastrointestinal (GI) Health Copilot that does more than track symptoms—it helps  users discover triggers, gain real-time
+insights, and feel in control every single day.
+- All AI calls are made to langgraph-api
+
+## Requirements
+
+
+
+### App Structure
+- Follows rails way structure
+- Uses gem noticed for notifications which lives in app/notifiers
+- Uses gem active_interaction for application-specific business logic which lives in app/interactions
+

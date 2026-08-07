@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Gutsphere Today</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#00b5c0",
+                    "gs-sand": "#F5EEE8",
+                    "outline": "#8b7169",
+                    "on-primary-fixed-variant": "#822800",
+                    "primary-fixed-dim": "#ffb59c",
+                    "on-tertiary-fixed": "#002022",
+                    "surface-container": "#ffe9e3",
+                    "surface": "#fff8f6",
+                    "on-primary-container": "#6c2000",
+                    "gs-card": "#FFFFFF",
+                    "surface-tint": "#a43c12",
+                    "on-error-container": "#93000a",
+                    "on-surface-variant": "#57423b",
+                    "tertiary": "#006970",
+                    "on-secondary": "#ffffff",
+                    "gs-dark-card": "#221E1B",
+                    "on-secondary-container": "#68645f",
+                    "on-tertiary-fixed-variant": "#004f54",
+                    "surface-variant": "#f4ded7",
+                    "on-secondary-fixed": "#1e1b18",
+                    "inverse-on-surface": "#ffede8",
+                    "error": "#ba1a1a",
+                    "inverse-surface": "#3a2e29",
+                    "primary": "#a43c12",
+                    "on-primary": "#ffffff",
+                    "primary-container": "#ff7f50",
+                    "background": "#fff8f6",
+                    "tertiary-fixed": "#7af4ff",
+                    "surface-dim": "#ebd6cf",
+                    "gs-coral-glow": "rgba(255, 127, 80, 0.1)",
+                    "on-secondary-fixed-variant": "#4a4642",
+                    "on-background": "#241915",
+                    "secondary": "#625e59",
+                    "on-tertiary": "#ffffff",
+                    "gs-dark-card-elevated": "#2A2522",
+                    "surface-container-highest": "#f4ded7",
+                    "primary-fixed": "#ffdbcf",
+                    "error-container": "#ffdad6",
+                    "gs-card-elevated": "#FAF6F2",
+                    "surface-bright": "#fff8f6",
+                    "inverse-primary": "#ffb59c",
+                    "tertiary-fixed-dim": "#4dd9e4",
+                    "surface-container-low": "#fff1ec",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#fae4dd",
+                    "on-tertiary-container": "#004145",
+                    "on-primary-fixed": "#380c00",
+                    "gs-dark-sand": "#1A1614",
+                    "secondary-fixed-dim": "#ccc5c0",
+                    "outline-variant": "#dec0b6",
+                    "gs-coral": "#FF7F50",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed": "#e8e1db",
+                    "on-surface": "#241915",
+                    "secondary-container": "#e8e1db"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.8rem",
+                    "xl": "1rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "space-4": "16px",
+                    "space-6": "24px",
+                    "space-3": "12px",
+                    "margin-desktop": "24px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-sm": ["DM Sans"],
+                    "label-md": ["DM Sans"],
+                    "headline-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["DM Sans"],
+                    "body-lg": ["DM Sans"]
+            },
+            "fontSize": {
+                    "headline-md-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-md": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "800"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #F5EEE8; /* gs-sand */
+            color: #241915; /* on-surface */
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .check-in-transition {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .state-hidden {
+            display: none !important;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .state-visible {
+            display: block !important;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .bento-wide {
+            grid-column: span 2;
+        }
+
+        /* Glassmorphism effects */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .bottom-sheet {
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .bottom-sheet.active {
+            transform: translateY(0);
+        }
+
+        .pulse-coral {
+            animation: pulse-coral 2s infinite;
+        }
+
+        @keyframes pulse-coral {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 127, 80, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 127, 80, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 127, 80, 0); }
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Severe Day Mode Styling */
+        .severe-mode {
+            background-color: #fff1ec;
+        }
+        .severe-mode .top-app-bar {
+            background-color: #fff1ec;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md bg-gs-sand">
+<!-- Top AppBar (JSON Content) -->
+<header class="top-app-bar fixed top-0 left-0 w-full z-40 bg-surface h-16 flex justify-between items-center px-margin-mobile check-in-transition">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-gs-coral-glow overflow-hidden border border-primary/10">
+<img class="w-full h-full object-cover" data-alt="A stylized professional portrait of a wellness practitioner in a bright, modern clinic with soft ambient lighting and warm earth tones, conveying trust and medical expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj9jiXTSwfRN1FjpkBsgoK39_05Qh0eAMG1mQa--7mSVGtXSE-fFVWEeoZSVWxcnxcZsGC0dC9tnmsiRGAgDJ7_RO_6D3XkttQgGRCb6PU3T-i1LC8JkLyaxEa2ESI0UtLvyWDVbNP3Nv97ods7kcDDZHF2P67bLYg05VP695_isoH4wFQbOI6OOfSmYlLcHjRNTzdt9f0w-tpv2S3Nm70qr0RvDH_t4OQB9-4XULn93havT3Z_WfN---cyzHE2sEX5B0ByEVCEqMc"/>
+</div>
+<h1 class="font-headline-md text-headline-md-mobile text-primary tracking-tight">Gutsphere</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-gs-sand transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<main class="pt-20 pb-32 px-margin-mobile space-y-6 max-w-2xl mx-auto">
+<!-- Relief Header: Dynamic -->
+<section class="space-y-1" id="relief-header">
+<h2 class="font-headline-lg text-headline-lg-mobile text-on-surface" id="greeting-text">Good Morning,</h2>
+<p class="font-body-lg text-secondary" id="sub-greeting">Ready to listen to your gut?</p>
+</section>
+<!-- My Gut Today Card (State Machine) -->
+<section id="check-in-container">
+<!-- Initial Check-in State -->
+<div class="bg-gs-card rounded-xl p-space-6 shadow-sm check-in-transition relative overflow-hidden" id="check-in-state-initial">
+<div class="flex items-start justify-between mb-space-4">
+<div class="space-y-1">
+<span class="text-xs font-label-sm uppercase tracking-widest text-primary font-bold">Daily Check-in</span>
+<h3 class="font-headline-sm text-on-surface">How's your gut feeling right now?</h3>
+</div>
+<div class="text-gs-coral opacity-20">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+</div>
+<div class="flex flex-col gap-3 mt-4">
+<button class="flex items-center gap-4 p-4 rounded-lg bg-gs-sand hover:bg-gs-coral-glow group transition-all" onclick="handleCheckIn('okay')">
+<span class="w-12 h-12 flex items-center justify-center rounded-full bg-white text-emerald-600">
+<span class="material-symbols-outlined text-3xl">sentiment_satisfied</span>
+</span>
+<div class="text-left">
+<p class="font-bold text-on-surface">Okay</p>
+<p class="text-xs text-secondary">Feeling steady today</p>
+</div>
+</button>
+<button class="flex items-center gap-4 p-4 rounded-lg bg-gs-sand hover:bg-gs-coral-glow group transition-all" onclick="handleCheckIn('not-great')">
+<span class="w-12 h-12 flex items-center justify-center rounded-full bg-white text-amber-500">
+<span class="material-symbols-outlined text-3xl">sentiment_neutral</span>
+</span>
+<div class="text-left">
+<p class="font-bold text-on-surface">Not Great</p>
+<p class="text-xs text-secondary">Minor discomfort present</p>
+</div>
+</button>
+<button class="flex items-center gap-4 p-4 rounded-lg bg-gs-sand hover:bg-gs-coral-glow group transition-all" onclick="handleCheckIn('struggling')">
+<span class="w-12 h-12 flex items-center justify-center rounded-full bg-white text-gs-coral">
+<span class="material-symbols-outlined text-3xl">sentiment_dissatisfied</span>
+</span>
+<div class="text-left">
+<p class="font-bold text-on-surface">Struggling</p>
+<p class="text-xs text-secondary">Severe symptoms reported</p>
+</div>
+</button>
+</div>
+</div>
+<!-- Acknowledgement State (Hidden Initially) -->
+<div class="state-hidden bg-gs-card rounded-xl p-space-6 shadow-sm check-in-transition" id="check-in-state-ack">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center" id="ack-icon">
+<span class="material-symbols-outlined text-3xl text-emerald-600">check_circle</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-on-surface" id="ack-title">Logged!</h3>
+<p class="text-secondary" id="ack-msg">We've noted your status. Take it easy.</p>
+</div>
+</div>
+<div class="h-1 bg-gs-sand rounded-full overflow-hidden">
+<div class="h-full bg-gs-coral w-full transition-all linear duration-[8000ms]" id="timeout-bar"></div>
+</div>
+</div>
+<!-- Suggestion State (Next Best Action) -->
+<div class="state-hidden bg-gs-card rounded-xl p-space-6 shadow-sm border-2 border-gs-coral-glow check-in-transition" id="check-in-state-action">
+<div class="flex items-start justify-between mb-4">
+<div class="bg-gs-coral-glow text-primary px-3 py-1 rounded-full text-xs font-bold uppercase">Next Best Action</div>
+</div>
+<h3 class="font-headline-sm text-on-surface mb-2" id="action-title">Hydrate &amp; Rest</h3>
+<p class="text-secondary mb-6" id="action-body">Based on your struggling status, we recommend small sips of warm water and a 15-minute lateral rest.</p>
+<div class="flex gap-3">
+<button class="flex-1 bg-gs-coral text-white py-3 rounded-lg font-bold shadow-md hover:bg-primary-container transition-colors" onclick="resetCheckIn()">Complete Action</button>
+<button class="px-6 border border-gs-coral/20 py-3 rounded-lg text-primary font-medium" onclick="resetCheckIn()">Later</button>
+</div>
+</div>
+<!-- Compact Status Pill (Hidden Initially) -->
+<div class="state-hidden bg-gs-card rounded-full px-5 py-3 shadow-sm border border-gs-sand flex items-center justify-between check-in-transition" id="check-in-state-compact">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-emerald-600" id="compact-icon">sentiment_satisfied</span>
+<span class="font-bold text-on-surface">Gut is <span id="compact-status-text">Okay</span></span>
+</div>
+<button class="text-primary font-medium text-sm" onclick="showCheckInOptions()">Update</button>
+</div>
+</section>
+<!-- Quick Action Strip -->
+<section class="flex gap-3 overflow-x-auto scrollbar-hide py-1 -mx-margin-mobile px-margin-mobile">
+<button class="flex-none flex items-center gap-2 bg-gs-card px-4 py-2 rounded-full border border-gs-sand shadow-sm hover:bg-gs-coral-glow transition-colors" onclick="openSheet('symptom')">
+<span class="material-symbols-outlined text-primary text-xl">healing</span>
+<span class="font-label-md">Symptom</span>
+</button>
+<button class="flex-none flex items-center gap-2 bg-gs-card px-4 py-2 rounded-full border border-gs-sand shadow-sm hover:bg-gs-coral-glow transition-colors" onclick="openSheet('bowel')">
+<span class="material-symbols-outlined text-primary text-xl">water_drop</span>
+<span class="font-label-md">Bowel</span>
+</button>
+<button class="flex-none flex items-center gap-2 bg-gs-card px-4 py-2 rounded-full border border-gs-sand shadow-sm hover:bg-gs-coral-glow transition-colors" onclick="openSheet('medication')">
+<span class="material-symbols-outlined text-primary text-xl">medication</span>
+<span class="font-label-md">Medication</span>
+</button>
+<button class="flex-none flex items-center gap-2 bg-gs-card px-4 py-2 rounded-full border border-gs-sand shadow-sm hover:bg-gs-coral-glow transition-colors" onclick="openSheet('note')">
+<span class="material-symbols-outlined text-primary text-xl">edit_note</span>
+<span class="font-label-md">Note</span>
+</button>
+</section>
+<!-- For You Today Rail -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-on-surface">For You Today</h3>
+<a class="text-primary font-medium text-sm" href="#">See All</a>
+</div>
+<div class="flex gap-4 overflow-x-auto scrollbar-hide -mx-margin-mobile px-margin-mobile pb-4">
+<div class="flex-none w-[280px] bg-gs-card rounded-xl overflow-hidden shadow-sm">
+<div class="h-32 w-full relative">
+<img class="w-full h-full object-cover" data-alt="A macro photograph of warm, soothing herbal ginger tea being poured into a ceramic mug, with soft morning sunlight streaming through a window, creating a serene and healthy atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMvNyGt-Y-MqbF6ZMYuAbi3ngNMO52jjr-Kx0vDm4xTkPl3AFP8VmNuu0Lrh9MZQamCF9UEdSIEc4xjNx7Z5_bDplo7XiFlbe8t-LK6w5nHf7q4cOfWAzHrKTqQWOg6czpGMTKvRnCJ9uIozDwW8QiTOuW4WQ9tql0Y3Ig5aU_vDlcmAVTVAnGdBWqxw8N9W2hycbX0F3uv3r8W1WIc0j0ZlIfeiKU09th04FkdOqWewAl8O5DJYXgsS089i95_1toOXQNx8whx4cm"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+<div class="absolute bottom-3 left-4 text-white">
+<span class="text-[10px] font-bold uppercase tracking-widest bg-gs-coral px-2 py-0.5 rounded">Article</span>
+</div>
+</div>
+<div class="p-4 space-y-3">
+<h4 class="font-headline-sm text-base leading-tight">Managing Afternoon Bloat</h4>
+<p class="text-sm text-secondary line-clamp-2">Simple breathing exercises to help gas move through your system efficiently.</p>
+<button class="w-full py-2 bg-gs-sand text-on-surface font-bold rounded-lg text-sm hover:bg-gs-coral-glow transition-colors">Read Now</button>
+</div>
+</div>
+<div class="flex-none w-[280px] bg-gs-card rounded-xl overflow-hidden shadow-sm border-l-4 border-gs-coral">
+<div class="p-5 space-y-4">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-full bg-gs-coral-glow flex items-center justify-center text-gs-coral">
+<span class="material-symbols-outlined text-3xl">psychology</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-secondary">5 Min Exercise</span>
+</div>
+<h4 class="font-headline-sm text-base leading-tight">Mindful Eating Check-in</h4>
+<p class="text-sm text-secondary">Take 5 minutes before your next meal to calm your vagus nerve.</p>
+<button class="w-full py-2 bg-gs-coral text-white font-bold rounded-lg text-sm hover:bg-primary-container transition-all active:scale-95">Start Exercise</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Today's Simple Plan -->
+<section class="space-y-4 pb-12">
+<h3 class="font-headline-sm text-on-surface">Your Simple Plan</h3>
+<div class="space-y-3">
+<!-- Med Card -->
+<div class="bg-gs-card rounded-xl p-5 shadow-sm border border-gs-sand flex items-center justify-between group cursor-pointer hover:border-gs-coral transition-all" id="med-task-card">
+<div class="flex items-center gap-4">
+<div class="w-6 h-6 rounded border-2 border-gs-sand flex items-center justify-center transition-colors" id="med-check">
+<span class="material-symbols-outlined text-white text-sm scale-0 transition-transform">check</span>
+</div>
+<div>
+<p class="font-bold text-on-surface group-checked:line-through">Mesalamine 800mg</p>
+<p class="text-xs text-secondary">Morning Dosage • 8:00 AM</p>
+</div>
+</div>
+<button class="bg-gs-sand text-on-surface-variant px-4 py-2 rounded-lg text-sm font-bold" onclick="toggleMedState()">Done</button>
+</div>
+<!-- Meal Log Card -->
+<div class="bg-gs-card rounded-xl p-5 shadow-sm border border-gs-sand flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Lunch Entry</p>
+<p class="text-xs text-secondary">Waiting for input...</p>
+</div>
+</div>
+<button class="bg-gs-coral text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">Log</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (JSON) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-surface-container flex justify-around items-center px-2 py-3 pb-safe shadow-sm rounded-t-xl">
+<button class="flex flex-col items-center justify-center bg-gs-coral-glow text-primary rounded-full px-4 py-1">
+<span class="material-symbols-outlined">today</span>
+<span class="font-label-sm text-[10px]">Today</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary opacity-70">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="font-label-sm text-[10px]">Track</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary opacity-70">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-sm text-[10px]">Patterns</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary opacity-70">
+<span class="material-symbols-outlined">medical_services</span>
+<span class="font-label-sm text-[10px]">Care</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary opacity-70">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-label-sm text-[10px]">Chat</span>
+</button>
+</nav>
+<!-- Bottom Sheets -->
+<div class="fixed inset-0 bg-black/40 z-[60] hidden opacity-0 transition-opacity" id="sheet-overlay" onclick="closeSheet()"></div>
+<div class="bottom-sheet fixed bottom-0 left-0 w-full bg-gs-card z-[70] rounded-t-3xl p-6 shadow-2xl max-h-[707px] overflow-y-auto" id="bottom-sheet">
+<div class="w-12 h-1.5 bg-gs-sand rounded-full mx-auto mb-6"></div>
+<div id="sheet-content">
+<!-- Dynamic Content Injected Here -->
+</div>
+</div>
+<!-- Prototype Controls (Overlay) -->
+<div class="fixed top-20 right-4 z-[100] flex flex-col gap-2" id="proto-controls">
+<button class="w-10 h-10 bg-on-surface text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform" onclick="toggleProtoMenu()">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="hidden bg-white rounded-xl p-4 shadow-xl border border-gs-sand space-y-4 w-48" id="proto-menu">
+<div>
+<p class="text-[10px] font-bold uppercase text-secondary mb-2">Feeling State</p>
+<select class="w-full text-sm rounded-md border-gs-sand" onchange="forceCheckIn(this.value)">
+<option value="none">Not Checked In</option>
+<option value="okay">Okay</option>
+<option value="not-great">Not Great</option>
+<option value="struggling">Struggling</option>
+</select>
+</div>
+<div>
+<p class="text-[10px] font-bold uppercase text-secondary mb-2">Time of Day</p>
+<div class="flex flex-wrap gap-1">
+<button class="text-[10px] bg-gs-sand px-2 py-1 rounded" onclick="setTime('morning')">AM</button>
+<button class="text-[10px] bg-gs-sand px-2 py-1 rounded" onclick="setTime('afternoon')">PM</button>
+<button class="text-[10px] bg-gs-sand px-2 py-1 rounded" onclick="setTime('evening')">Night</button>
+</div>
+</div>
+<div>
+<p class="text-[10px] font-bold uppercase text-secondary mb-2">Care State</p>
+<div class="space-y-1">
+<label class="flex items-center gap-2 text-[10px]">
+<input onchange="toggleMedCompleted(this.checked)" type="checkbox"/> Med Completed
+                    </label>
+</div>
+</div>
+</div>
+</div>
+<script>
+        // --- State Management ---
+        let currentState = {
+            feeling: 'none',
+            time: 'morning',
+            medCompleted: false,
+            isSevere: false
+        };
+
+        const states = {
+            initial: document.getElementById('check-in-state-initial'),
+            ack: document.getElementById('check-in-state-ack'),
+            action: document.getElementById('check-in-state-action'),
+            compact: document.getElementById('check-in-state-compact')
+        };
+
+        let timeoutHandle = null;
+
+        // --- Interaction Handlers ---
+
+        function handleCheckIn(feeling) {
+            currentState.feeling = feeling;
+            currentState.isSevere = (feeling === 'struggling');
+            
+            // Apply Severe UI globally
+            if(currentState.isSevere) {
+                document.body.classList.add('severe-mode');
+                document.getElementById('relief-header').classList.add('animate-pulse');
+            } else {
+                document.body.classList.remove('severe-mode');
+                document.getElementById('relief-header').classList.remove('animate-pulse');
+            }
+
+            // Transition to Ack
+            showState('ack');
+            
+            const ackIcon = document.getElementById('ack-icon');
+            const ackTitle = document.getElementById('ack-title');
+            const ackMsg = document.getElementById('ack-msg');
+            const timeoutBar = document.getElementById('timeout-bar');
+
+            // Reset timeout bar
+            timeoutBar.style.width = '100%';
+            timeoutBar.style.transition = 'none';
+            void timeoutBar.offsetWidth; // Force reflow
+            timeoutBar.style.transition = 'width 8000ms linear';
+            timeoutBar.style.width = '0%';
+
+            if(feeling === 'okay') {
+                ackIcon.className = 'w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center';
+                ackIcon.innerHTML = '<span class="material-symbols-outlined text-3xl text-emerald-600">sentiment_satisfied</span>';
+                ackTitle.innerText = "Great to hear!";
+                ackMsg.innerText = "Let's keep this momentum going.";
+            } else if (feeling === 'not-great') {
+                ackIcon.className = 'w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center';
+                ackIcon.innerHTML = '<span class="material-symbols-outlined text-3xl text-amber-500">sentiment_neutral</span>';
+                ackTitle.innerText = "Acknowledged.";
+                ackMsg.innerText = "We're here to help you manage this.";
+            } else {
+                ackIcon.className = 'w-14 h-14 rounded-full bg-red-100 flex items-center justify-center';
+                ackIcon.innerHTML = '<span class="material-symbols-outlined text-3xl text-gs-coral">sentiment_dissatisfied</span>';
+                ackTitle.innerText = "I'm sorry you're struggling.";
+                ackMsg.innerText = "Let's adjust your plan for relief.";
+            }
+
+            // Set 8s timeout to Action mode
+            clearTimeout(timeoutHandle);
+            timeoutHandle = setTimeout(() => {
+                showAction(feeling);
+            }, 8000);
+        }
+
+        function showAction(feeling) {
+            showState('action');
+            const title = document.getElementById('action-title');
+            const body = document.getElementById('action-body');
+
+            if(feeling === 'okay') {
+                title.innerText = "Daily Optimization";
+                body.innerText = "Since you're feeling good, try adding a 10-minute walk to further boost motility.";
+            } else if(feeling === 'not-great') {
+                title.innerText = "Soothing Ritual";
+                body.innerText = "Consider a peppermint tea or a heating pad session to calm early discomfort.";
+            } else {
+                title.innerText = "Immediate Relief Plan";
+                body.innerText = "Severe symptoms detected. Switch to liquid diet for 4 hours and log symptoms for your clinician.";
+            }
+        }
+
+        function resetCheckIn() {
+            showState('compact');
+            updateCompactPill();
+        }
+
+        function showCheckInOptions() {
+            showState('initial');
+        }
+
+        function forceCheckIn(val) {
+            if(val === 'none') {
+                showState('initial');
+                document.body.classList.remove('severe-mode');
+            } else {
+                handleCheckIn(val);
+            }
+        }
+
+        function updateCompactPill() {
+            const icon = document.getElementById('compact-icon');
+            const text = document.getElementById('compact-status-text');
+            
+            text.innerText = currentState.feeling.charAt(0).toUpperCase() + currentState.feeling.slice(1).replace('-', ' ');
+            
+            if(currentState.feeling === 'okay') {
+                icon.className = 'material-symbols-outlined text-emerald-600';
+                icon.innerText = 'sentiment_satisfied';
+            } else if(currentState.feeling === 'not-great') {
+                icon.className = 'material-symbols-outlined text-amber-500';
+                icon.innerText = 'sentiment_neutral';
+            } else {
+                icon.className = 'material-symbols-outlined text-gs-coral';
+                icon.innerText = 'sentiment_dissatisfied';
+            }
+        }
+
+        function showState(targetKey) {
+            Object.keys(states).forEach(key => {
+                if(key === targetKey) {
+                    states[key].classList.remove('state-hidden');
+                    states[key].classList.add('state-visible');
+                } else {
+                    states[key].classList.add('state-hidden');
+                    states[key].classList.remove('state-visible');
+                }
+            });
+        }
+
+        // --- UI Utils ---
+
+        function setTime(time) {
+            currentState.time = time;
+            const greeting = document.getElementById('greeting-text');
+            const sub = document.getElementById('sub-greeting');
+            
+            if(time === 'morning') {
+                greeting.innerText = "Good Morning,";
+                sub.innerText = "Ready to listen to your gut?";
+            } else if(time === 'afternoon') {
+                greeting.innerText = "Good Afternoon,";
+                sub.innerText = "How is your day tracking?";
+            } else {
+                greeting.innerText = "Good Evening,";
+                sub.innerText = "Let's wind down for repair.";
+            }
+        }
+
+        function toggleMedState() {
+            const card = document.getElementById('med-task-card');
+            const check = document.getElementById('med-check');
+            const btn = card.querySelector('button');
+            
+            card.classList.toggle('opacity-50');
+            check.classList.toggle('bg-emerald-500');
+            check.classList.toggle('border-emerald-500');
+            check.querySelector('span').classList.toggle('scale-0');
+            check.querySelector('span').classList.toggle('scale-100');
+            
+            if(card.classList.contains('opacity-50')) {
+                btn.innerText = "Undo";
+                btn.className = "text-secondary text-sm font-medium";
+            } else {
+                btn.innerText = "Done";
+                btn.className = "bg-gs-sand text-on-surface-variant px-4 py-2 rounded-lg text-sm font-bold";
+            }
+        }
+
+        function openSheet(type) {
+            const overlay = document.getElementById('sheet-overlay');
+            const sheet = document.getElementById('bottom-sheet');
+            const content = document.getElementById('sheet-content');
+            
+            let html = '';
+            if(type === 'symptom') {
+                html = `<h2 class="font-headline-sm mb-4">Log Symptom</h2>
+                        <div class="grid grid-cols-3 gap-3 mb-6">
+                            ${['Pain', 'Bloating', 'Nausea', 'Cramps', 'Gas', 'Urgency'].map(s => `
+                                <button class="p-3 bg-gs-sand rounded-xl text-sm font-bold hover:bg-gs-coral-glow transition-colors">${s}</button>
+                            `).join('')}
+                        </div>
+                        <button onclick="closeSheet()" class="w-full py-4 bg-gs-coral text-white font-bold rounded-xl">Save Symptom</button>`;
+            } else if(type === 'medication') {
+                 html = `<h2 class="font-headline-sm mb-4">Medication Track</h2>
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-center justify-between p-4 bg-gs-sand rounded-xl">
+                                <div>
+                                    <p class="font-bold">Mesalamine</p>
+                                    <p class="text-xs text-secondary">800mg • Next: 8:00 PM</p>
+                                </div>
+                                <button class="bg-gs-coral text-white px-4 py-2 rounded-lg text-sm font-bold">Log Now</button>
+                            </div>
+                        </div>
+                        <button onclick="closeSheet()" class="w-full py-4 border border-gs-coral text-primary font-bold rounded-xl">Close</button>`;
+            } else {
+                 html = `<h2 class="font-headline-sm mb-4">Quick ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+                        <textarea placeholder="How are you feeling?" class="w-full h-32 p-4 bg-gs-sand border-none rounded-xl mb-4"></textarea>
+                        <button onclick="closeSheet()" class="w-full py-4 bg-gs-coral text-white font-bold rounded-xl">Save ${type.charAt(0).toUpperCase() + type.slice(1)}</button>`;
+            }
+
+            content.innerHTML = html;
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.add('opacity-100');
+                sheet.classList.add('active');
+            }, 10);
+        }
+
+        function closeSheet() {
+            const overlay = document.getElementById('sheet-overlay');
+            const sheet = document.getElementById('bottom-sheet');
+            
+            overlay.classList.remove('opacity-100');
+            sheet.classList.remove('active');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 400);
+        }
+
+        function toggleProtoMenu() {
+            document.getElementById('proto-menu').classList.toggle('hidden');
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setTime('morning');
+        });
+    </script>
+</body></html>

@@ -1,0 +1,2875 @@
+<!DOCTYPE html>
+<html lang="en" data-text-scale="default">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#F5EEE8" id="themeColorMeta" />
+  <title>Gutsphere Today — Prototype</title>
+  <script>
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var dark = stored === 'dark' || (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) {
+        document.documentElement.classList.add('dark');
+        document.getElementById('themeColorMeta').setAttribute('content', '#1A1614');
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gs-coral: #FF7F50;
+      --gs-coral-glow: rgba(255, 127, 80, 0.1);
+      --gs-coral-light: rgba(255, 127, 80, 0.18);
+      --gs-sand: #F5EEE8;
+      --gs-surface: #fff8f6;
+      --gs-sand-light: #FAF6F2;
+      --gs-card: #FFFFFF;
+      --gs-card-elevated: #FAF6F2;
+      --gs-text-primary: #241915;
+      --gs-text-secondary: #57423b;
+      --gs-text-muted: #8b7169;
+      --gs-text-hint: #C4BBB5;
+      --gs-border: #E7E0DA;
+      --gs-border-hover: #D6CEC6;
+      --gs-divider: rgba(0, 0, 0, 0.03);
+      --gs-green: #2E7D32;
+      --gs-green-bg: #E8F5E9;
+      --gs-amber: #F2A93B;
+      --gs-amber-bg: #FEF3C7;
+      --gs-amber-text: #92400E;
+      --gs-red: #DC2626;
+      --gs-red-bg: #FEE2E2;
+      --gs-insight-section-bg: rgba(239, 83, 80, 0.07);
+      --gs-insight-section-border: rgba(239, 83, 80, 0.22);
+      --gs-nav-bg: #ffe9e3;
+      --gs-severe-bg: #fff1ec;
+      --gs-nav-active: var(--gs-coral-glow);
+      --gs-segment-track-bg: #FAF6F2;
+      --gs-snapshot-tile-bg: #FAF6F2;
+      --gs-overlay: rgba(28, 25, 23, 0.45);
+      --gs-avatar-border: rgba(239, 83, 80, 0.35);
+      --gs-struggling-bg: #EDE8E4;
+      --gs-toast-bg: #1C1917;
+      --gs-toast-text: #FFFFFF;
+      --font-display: 'Inter', -apple-system, 'SF Pro Display', sans-serif;
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+      --gs-radius-sm: 8px;
+      --gs-radius-md: 12px;
+      --gs-radius-lg: 16px;
+      --gs-radius-xl: 20px;
+      --gs-radius-pill: 9999px;
+      --gs-page-px: 16px;
+      --gs-max-width: 430px;
+      --gs-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+      --gs-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --bnav-h: 72px;
+    }
+
+    html.dark {
+      --gs-coral: #FF7F50;
+      --gs-coral-glow: rgba(255, 127, 80, 0.15);
+      --gs-coral-light: rgba(255, 127, 80, 0.22);
+      --gs-sand: #1A1614;
+      --gs-surface: #221E1B;
+      --gs-sand-light: #221E1B;
+      --gs-card: #221E1B;
+      --gs-card-elevated: #2A2522;
+      --gs-text-primary: #F5F0EC;
+      --gs-text-secondary: #C4BBB5;
+      --gs-text-muted: #8A817A;
+      --gs-text-hint: #6B635C;
+      --gs-border: #3A3431;
+      --gs-border-hover: #4A4440;
+      --gs-divider: rgba(255, 255, 255, 0.05);
+      --gs-green: #4ADE80;
+      --gs-green-bg: rgba(74, 222, 128, 0.12);
+      --gs-amber-bg: rgba(242, 169, 59, 0.15);
+      --gs-amber-text: #F2C94C;
+      --gs-red-bg: rgba(220, 38, 38, 0.15);
+      --gs-insight-section-bg: rgba(248, 113, 113, 0.18);
+      --gs-insight-section-border: rgba(248, 113, 113, 0.40);
+      --gs-nav-bg: rgba(255, 233, 227, 0.08);
+      --gs-severe-bg: #2a1f1c;
+      --gs-segment-track-bg: #2A2522;
+      --gs-snapshot-tile-bg: #2A2522;
+      --gs-overlay: rgba(0, 0, 0, 0.55);
+      --gs-avatar-border: rgba(248, 113, 113, 0.45);
+      --gs-struggling-bg: #2A2522;
+      --gs-toast-bg: #F5F0EC;
+      --gs-toast-text: #1C1917;
+      --gs-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.50);
+      --gs-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+    }
+
+    html { -webkit-text-size-adjust: 100%; height: 100%; height: 100dvh; color-scheme: light; }
+    html.dark { color-scheme: dark; }
+    body {
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--gs-text-secondary);
+      background: var(--gs-sand);
+      height: 100dvh;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.4s ease;
+    }
+    body.severe-mode { background: var(--gs-severe-bg); }
+    body.severe-mode .app { background: var(--gs-severe-bg); }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    h1, h2, h3, .display { font-family: var(--font-display); color: var(--gs-text-primary); }
+    h1 { font-size: 24px; line-height: 1.25; font-weight: 600; letter-spacing: -0.02em; }
+    h2 { font-size: 18px; line-height: 1.33; font-weight: 600; letter-spacing: -0.02em; }
+    h3 { font-size: 16px; line-height: 1.25; font-weight: 600; }
+    .caption { font-size: 12px; line-height: 1.33; font-weight: 500; color: var(--gs-text-muted); }
+    .label { font-size: 13px; line-height: 1.23; font-weight: 500; }
+    .body-sm { font-size: 14px; line-height: 1.43; }
+
+    .app {
+      max-width: var(--gs-max-width);
+      margin: 0 auto;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: var(--gs-sand);
+      position: relative;
+    }
+
+    .header {
+      flex-shrink: 0;
+      z-index: 20;
+      background: var(--gs-sand);
+      border-bottom: 1px solid var(--gs-border);
+      transition: background 0.4s ease;
+    }
+    body.severe-mode .header { background: var(--gs-severe-bg); }
+
+    /* ── App bar (profile + actions) ── */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 56px;
+      padding: calc(8px + var(--safe-top)) var(--gs-page-px) 8px;
+      gap: 12px;
+    }
+    .topbar-avatar-link {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--gs-border);
+      background: var(--gs-sand-light);
+      overflow: hidden;
+      flex-shrink: 0;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .topbar-avatar-link:active { opacity: 0.85; }
+    .topbar-avatar-link img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .topbar-icon-btn,
+    .topbar-bell {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--gs-text-muted);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, color 0.15s;
+    }
+    .topbar-icon-btn:active,
+    .topbar-bell:active { background: var(--gs-sand-light); }
+    .topbar-icon-btn svg,
+    .topbar-bell svg { width: 22px; height: 22px; }
+    .topbar-bell .material-symbols-outlined { font-size: 24px; }
+    .topbar-icon-btn .icon-moon { display: none; }
+    html.dark .topbar-icon-btn .icon-sun { display: none; }
+    html.dark .topbar-icon-btn .icon-moon { display: block; }
+    .bell-badge {
+      position: absolute;
+      top: 2px;
+      right: 0;
+      min-width: 22px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: var(--gs-radius-pill);
+      background: var(--gs-red);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 18px;
+      text-align: center;
+    }
+
+    /* ── Page title / greeting (scrolls with content) ── */
+    .greeting-block {
+      padding: 0 0 20px;
+    }
+    .greeting-block h2 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      color: var(--gs-text-primary);
+      margin-bottom: 4px;
+    }
+    .greeting-sub {
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--gs-text-secondary);
+      margin-bottom: 0;
+    }
+    .greeting-meta { margin-bottom: 14px; }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--gs-radius-pill);
+      border: 1px solid var(--gs-border);
+      background: var(--gs-sand-light);
+      color: var(--gs-text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .status-pill svg {
+      width: 14px;
+      height: 14px;
+      color: var(--gs-text-muted);
+      flex-shrink: 0;
+    }
+
+    .scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0 var(--gs-page-px) calc(var(--bnav-h) + var(--safe-bottom) + 16px);
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+    }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    .section-label {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gs-text-primary);
+      margin: 20px 0 12px;
+    }
+    .section-label:first-child { margin-top: 4px; }
+
+    /* ── My Gut Today ── */
+    .gut-card {
+      background: var(--gs-card);
+      border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-lg);
+      box-shadow: var(--gs-shadow-sm);
+      padding: 20px;
+    }
+    .gut-card-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .gut-heart-wrap { position: relative; flex-shrink: 0; }
+    .gut-heart {
+      width: 56px; height: 56px;
+      display: grid; place-items: center;
+      border-radius: var(--gs-radius-lg);
+      background: var(--gs-sand-light);
+      border: 2px solid var(--gs-border);
+      transition: all 0.3s ease;
+    }
+    .gut-heart svg { width: 32px; height: 32px; }
+    .gut-heart.pulse { animation: gutPulse 2.5s ease-in-out infinite; }
+    @keyframes gutPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0.15); }
+      50% { box-shadow: 0 0 0 8px rgba(239, 83, 80, 0); }
+    }
+    .gut-heart.state-okay { background: var(--gs-green-bg); border-color: rgba(46, 125, 50, 0.25); }
+    .gut-heart.state-okay svg { color: var(--gs-green); }
+    .gut-heart.state-not-great { background: var(--gs-amber-bg); border-color: rgba(242, 169, 59, 0.35); }
+    .gut-heart.state-not-great svg { color: var(--gs-amber-text); }
+    .gut-heart.state-struggling { background: var(--gs-struggling-bg); border-color: var(--gs-border); }
+    .gut-heart.state-struggling svg { color: var(--gs-text-secondary); }
+    .gut-heart.state-medication { background: var(--gs-insight-section-bg); border-color: var(--gs-insight-section-border); }
+    .gut-heart.state-medication svg { color: var(--gs-coral); }
+    .gut-badge {
+      position: absolute; bottom: -4px; right: -4px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--gs-coral); color: #fff;
+      font-size: 10px; display: grid; place-items: center;
+      border: 2px solid var(--gs-card);
+    }
+    .gut-status-pill {
+      display: inline-block;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 8px; border-radius: var(--gs-radius-pill);
+      background: var(--gs-sand-light);
+      color: var(--gs-text-muted);
+      margin-top: 4px;
+    }
+    .gut-card-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--gs-text-primary); }
+    .gut-card-body { font-size: 15px; line-height: 1.45; color: var(--gs-text-secondary); margin-bottom: 16px; }
+    .gut-card-body strong { color: var(--gs-text-primary); font-weight: 600; }
+    .gut-steps { list-style: none; margin: 12px 0 16px; }
+    .gut-steps li {
+      font-size: 14px; padding: 6px 0; padding-left: 24px; position: relative;
+      color: var(--gs-text-secondary);
+    }
+    .gut-steps li::before {
+      content: attr(data-step);
+      position: absolute; left: 0; font-weight: 600; color: var(--gs-text-muted); font-size: 13px;
+    }
+
+    .feeling-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .feeling-btn {
+      flex: 1; min-width: 90px; min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-md);
+      background: var(--gs-sand-light);
+      font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      color: var(--gs-text-primary);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .feeling-btn:active { transform: scale(0.985); }
+    .feeling-btn:hover { border-color: var(--gs-border-hover); }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .btn {
+      appearance: none; border: none; border-radius: var(--gs-radius-md);
+      padding: 12px 16px; min-height: 44px;
+      font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .btn:active { transform: scale(0.985); }
+    .btn-primary { background: var(--gs-coral); color: #fff; flex: 1; min-width: 120px; }
+    .btn-secondary {
+      background: var(--gs-sand-light); color: var(--gs-text-secondary);
+      border: 1px solid var(--gs-border);
+    }
+    .btn-ghost { background: transparent; color: var(--gs-text-muted); padding: 8px 12px; min-height: 40px; }
+    .btn-link {
+      background: none; border: none; color: var(--gs-coral);
+      font-size: 13px; font-weight: 600; padding: 8px 0; cursor: pointer;
+      font-family: var(--font-body);
+    }
+    .microcopy {
+      font-size: 13px; color: var(--gs-green); font-weight: 500;
+      margin-bottom: 12px;
+    }
+    .reassurance { font-size: 14px; color: var(--gs-text-muted); font-style: italic; margin-top: 8px; }
+
+    .gut-card--compact {
+      padding: 14px 16px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+    .gut-card--compact:active { background: var(--gs-sand-light); }
+    .gut-card--compact .gut-card-head { margin-bottom: 0; }
+    .gut-card--compact .gut-heart { width: 44px; height: 44px; }
+    .gut-card--compact .gut-heart svg { width: 24px; height: 24px; }
+    .gut-compact-sub { font-size: 14px; color: var(--gs-text-secondary); margin-top: 2px; }
+    .gut-compact-cta { font-size: 13px; font-weight: 600; color: var(--gs-coral); margin-top: 6px; display: inline-block; }
+    .gut-reflection-box {
+      background: var(--gs-snapshot-tile-bg);
+      border: 1px solid var(--gs-divider);
+      border-radius: var(--gs-radius-md);
+      padding: 14px;
+      margin: 14px 0;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--gs-text-secondary);
+    }
+    .gut-reflection-box strong { color: var(--gs-text-primary); display: block; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ── Stitch check-in states ── */
+    .gut-checkin-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #a43c12;
+      margin-bottom: 4px;
+    }
+    .gut-checkin-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .gut-checkin-heart-deco {
+      color: var(--gs-coral);
+      opacity: 0.2;
+      flex-shrink: 0;
+    }
+    .gut-checkin-heart-deco .material-symbols-outlined { font-size: 40px; }
+    .feeling-options { display: flex; flex-direction: column; gap: 12px; }
+    .feeling-option {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: var(--gs-radius-md);
+      background: var(--gs-sand);
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--font-body);
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s;
+    }
+    .feeling-option:active { background: var(--gs-coral-glow); }
+    .feeling-option-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--gs-card);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .feeling-option-icon .material-symbols-outlined { font-size: 28px; }
+    .feeling-option-icon.feel-okay { color: #059669; }
+    .feeling-option-icon.feel-not-great { color: #f59e0b; }
+    .feeling-option-icon.feel-struggling { color: var(--gs-coral); }
+    .gut-compact-left .feel-struggling { color: var(--gs-coral); }
+    .feeling-option-title { font-size: 16px; font-weight: 700; color: var(--gs-text-primary); }
+    .feeling-option-sub { font-size: 12px; color: var(--gs-text-secondary); margin-top: 2px; }
+
+    .gut-card--ack .gut-ack-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: grid; place-items: center; flex-shrink: 0;
+    }
+    .gut-card--ack .gut-ack-icon.okay { background: #d1fae5; color: #059669; }
+    .gut-card--ack .gut-ack-icon.not-great { background: #fef3c7; color: #d97706; }
+    .gut-card--ack .gut-ack-row { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+    .gut-ack-bar {
+      height: 4px; background: var(--gs-sand); border-radius: var(--gs-radius-pill); overflow: hidden;
+    }
+    .gut-ack-bar-fill {
+      height: 100%; background: var(--gs-coral); width: 100%;
+      animation: ackShrink 8s linear forwards;
+    }
+    @keyframes ackShrink { from { width: 100%; } to { width: 0%; } }
+
+    .gut-card--action { border: 2px solid var(--gs-coral-glow); }
+    .gut-action-badge {
+      display: inline-block;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--gs-coral-glow);
+      color: #a43c12;
+      padding: 4px 12px;
+      border-radius: var(--gs-radius-pill);
+      margin-bottom: 12px;
+    }
+    .gut-action-suggest {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--gs-border);
+    }
+    .gut-action-suggest .gut-card-title { margin-bottom: 6px; }
+    .gut-action-suggest .gut-card-body { margin-bottom: 14px; }
+    .gut-action-timer-label {
+      margin-top: 14px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .gut-card--compact-pill {
+      padding: 12px 20px;
+      border-radius: var(--gs-radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .gut-compact-left { display: flex; align-items: center; gap: 12px; }
+    .gut-compact-left .material-symbols-outlined { font-size: 24px; }
+    .gut-compact-left .feel-okay { color: #059669; }
+    .gut-compact-left .feel-not-great { color: #d97706; }
+    .gut-compact-status { font-weight: 700; color: var(--gs-text-primary); }
+    .gut-compact-update {
+      background: none; border: none; color: #a43c12;
+      font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font-body);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 20px 0 12px;
+    }
+    .section-head .section-label { margin: 0; }
+    .section-link {
+      background: none; border: none;
+      color: #a43c12;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: var(--font-body);
+    }
+    /* ── Tracker cards rail ── */
+    .tracker-rail {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      margin: 14px calc(-1 * var(--gs-page-px)) 0;
+      padding: 4px var(--gs-page-px) 8px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tracker-rail::-webkit-scrollbar { display: none; }
+    .tracker-card {
+      flex: 0 0 min(272px, calc(100vw - var(--gs-page-px) * 2 - 40px));
+      scroll-snap-align: start;
+      background: var(--gs-card);
+      border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-lg);
+      box-shadow: var(--gs-shadow-sm);
+      padding: 18px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      cursor: default;
+    }
+    .tracker-card--due {
+      border-color: var(--gs-insight-section-border);
+      box-shadow: 0 2px 12px var(--gs-coral-glow);
+    }
+    .med-detail {
+      background: var(--gs-insight-section-bg);
+      border: 1px solid var(--gs-insight-section-border);
+      border-radius: var(--gs-radius-md);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .med-name {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--gs-text-primary);
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+    .med-dose {
+      font-size: 14px;
+      color: var(--gs-text-secondary);
+      margin-bottom: 10px;
+    }
+    .med-schedule-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .med-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gs-text-secondary);
+      background: var(--gs-card);
+      border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-pill);
+      padding: 4px 10px;
+    }
+    .med-chip.due {
+      color: var(--gs-coral);
+      background: var(--gs-coral-glow);
+      border-color: var(--gs-insight-section-border);
+      font-weight: 600;
+    }
+    .med-streak {
+      font-size: 12px;
+      color: var(--gs-green);
+      font-weight: 600;
+    }
+    .med-streak-muted { color: var(--gs-text-muted); font-weight: 500; }
+    .tracker-med-actions {
+      margin-top: auto;
+      flex-direction: column;
+    }
+    .tracker-med-actions .btn { width: 100%; flex: none; }
+    .tracker-med-actions-row {
+      display: flex;
+      gap: 8px;
+    }
+    .tracker-med-actions-row .btn { flex: 1; min-width: 0; }
+    .tracker-completed-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gs-green);
+      margin-bottom: 12px;
+    }
+    .tracker-completed-banner svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .tracker-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .tracker-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--gs-radius-md);
+      background: var(--gs-coral-glow);
+      color: #a43c12;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .tracker-icon-wrap .material-symbols-outlined { font-size: 26px; }
+    .tracker-icon-wrap svg { width: 24px; height: 24px; }
+    .tracker-title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--gs-text-primary);
+      line-height: 1.2;
+    }
+    .tracker-meta {
+      font-size: 12px;
+      color: var(--gs-text-muted);
+      margin-top: 2px;
+    }
+    .tracker-history {
+      flex: 1;
+      background: var(--gs-snapshot-tile-bg);
+      border-radius: var(--gs-radius-md);
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid var(--gs-divider);
+      min-height: 88px;
+    }
+    .tracker-history-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--gs-text-muted);
+      margin-bottom: 6px;
+    }
+    .tracker-history-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--gs-text-primary);
+      line-height: 1.35;
+      margin-bottom: 4px;
+    }
+    .tracker-history-time {
+      font-size: 12px;
+      color: var(--gs-text-muted);
+      line-height: 1.3;
+    }
+    .tracker-history--empty .tracker-history-text,
+    .tracker-history-text.tracker-history--empty {
+      color: var(--gs-text-muted);
+      font-weight: 400;
+      font-style: italic;
+    }
+    .tracker-btn {
+      width: 100%;
+      flex: none;
+    }
+    .tracker-due {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gs-coral);
+      background: var(--gs-coral-glow);
+      padding: 3px 8px;
+      border-radius: var(--gs-radius-pill);
+      margin-top: 6px;
+    }
+
+    /* ── Relief card (struggling, before trackers) ── */
+    .relief-card-wrap { margin: 12px 0 4px; }
+    .relief-card {
+      background: var(--gs-insight-section-bg);
+      border: 1px solid var(--gs-insight-section-border);
+      border-radius: var(--gs-radius-lg);
+      padding: 18px;
+      box-shadow: var(--gs-shadow-sm);
+    }
+    .relief-card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .relief-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--gs-radius-md);
+      background: var(--gs-card);
+      color: var(--gs-coral);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .relief-card-icon .material-symbols-outlined { font-size: 26px; }
+    .relief-card-title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--gs-text-primary);
+      margin-bottom: 4px;
+    }
+    .relief-card-body { font-size: 14px; line-height: 1.45; color: var(--gs-text-secondary); margin-bottom: 14px; }
+    .relief-card-kicker {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--gs-coral);
+      margin-bottom: 4px;
+    }
+
+    /* ── Breathing / routine sheets ── */
+    .breath-cycle {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .breath-step {
+      text-align: center;
+      padding: 12px 6px;
+      border-radius: var(--gs-radius-md);
+      background: var(--gs-snapshot-tile-bg);
+      border: 1px solid var(--gs-border);
+    }
+    .breath-step-num {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--gs-coral);
+    }
+    .breath-step-label { font-size: 11px; color: var(--gs-text-muted); margin-top: 4px; }
+    .routine-steps { list-style: none; margin: 16px 0; }
+    .routine-steps li {
+      font-size: 14px;
+      padding: 10px 0;
+      padding-left: 28px;
+      position: relative;
+      color: var(--gs-text-secondary);
+      border-bottom: 1px solid var(--gs-divider);
+    }
+    .routine-steps li:last-child { border-bottom: none; }
+    .routine-steps li::before {
+      content: attr(data-step);
+      position: absolute;
+      left: 0;
+      font-weight: 600;
+      color: var(--gs-coral);
+      font-size: 13px;
+    }
+    .snapshot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0 16px;
+    }
+    .snapshot-tile {
+      padding: 10px 12px;
+      border-radius: var(--gs-radius-md);
+      background: var(--gs-snapshot-tile-bg);
+      border: 1px solid var(--gs-border);
+      font-size: 13px;
+    }
+    .snapshot-tile.done { border-color: rgba(46, 125, 50, 0.3); background: var(--gs-green-bg); }
+    .snapshot-tile.missed { opacity: 0.85; }
+    .snapshot-tile-label { font-weight: 600; color: var(--gs-text-primary); display: block; }
+    .snapshot-tile-status { font-size: 12px; color: var(--gs-text-muted); margin-top: 2px; }
+    .rail-card-icon-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .rail-card-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--gs-coral-glow);
+      color: var(--gs-coral);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .rail-card-icon-wrap .material-symbols-outlined { font-size: 24px; }
+
+    /* ── Card rail (For You Today) ── */
+    .rail {
+      display: flex; gap: 12px;
+      overflow-x: auto; scroll-snap-type: x mandatory;
+      margin: 0 calc(-1 * var(--gs-page-px));
+      padding: 4px var(--gs-page-px) 16px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .rail::-webkit-scrollbar { display: none; }
+    .rail-card {
+      flex: 0 0 min(280px, calc(100vw - var(--gs-page-px) * 2 - 36px));
+      scroll-snap-align: start;
+      background: var(--gs-card);
+      border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-lg);
+      box-shadow: var(--gs-shadow-sm);
+      overflow: hidden;
+      min-height: 200px;
+      display: flex; flex-direction: column;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .rail-card--exercise { border-left: 4px solid var(--gs-coral); }
+    .rail-card-img {
+      height: 128px;
+      position: relative;
+      background: var(--gs-sand-light);
+      overflow: hidden;
+    }
+    .rail-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .rail-card-img::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+    }
+    .rail-img-badge {
+      position: absolute; bottom: 12px; left: 16px; z-index: 1;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--gs-coral); color: #fff;
+      padding: 2px 8px; border-radius: 4px;
+    }
+    .rail-card-body { padding: 16px; display: flex; flex-direction: column; flex: 1; }
+    .rail-exercise-icon {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--gs-coral-glow); color: var(--gs-coral);
+      display: grid; place-items: center; margin-bottom: 12px;
+    }
+    .rail-exercise-icon .material-symbols-outlined { font-size: 28px; }
+    .rail-kicker {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--gs-text-muted);
+      margin-bottom: 10px;
+    }
+    .rail-title {
+      font-family: var(--font-display);
+      font-size: 18px; font-weight: 600; line-height: 1.25;
+      color: var(--gs-text-primary);
+      margin-bottom: 8px;
+    }
+    .rail-body { font-size: 14px; line-height: 1.45; color: var(--gs-text-secondary); flex: 1; margin-bottom: 14px; }
+    .rail-card:active { transform: scale(0.99); }
+    .rail-card:not(.rail-card--exercise) .rail-kicker { padding: 0; }
+    .rail-card--exercise { padding: 20px; }
+    .rail-card .btn-row { margin-top: auto; }
+
+    /* ── Simple plan (Stitch rows) ── */
+    .plan-list { display: flex; flex-direction: column; gap: 12px; }
+    .plan-row {
+      background: var(--gs-card);
+      border: 1px solid var(--gs-sand);
+      border-radius: var(--gs-radius-lg);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: var(--gs-shadow-sm);
+      transition: border-color 0.2s;
+    }
+    .plan-row:hover { border-color: var(--gs-coral-glow); }
+    .plan-row.done .plan-row-label { text-decoration: line-through; color: var(--gs-text-muted); }
+    .plan-row-left { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0; }
+    .plan-row-check {
+      width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+      border: 2px solid var(--gs-sand);
+      display: grid; place-items: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .plan-row.done .plan-row-check {
+      background: var(--gs-green); border-color: var(--gs-green);
+    }
+    .plan-row.done .plan-row-check .material-symbols-outlined {
+      color: #fff; font-size: 16px;
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .plan-row-icon {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: grid; place-items: center; flex-shrink: 0;
+    }
+    .plan-row-icon.meal { background: #eff6ff; color: #3b82f6; }
+    .plan-row-label { font-size: 16px; font-weight: 700; color: var(--gs-text-primary); }
+    .plan-row-meta { font-size: 12px; color: var(--gs-text-secondary); margin-top: 2px; }
+    .plan-row-btn {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      border-radius: var(--gs-radius-md);
+      border: none;
+      font-family: var(--font-body);
+      font-size: 14px; font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .plan-row-btn--sand { background: var(--gs-sand); color: var(--gs-text-secondary); }
+    .plan-row-btn--coral { background: var(--gs-coral); color: #fff; box-shadow: var(--gs-shadow-sm); }
+    .plan-item {
+      background: var(--gs-card);
+      border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-md);
+      padding: 14px 16px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .plan-check {
+      width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0; margin-top: 2px;
+      border: 2px solid var(--gs-border);
+      display: grid; place-items: center;
+      font-size: 12px; color: transparent;
+    }
+    .plan-item.done .plan-check {
+      background: var(--gs-green); border-color: var(--gs-green); color: #fff;
+    }
+    .plan-item.done .plan-label { text-decoration: line-through; color: var(--gs-text-muted); }
+    .plan-content { flex: 1; min-width: 0; }
+    .plan-label { font-size: 15px; font-weight: 600; color: var(--gs-text-primary); }
+    .plan-meta { font-size: 13px; color: var(--gs-text-muted); margin-top: 2px; }
+    .plan-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .plan-actions .btn-link { padding: 4px 0; }
+
+    /* ── Support feed ── */
+    .feed { display: flex; flex-direction: column; gap: 12px; }
+    .feed-card {
+      background: var(--gs-card);
+      border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-lg);
+      box-shadow: var(--gs-shadow-sm);
+      padding: 18px;
+      min-height: 140px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .feed-card:active { background: var(--gs-sand-light); }
+    .feed-badge {
+      display: inline-block;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--gs-coral);
+      background: var(--gs-coral-glow);
+      padding: 4px 8px; border-radius: var(--gs-radius-pill);
+      margin-bottom: 8px;
+    }
+    .feed-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--gs-text-primary); margin-bottom: 6px; }
+    .feed-body { font-size: 14px; line-height: 1.45; color: var(--gs-text-secondary); margin-bottom: 12px; }
+
+    /* ── Today Feed (unified) ── */
+    .today-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .today-feed-card {
+      background: var(--gs-card);
+      border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-lg);
+      box-shadow: var(--gs-shadow-sm);
+      padding: 18px;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      cursor: default;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .today-feed-card--tappable { cursor: pointer; }
+    .today-feed-card--tappable:active { background: var(--gs-sand-light); }
+    .feed-source {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--gs-coral);
+      background: var(--gs-coral-glow);
+      padding: 4px 9px;
+      border-radius: var(--gs-radius-pill);
+      margin-bottom: 10px;
+      width: fit-content;
+    }
+    .feed-source .material-symbols-outlined { font-size: 14px; }
+    .feed-card-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--gs-text-primary);
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+    .feed-card-body {
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--gs-text-secondary);
+      margin-bottom: 8px;
+    }
+    .feed-card-hint {
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--gs-text-muted);
+      font-style: italic;
+      margin-bottom: 12px;
+    }
+    .feed-card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 4px;
+    }
+    .feed-plan-mini { margin: 10px 0 14px; }
+    .feed-plan-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      font-size: 14px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gs-divider);
+      color: var(--gs-text-secondary);
+    }
+    .feed-plan-row:last-child { border-bottom: none; }
+    .feed-plan-row.done { color: var(--gs-text-muted); text-decoration: line-through; }
+    .feed-plan-num { font-weight: 600; color: var(--gs-text-muted); flex-shrink: 0; }
+    .feed-section { margin-top: 20px; }
+    .feed-section:first-child { margin-top: 12px; }
+    .feed-section-label {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gs-text-primary);
+      margin: 0 0 12px;
+    }
+    .feed-section-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .section-head--compact { margin: 16px 0 10px; }
+    .section-head--compact .section-label { font-size: 13px; }
+    .welcome-card {
+      background: var(--gs-card);
+      border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-lg);
+      padding: 24px 20px;
+      text-align: left;
+      margin-bottom: 8px;
+    }
+    .welcome-card h2 { margin-bottom: 8px; }
+    .welcome-hint {
+      font-size: 14px; color: var(--gs-text-muted);
+      background: var(--gs-sand-light);
+      border-radius: var(--gs-radius-md);
+      padding: 14px;
+      margin-top: 16px;
+      line-height: 1.45;
+    }
+
+    /* ── Bottom nav (Stitch) ── */
+    .bnav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: var(--gs-max-width);
+      background: var(--gs-nav-bg);
+      border-top: none;
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+      padding: 12px 8px calc(12px + var(--safe-bottom));
+      display: flex; justify-content: space-around;
+      z-index: 10;
+    }
+    .bnav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      font-size: 10px; font-weight: 500; color: var(--gs-text-muted);
+      min-width: 56px; padding: 6px 14px;
+      border-radius: var(--gs-radius-pill);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      opacity: 0.75;
+    }
+    .bnav-item.active {
+      color: #a43c12;
+      background: var(--gs-coral-glow);
+      font-weight: 600;
+      opacity: 1;
+    }
+    .bnav-item .material-symbols-outlined { font-size: 24px; }
+
+    /* ── Sheet / modal ── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: var(--gs-overlay);
+      z-index: 40; align-items: flex-end; justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .sheet {
+      width: 100%; max-width: var(--gs-max-width);
+      background: var(--gs-card);
+      border-radius: var(--gs-radius-xl) var(--gs-radius-xl) 0 0;
+      padding: 12px 20px calc(24px + var(--safe-bottom));
+      max-height: 90dvh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      box-shadow: var(--gs-shadow-md);
+      animation: sheetUp 0.35s ease;
+    }
+    @keyframes sheetUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .sheet-handle {
+      width: 36px; height: 4px; background: var(--gs-border);
+      border-radius: 4px; margin: 0 auto 16px;
+    }
+    .sheet h2 { margin-bottom: 8px; }
+    .sheet p { margin-bottom: 16px; }
+    .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .chip {
+      padding: 10px 14px; min-height: 44px;
+      border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-md);
+      background: var(--gs-sand-light);
+      font-family: var(--font-body); font-size: 14px; font-weight: 500;
+      color: var(--gs-text-primary);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chip.selected { border-color: var(--gs-coral); background: var(--gs-coral-glow); color: var(--gs-coral); }
+    .severity-row { display: flex; gap: 6px; margin-bottom: 16px; }
+    .severity-btn {
+      flex: 1; min-height: 44px; border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-md); background: var(--gs-sand-light);
+      font-weight: 600; font-size: 15px; cursor: pointer;
+      font-family: var(--font-body);
+    }
+    .severity-btn.selected { border-color: var(--gs-coral); background: var(--gs-coral-glow); color: var(--gs-coral); }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--gs-text-primary); margin-bottom: 8px; display: block; }
+    textarea, .form-input {
+      width: 100%; border: 1px solid var(--gs-border);
+      border-radius: var(--gs-radius-md);
+      padding: 12px; font-family: var(--font-body); font-size: 15px;
+      background: var(--gs-sand-light); color: var(--gs-text-primary);
+      resize: vertical; margin-bottom: 16px;
+    }
+    textarea:focus, .form-input:focus {
+      outline: none; border-color: var(--gs-coral);
+      box-shadow: 0 0 0 3px var(--gs-coral-glow);
+    }
+    .why-block {
+      background: var(--gs-sand-light);
+      border-radius: var(--gs-radius-md);
+      padding: 14px; margin: 16px 0;
+      font-size: 14px; line-height: 1.45;
+    }
+    .why-block strong { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gs-text-muted); margin-bottom: 6px; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: calc(var(--bnav-h) + var(--safe-bottom) + 16px);
+      left: 50%; transform: translateX(-50%) translateY(80px);
+      max-width: calc(var(--gs-max-width) - 32px); width: calc(100% - 32px);
+      background: var(--gs-toast-bg);
+      color: var(--gs-toast-text); padding: 14px 18px;
+      border-radius: var(--gs-radius-md);
+      font-size: 14px; line-height: 1.4;
+      z-index: 50; opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── Prototype controls ── */
+    .proto-toggle {
+      position: fixed;
+      top: calc(56px + var(--safe-top));
+      right: 12px;
+      z-index: 60;
+      background: var(--gs-card);
+      color: var(--gs-text-primary);
+      border: 1px solid var(--gs-border);
+      border: none; border-radius: var(--gs-radius-pill);
+      padding: 8px 14px; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: var(--font-body);
+      box-shadow: var(--gs-shadow-md);
+    }
+    .proto-panel {
+      display: none; position: fixed; top: 0; right: 0;
+      width: min(320px, 100vw); height: 100dvh;
+      background: var(--gs-card);
+      border-left: 1px solid var(--gs-border);
+      z-index: 55; overflow-y: auto;
+      padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
+      box-shadow: -8px 0 32px rgba(0,0,0,0.12);
+    }
+    .proto-panel.open { display: block; }
+    .proto-panel h2 { font-size: 16px; margin-bottom: 16px; }
+    .proto-group { margin-bottom: 20px; }
+    .proto-group label { display: block; font-size: 12px; font-weight: 600; color: var(--gs-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .proto-opt {
+      display: block; width: 100%; text-align: left;
+      padding: 10px 12px; margin-bottom: 6px;
+      border: 1px solid var(--gs-border); border-radius: var(--gs-radius-md);
+      background: var(--gs-sand-light); font-family: var(--font-body);
+      font-size: 13px; cursor: pointer;
+    }
+    .proto-opt.active { border-color: var(--gs-coral); background: var(--gs-coral-glow); color: var(--gs-coral); font-weight: 600; }
+    .back-link {
+      display: none;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<button type="button" class="proto-toggle" id="protoToggle" aria-label="Prototype controls">Controls</button>
+<aside class="proto-panel" id="protoPanel">
+  <h2>Prototype controls</h2>
+  <div class="proto-group">
+    <label>Appearance</label>
+    <button type="button" class="proto-opt" data-theme="light">Light</button>
+    <button type="button" class="proto-opt" data-theme="dark">Dark</button>
+    <button type="button" class="proto-opt" data-theme="system">System</button>
+  </div>
+  <div class="proto-group">
+    <label>Feeling state</label>
+    <button type="button" class="proto-opt" data-gut="checkin">Not checked in</button>
+    <button type="button" class="proto-opt" data-gut="okay">Checked in: Okay</button>
+    <button type="button" class="proto-opt" data-gut="not_great">Checked in: Not Great</button>
+    <button type="button" class="proto-opt" data-gut="struggling">Severe day / Struggling</button>
+    <button type="button" class="proto-opt" data-gut="compact">Compact gut-heart</button>
+    <button type="button" class="proto-opt" data-gut="reflection">Reflection mode</button>
+  </div>
+  <div class="proto-group">
+    <label>Time of day</label>
+    <button type="button" class="proto-opt" data-time="morning">Morning</button>
+    <button type="button" class="proto-opt" data-time="afternoon">Afternoon</button>
+    <button type="button" class="proto-opt" data-time="evening">Evening</button>
+  </div>
+  <div class="proto-group">
+    <label>Care state</label>
+    <button type="button" class="proto-opt" data-care="med_due">Medication due</button>
+    <button type="button" class="proto-opt" data-care="med_done">Medication completed</button>
+    <button type="button" class="proto-opt" data-care="lowdata">Low data</button>
+    <button type="button" class="proto-opt" data-care="doctor">Doctor visit upcoming</button>
+  </div>
+  <div class="proto-group">
+    <label>Today Feed Mode</label>
+    <button type="button" class="proto-opt" data-feed="auto">Auto rank</button>
+    <button type="button" class="proto-opt" data-feed="relief">Relief focus</button>
+    <button type="button" class="proto-opt" data-feed="care">Care focus</button>
+    <button type="button" class="proto-opt" data-feed="doctor">Doctor prep focus</button>
+    <button type="button" class="proto-opt" data-feed="lowdata">Low data</button>
+    <button type="button" class="proto-opt" data-feed="severe">Severe day set</button>
+  </div>
+  <div class="proto-group">
+    <label>Actions</label>
+    <button type="button" class="proto-opt" data-action="reset">Reset prototype</button>
+    <button type="button" class="proto-opt" data-action="symptom">Add sample symptom</button>
+    <button type="button" class="proto-opt" data-action="bowel">Add bowel log</button>
+    <button type="button" class="proto-opt" data-action="medication">Complete medication</button>
+    <button type="button" class="proto-opt" data-action="timeout">Trigger suggestion timeout</button>
+  </div>
+</aside>
+
+<div class="app">
+  <header class="header">
+    <div class="topbar">
+      <a href="index.html" class="topbar-avatar-link" aria-label="Profile">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj9jiXTSwfRN1FjpkBsgoK39_05Qh0eAMG1mQa--7mSVGtXSE-fFVWEeoZSVWxcnxcZsGC0dC9tnmsiRGAgDJ7_RO_6D3XkttQgGRCb6PU3T-i1LC8JkLyaxEa2ESI0UtLvyWDVbNP3Nv97ods7kcDDZHF2P67bLYg05VP695_isoH4wFQbOI6OOfSmYlLcHjRNTzdt9f0w-tpv2S3Nm70qr0RvDH_t4OQB9-4XULn93havT3Z_WfN---cyzHE2sEX5B0ByEVCEqMc" alt="" />
+      </a>
+      <div class="topbar-actions">
+        <button type="button" class="topbar-icon-btn" id="themeToggle" aria-label="Toggle light and dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
+        <button type="button" class="topbar-bell" aria-label="Notifications" onclick="showToast('9+ notifications (mock)')">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="bell-badge">9+</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="scroll" id="mainScroll">
+    <div class="greeting-block">
+      <h2 id="greetingTitle">Good afternoon,</h2>
+      <p class="greeting-sub" id="greetingSub">Ready to listen to your gut?</p>
+      <p class="greeting-meta caption hidden" id="headerMeta" aria-hidden="true"></p>
+      <div class="status-pill hidden" id="statusPill" aria-hidden="true">
+        <span id="statusPillText"></span>
+      </div>
+    </div>
+    <!-- Low data welcome (hidden by default) -->
+    <section id="lowDataWelcome" class="hidden">
+      <div class="welcome-card">
+        <h2>Welcome to Today</h2>
+        <p class="body-sm">We'll keep things simple.</p>
+        <p class="body-sm" style="margin-top:12px">Start with one quick check-in or log what's happening now.</p>
+        <div class="btn-row" style="margin-top:20px">
+          <button type="button" class="btn btn-primary" onclick="state.lowData=false;resetCheckIn();">Check in</button>
+          <button type="button" class="btn btn-secondary" onclick="openSheet('symptom')">Log symptom</button>
+        </div>
+        <p class="welcome-hint">Guidance gets clearer as you log symptoms, bowel movements, meals, and care tasks.</p>
+      </div>
+    </section>
+
+    <div id="mainContent">
+      <!-- Section 2: My Gut Today -->
+      <section id="gutTodaySection">
+        <div class="gut-card" id="gutCard"></div>
+      </section>
+
+      <div class="section-head section-head--compact hidden" id="quickActionsHead">
+        <h2 class="section-label">Quick Actions</h2>
+      </div>
+      <div id="reliefCardWrap" class="relief-card-wrap hidden" aria-hidden="true"></div>
+      <section class="tracker-rail hidden" id="trackerRail" aria-label="Quick actions"></section>
+
+      <section class="today-feed" id="todayFeed" aria-label="Today Feed"></section>
+    </div>
+  </main>
+
+  <nav class="bnav" aria-label="Main navigation">
+    <div class="bnav-item active">
+      <span class="material-symbols-outlined filled">today</span>
+      Today
+    </div>
+    <div class="bnav-item">
+      <span class="material-symbols-outlined">add_circle</span>
+      Track
+    </div>
+    <div class="bnav-item">
+      <span class="material-symbols-outlined">analytics</span>
+      Patterns
+    </div>
+    <div class="bnav-item">
+      <span class="material-symbols-outlined">favorite</span>
+      Care
+    </div>
+    <div class="bnav-item">
+      <span class="material-symbols-outlined">chat_bubble</span>
+      Chat
+    </div>
+  </nav>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSheet(event)">
+  <div class="sheet" id="sheet" onclick="event.stopPropagation()"></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const GUT_HEART_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" opacity="0.9"/></svg>';
+
+const state = {
+  feeling: 'not_checked_in',
+  timeOfDay: 'afternoon',
+  lowData: false,
+  medicationDue: true,
+  medicationCompleted: false,
+  symptomLoggedToday: false,
+  bowelLoggedToday: false,
+  reliefStepDone: false,
+  reliefStepIndex: 0,
+  gutMode: 'checkin',
+  checkInTime: null,
+  gutTimer: null,
+  doctorVisitUpcoming: false,
+  hasChatThread: true,
+  weeklyPatternReady: true,
+  symptomHighSeverity: false,
+  feedMode: 'auto',
+  feedOverride: null,
+  plan: [
+    { id: 'med', label: 'Take medication at 7 PM', meta: 'Evening probiotic', status: 'pending', snooze: true },
+    { id: 'symptom', label: 'Log symptoms before bed', meta: 'Before bed', status: 'pending', snooze: false },
+    { id: 'water', label: 'Add lunch entry', meta: 'Waiting for input...', status: 'pending', snooze: false, action: 'Log' }
+  ],
+  scheduledMedication: {
+    name: 'Evening probiotic',
+    dose: '1 capsule',
+    instructions: 'Take with dinner',
+    schedule: 'Daily · 7 PM',
+    dueTime: '7:00 PM',
+    streakDays: 14,
+    status: 'due'
+  },
+  trackHistory: {
+    symptom: {
+      today: null,
+      lastSummary: 'Bloating · severity 3',
+      lastTime: 'Yesterday · 8:42 PM',
+      countToday: 0
+    },
+    bowel: {
+      today: null,
+      lastSummary: 'Type 4 · no urgency',
+      lastTime: 'Yesterday · 7:15 AM',
+      countToday: 0
+    },
+    medication: {
+      today: null,
+      lastSummary: 'Evening probiotic',
+      lastTime: 'Yesterday · 7:02 PM',
+      countToday: 0,
+      dueLabel: 'Due 7 PM today'
+    },
+    note: {
+      today: null,
+      lastSummary: 'Felt stressed after lunch',
+      lastTime: 'Mon · 2:10 PM',
+      countToday: 0
+    }
+  }
+};
+
+const TRACKER_MATERIAL_ICONS = {
+  symptom: 'healing',
+  bowel: 'water_drop',
+  medication: 'medication',
+  note: 'edit_note'
+};
+
+const TRACKER_LABELS = {
+  symptom: 'Symptom',
+  bowel: 'Bowel',
+  medication: 'Medication',
+  note: 'Note'
+};
+
+function isCheckedIn() {
+  return state.feeling !== 'not_checked_in';
+}
+
+function getSnapshotRows() {
+  return [
+    { label: 'Symptom', key: 'symptom', tracked: !!(state.trackHistory.symptom.today || state.symptomLoggedToday) },
+    { label: 'Bowel', key: 'bowel', tracked: !!(state.trackHistory.bowel.today || state.bowelLoggedToday) },
+    { label: 'Medication', key: 'medication', tracked: !!(state.trackHistory.medication.today || state.medicationCompleted) },
+    { label: 'Note', key: 'note', tracked: !!state.trackHistory.note.today }
+  ];
+}
+
+function scrollToQuickActions() {
+  const el = document.getElementById('trackerRail');
+  if (el && !el.classList.contains('hidden')) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function scrollToTodayFeed() {
+  const el = document.getElementById('todayFeed');
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function scrollToTodayFeedCard(cardId) {
+  const el = document.querySelector('[data-feed-id="' + cardId + '"]');
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+  else scrollToTodayFeed();
+}
+
+function completeNextPlanItem() {
+  const next = state.plan.find(function (p) { return p.status !== 'done'; });
+  if (next) completePlanItem(next.id);
+  else showToast('All plan items complete');
+}
+
+function openPlanDetail() {
+  const rows = state.plan.map(function (item, i) {
+    const status = item.status === 'done' ? 'Done' : 'Pending';
+    return '<p><strong>' + (i + 1) + '. ' + item.label + '</strong><br>' + item.meta + ' · ' + status + '</p>';
+  }).join('');
+  const sheet = document.getElementById('sheet');
+  sheet.innerHTML = '<div class="sheet-handle"></div><h2>Today\'s Simple Plan</h2>' + rows +
+    '<button type="button" class="btn btn-primary" style="width:100%;margin-top:12px" onclick="closeSheet()">Done</button>';
+  document.getElementById('overlay').classList.add('open');
+}
+
+function rotateFeedReliefStep() {
+  showAnotherRelief();
+  showToast('Here\'s another option');
+}
+
+function prepareSummary() {
+  showToast('Summary prepared (mock)');
+}
+
+function feedReliefBody() {
+  return currentReliefStep();
+}
+
+function renderFeedSnapshotTiles() {
+  return getSnapshotRows().map(function (row) {
+    var medLabel = row.key === 'medication';
+    var status = row.tracked ? (medLabel ? 'Done' : 'Logged') : (medLabel ? 'Due' : 'Not yet');
+    return '<div class="snapshot-tile ' + (row.tracked ? 'done' : 'missed') + '">' +
+      '<span class="snapshot-tile-label">' + row.label + '</span>' +
+      '<span class="snapshot-tile-status">' + status + '</span></div>';
+  }).join('');
+}
+
+function renderFeedPlanMini() {
+  return '<div class="feed-plan-mini">' + state.plan.map(function (item, i) {
+    return '<div class="feed-plan-row ' + (item.status === 'done' ? 'done' : '') + '">' +
+      '<span class="feed-plan-num">' + (i + 1) + '.</span>' +
+      '<span>' + item.label + (item.meta ? ' · ' + item.meta : '') + '</span></div>';
+  }).join('') + '</div>';
+}
+
+function runFeedHandler(handler) {
+  var handlers = {
+    completeMedication: function () { completeMedication(); },
+    snoozeMedication: function () { snoozeMedication(); },
+    logBowel: function () { openSheet('bowel'); },
+    logSymptom: function () { openSheet('symptom'); },
+    flareRoutine: function () { openSheet('flare_routine'); },
+    addNote: function () { openSheet('note', true); },
+    scrollQuickActions: function () { scrollToQuickActions(); },
+    completeNextPlan: function () { completeNextPlanItem(); },
+    viewPlan: function () { openPlanDetail(); },
+    reliefDone: function () { markReliefDone(); renderTodayFeed(); },
+    reliefAnother: function () { rotateFeedReliefStep(); renderTodayFeed(); },
+    prepareSummary: function () { prepareSummary(); },
+    continueChat: function () { showToast('Opening chat…'); },
+    viewReflection: function () { state.gutMode = 'reflection'; renderGutCard(); },
+    viewPattern: function () {
+      openDetail('Sleep and symptoms', 'Poor sleep has aligned with worse symptoms 4 times this month.', 'This is a reflection, not a prediction.');
+    },
+    viewSimilarDays: function () {
+      openDetail('Days like today', '3 similar afternoons this month stayed steadier after a simple meal.', 'Based on your past logs — a reflection, not a prediction.');
+    },
+    viewWeeklySummary: function () {
+      openDetail('Your week at a glance', '4 logs · 2 stable days · 1 open care task.', 'A quick recap of what you captured this week.');
+    },
+    readEducation: function () {
+      openDetail('Why stress can affect digestion', '2 min read.', 'Shown when you have capacity for gentle education.');
+    },
+    gotIt: function () { showToast('We\'re here when you need us'); },
+    checkIn: function () { state.lowData = false; resetCheckIn(); },
+    lowDataSymptom: function () { openSheet('symptom'); }
+  };
+  if (handlers[handler]) handlers[handler]();
+}
+
+function feedCard(id, source, title, body, priority, actions, opts) {
+  opts = opts || {};
+  return {
+    id: id,
+    source: source,
+    icon: opts.icon || null,
+    title: title,
+    body: body,
+    hint: opts.hint || '',
+    priority: priority,
+    actions: actions || [],
+    extraHtml: opts.extraHtml || '',
+    tappable: !!opts.tappable,
+    tapHandler: opts.tapHandler || null
+  };
+}
+
+function getMissingLogTarget() {
+  var trackKeys = ['bowel', 'symptom', 'note'];
+  var priority = { bowel: 0, symptom: 1, note: 2 };
+  var missing = getSnapshotRows().filter(function (row) {
+    return trackKeys.indexOf(row.key) >= 0 && !row.tracked;
+  });
+  if (!missing.length) return null;
+  missing.sort(function (a, b) { return priority[a.key] - priority[b.key]; });
+  return missing[0];
+}
+
+function isSevereFeed() {
+  return state.feeling === 'struggling' || state.feedMode === 'severe';
+}
+
+function getFeedCardById(id) {
+  if (id === 'medication_due' || id === 'medication_done') return getFeedCardById('medication');
+  if (id === 'tracking_bowel') return getFeedCardById('missing_log');
+  var pendingPlan = state.plan.filter(function (p) { return p.status !== 'done'; }).length;
+  var severe = isSevereFeed();
+
+  if (id === 'welcome') {
+    if (!state.lowData && state.feedMode !== 'lowdata') return null;
+    return feedCard('welcome', 'Gutsphere', 'Welcome to Today',
+      'Start with one quick check-in or log what\'s happening now.', 1,
+      [
+        { label: 'Check in', kind: 'primary', handler: 'checkIn' },
+        { label: 'Log symptom', kind: 'secondary', handler: 'lowDataSymptom' }
+      ]);
+  }
+  if (id === 'guidance') {
+    if (!state.lowData && state.feedMode !== 'lowdata') return null;
+    return feedCard('guidance', 'Today', 'Guidance gets clearer as you log',
+      'Symptoms, bowel movements, meals, and care tasks help Gutsphere personalize your day.', 1,
+      [{ label: 'Open quick actions', kind: 'secondary', handler: 'scrollQuickActions' }]);
+  }
+  if (id === 'simple_plan') {
+    if (pendingPlan <= 0 || state.lowData || state.feedMode === 'lowdata') return null;
+    return feedCard('simple_plan', 'Care Plan', 'Today\'s Simple Plan',
+      'Three small things to keep today steady.', 1,
+      [
+        { label: 'Complete next', kind: 'primary', handler: 'completeNextPlan' },
+        { label: 'View all', kind: 'secondary', handler: 'viewPlan' }
+      ], { icon: 'checklist', extraHtml: renderFeedPlanMini() });
+  }
+  if (id === 'medication') {
+    if (state.lowData || state.feedMode === 'lowdata') return null;
+    if (state.medicationDue && !state.medicationCompleted) {
+      return feedCard('medication_due', 'Medication', 'Evening probiotic due at 7 PM',
+        pendingPlan <= 1 ? 'Only one care task left today.' : 'Part of today\'s simple plan.', 1,
+        [
+          { label: 'Complete', kind: 'primary', handler: 'completeMedication' },
+          { label: 'Snooze', kind: 'secondary', handler: 'snoozeMedication' }
+        ], { icon: 'medication' });
+    }
+    if (state.medicationCompleted) {
+      return feedCard('medication_done', 'Medication', 'Medication completed today',
+        'Completed 7:08 PM.', 1, [], { icon: 'medication' });
+    }
+    return null;
+  }
+  if (id === 'relief') {
+    if (state.lowData || state.feedMode === 'lowdata') return null;
+    if (severe) {
+      return feedCard('severe_relief', 'Relief', 'Start with one small step',
+        'Log what\'s happening, then follow today\'s care plan.', 1,
+        [
+          { label: 'Log symptom', kind: 'primary', handler: 'logSymptom' },
+          { label: 'Start flare routine', kind: 'secondary', handler: 'flareRoutine' }
+        ], { icon: 'local_fire_department' });
+    }
+    if ((state.feeling === 'not_great' || state.symptomLoggedToday) && !state.reliefStepDone) {
+      return feedCard('relief', 'Relief', 'Start with one small step',
+        feedReliefBody(), 1,
+        [
+          { label: 'Done', kind: 'primary', handler: 'reliefDone' },
+          { label: 'Show another', kind: 'secondary', handler: 'reliefAnother' }
+        ], { icon: 'spa' });
+    }
+    return null;
+  }
+  if (id === 'snapshot') {
+    if (state.lowData || state.feedMode === 'lowdata') return null;
+    return feedCard('snapshot', 'Today Snapshot', 'Today so far',
+      'A quick view of what\'s logged and what\'s still open.', 1,
+      [{ label: 'Open quick actions', kind: 'secondary', handler: 'scrollQuickActions' }],
+      { extraHtml: '<div class="snapshot-grid">' + renderFeedSnapshotTiles() + '</div>' });
+  }
+  if (id === 'missing_log') {
+    if (state.lowData || state.feedMode === 'lowdata') return null;
+    var missing = getMissingLogTarget();
+    if (!missing) return null;
+    var copy = {
+      bowel: {
+        title: 'A quick bowel log will make today\'s guidance clearer',
+        body: 'Takes less than a minute.',
+        handler: 'logBowel',
+        icon: 'water_drop'
+      },
+      symptom: {
+        title: 'Log what you\'re feeling',
+        body: 'A quick symptom log helps today\'s guidance stay accurate.',
+        handler: 'logSymptom',
+        icon: 'healing'
+      },
+      note: {
+        title: 'Add a note for later',
+        body: 'Capture what happened while it\'s still fresh.',
+        handler: 'addNote',
+        icon: 'edit_note'
+      }
+    };
+    var item = copy[missing.key];
+    return feedCard('missing_log', 'Tracker', item.title, item.body, 1,
+      [{ label: 'Log ' + missing.label.toLowerCase(), kind: 'primary', handler: item.handler }],
+      { icon: item.icon });
+  }
+  if (id === 'pattern') {
+    if (!state.weeklyPatternReady || state.lowData || state.feedMode === 'lowdata' || severe) return null;
+    return feedCard('pattern', 'Insights', 'Sleep and symptoms',
+      'Poor sleep has aligned with worse symptoms 4 times this month.', 1,
+      [{ label: 'View details', kind: 'secondary', handler: 'viewPattern' }],
+      { hint: 'This is a reflection, not a prediction.', icon: 'analytics' });
+  }
+  if (id === 'similar_days') {
+    if (!state.weeklyPatternReady || state.lowData || state.feedMode === 'lowdata' || severe) return null;
+    return feedCard('similar_days', 'Insights', 'Days like today',
+      '3 similar afternoons this month stayed steadier after a simple meal.', 1,
+      [{ label: 'View similar days', kind: 'secondary', handler: 'viewSimilarDays' }],
+      { hint: 'This is a reflection, not a prediction.', icon: 'calendar_month' });
+  }
+  if (id === 'doctor_prep') {
+    if (state.lowData || state.feedMode === 'lowdata') return null;
+    if (!state.doctorVisitUpcoming && !severe && !(state.symptomLoggedToday && state.symptomHighSeverity)) return null;
+    return feedCard('doctor_prep', 'Doctor Prep', 'GI Visit Prep',
+      'You had 4 high-symptom days this week.', 1,
+      [{ label: 'Prepare summary', kind: 'primary', handler: 'prepareSummary' }], { icon: 'medical_services' });
+  }
+  if (id === 'doctor_note') {
+    if (!severe || state.lowData || state.feedMode === 'lowdata') return null;
+    return feedCard('doctor_note', 'Doctor Note', 'Save this episode while it\'s fresh',
+      'This can help you explain what happened later.', 1,
+      [{ label: 'Add note', kind: 'primary', handler: 'addNote' }], { icon: 'edit_note' });
+  }
+  if (id === 'weekly_summary') {
+    if (state.lowData || state.feedMode === 'lowdata' || severe) return null;
+    return feedCard('weekly_summary', 'Details', 'Your week at a glance',
+      '4 logs · 2 stable days · 1 open care task.', 1,
+      [{ label: 'View summary', kind: 'secondary', handler: 'viewWeeklySummary' }], { icon: 'summarize' });
+  }
+  if (id === 'chat') {
+    if (!state.hasChatThread || state.lowData || state.feedMode === 'lowdata' || severe) return null;
+    return feedCard('chat', 'Chat', 'Continue your conversation',
+      'Last topic: managing afternoon bloating.', 1,
+      [{ label: 'Continue chat', kind: 'secondary', handler: 'continueChat' }], { icon: 'chat_bubble' });
+  }
+  return null;
+}
+
+var FEED_SECTION_DEFS = [
+  { id: 'care', label: 'Care', ids: ['simple_plan', 'medication', 'relief'] },
+  { id: 'track', label: 'Track', ids: ['snapshot', 'missing_log'] },
+  { id: 'patterns', label: 'Patterns', ids: ['pattern', 'similar_days'] },
+  { id: 'details', label: 'Details', ids: ['doctor_prep', 'weekly_summary', 'doctor_note'] },
+  { id: 'chat', label: 'Chat', ids: ['chat'] }
+];
+
+var FEED_LOW_DATA_DEFS = [
+  { id: 'care', label: 'Care', ids: ['welcome'] },
+  { id: 'track', label: 'Track', ids: ['guidance'] }
+];
+
+var FEED_SEVERE_DEFS = [
+  { id: 'care', label: 'Care', ids: ['relief', 'medication', 'simple_plan'] },
+  { id: 'track', label: 'Track', ids: ['snapshot', 'missing_log'] },
+  { id: 'details', label: 'Details', ids: ['doctor_note', 'doctor_prep'] }
+];
+
+function buildFeedSections(defs) {
+  return defs.map(function (def) {
+    return {
+      id: def.id,
+      label: def.label,
+      cards: def.ids.map(function (id) { return getFeedCardById(id); }).filter(Boolean)
+    };
+  }).filter(function (section) { return section.cards.length > 0; });
+}
+
+function getTodayFeedSections() {
+  if (state.feedOverride && state.feedOverride.length) {
+    var cards = state.feedOverride.map(function (id) { return getFeedCardById(id); }).filter(Boolean);
+    var bySection = {};
+    FEED_SECTION_DEFS.forEach(function (def) {
+      bySection[def.id] = { id: def.id, label: def.label, cards: [] };
+    });
+    cards.forEach(function (card) {
+      var sectionId = 'care';
+      if (['snapshot', 'missing_log'].indexOf(card.id) >= 0 || card.id === 'guidance') sectionId = 'track';
+      else if (['pattern', 'similar_days'].indexOf(card.id) >= 0) sectionId = 'patterns';
+      else if (['doctor_prep', 'weekly_summary', 'doctor_note'].indexOf(card.id) >= 0) sectionId = 'details';
+      else if (card.id === 'chat') sectionId = 'chat';
+      if (!bySection[sectionId]) bySection[sectionId] = { id: sectionId, label: sectionId, cards: [] };
+      bySection[sectionId].cards.push(card);
+    });
+    return FEED_SECTION_DEFS.map(function (def) { return bySection[def.id]; }).filter(function (s) { return s && s.cards.length; });
+  }
+  if (state.lowData || state.feedMode === 'lowdata') return buildFeedSections(FEED_LOW_DATA_DEFS);
+  if (isSevereFeed()) return buildFeedSections(FEED_SEVERE_DEFS);
+  if (state.feedMode === 'relief') {
+    return buildFeedSections([
+      { id: 'care', label: 'Care', ids: ['relief', 'medication', 'simple_plan'] },
+      { id: 'patterns', label: 'Patterns', ids: ['pattern'] }
+    ]);
+  }
+  if (state.feedMode === 'care') {
+    return buildFeedSections([
+      { id: 'care', label: 'Care', ids: ['simple_plan', 'medication', 'relief'] },
+      { id: 'track', label: 'Track', ids: ['snapshot', 'missing_log'] }
+    ]);
+  }
+  if (state.feedMode === 'doctor') {
+    return buildFeedSections([
+      { id: 'details', label: 'Details', ids: ['doctor_prep', 'weekly_summary', 'doctor_note'] },
+      { id: 'patterns', label: 'Patterns', ids: ['pattern', 'similar_days'] }
+    ]);
+  }
+  return buildFeedSections(FEED_SECTION_DEFS);
+}
+
+function getTodayFeedCards() {
+  return getTodayFeedSections().reduce(function (all, section) {
+    return all.concat(section.cards);
+  }, []);
+}
+
+function getFocusFeedCards(ids) {
+  return ids.map(function (id) { return getFeedCardById(id); }).filter(Boolean);
+}
+
+function renderTodayFeedCard(card) {
+  var iconHtml = card.icon ? '<span class="material-symbols-outlined">' + card.icon + '</span>' : '';
+  var actionsHtml = card.actions.map(function (a) {
+    var cls = a.kind === 'primary' ? 'btn btn-primary' : a.kind === 'ghost' ? 'btn btn-ghost' : 'btn btn-secondary';
+    return '<button type="button" class="' + cls + '" onclick="event.stopPropagation();runFeedHandler(\'' + a.handler + '\')">' + a.label + '</button>';
+  }).join('');
+  var tap = card.tappable && card.tapHandler ? ' today-feed-card--tappable" onclick="runFeedHandler(\'' + card.tapHandler + '\')"' : '"';
+  return '<article class="today-feed-card' + tap + ' data-feed-id="' + card.id + '">' +
+    '<span class="feed-source">' + iconHtml + card.source + '</span>' +
+    '<div class="feed-card-title">' + card.title + '</div>' +
+    '<p class="feed-card-body">' + card.body + '</p>' +
+    (card.hint ? '<p class="feed-card-hint">' + card.hint + '</p>' : '') +
+    (card.extraHtml || '') +
+    (actionsHtml ? '<div class="feed-card-actions">' + actionsHtml + '</div>' : '') +
+  '</article>';
+}
+
+function renderTodayFeed() {
+  var feed = document.getElementById('todayFeed');
+  if (!feed) return;
+
+  var sections = getTodayFeedSections();
+  feed.innerHTML = sections.map(function (section) {
+    return '<div class="feed-section" data-feed-section="' + section.id + '">' +
+      '<h2 class="feed-section-label">' + section.label + '</h2>' +
+      '<div class="feed-section-cards">' +
+        section.cards.map(renderTodayFeedCard).join('') +
+      '</div></div>';
+  }).join('');
+}
+
+const GUT_TIMEOUT_MS = 8000;
+const RELIEF_STEPS = [
+  'Keep your next meal simple.',
+  'Log what you\'re feeling.',
+  'Sip water slowly over the next hour.',
+  'Save a quick note for later.',
+  'Check today\'s care plan.'
+];
+
+const greetings = {
+  morning: { title: 'Good Morning,', sub: 'Ready to listen to your gut?' },
+  afternoon: { title: 'Good Afternoon,', sub: 'Ready to listen to your gut?' },
+  evening: { title: 'Good Evening,', sub: "Let's close the loop gently." },
+  severe: { title: "You're having a harder day.", sub: "Let's keep this simple." }
+};
+
+const FEELING_OPTIONS = [
+  { id: 'okay', icon: 'sentiment_satisfied', title: 'Okay', sub: 'Feeling steady today', cls: 'feel-okay' },
+  { id: 'not_great', icon: 'sentiment_neutral', title: 'Not Great', sub: 'Minor discomfort present', cls: 'feel-not-great' },
+  { id: 'struggling', icon: 'sentiment_dissatisfied', title: 'Struggling', sub: 'Severe symptoms reported', cls: 'feel-struggling' }
+];
+
+const ACK_COPY = {
+  okay: { title: 'Logged!', msg: "We've noted your status. Take it easy.", cls: 'okay' },
+  not_great: { title: 'Got it.', msg: "We'll keep things gentle today.", cls: 'not-great' },
+  struggling: { title: "We're with you", msg: "Let's focus on relief — one small step at a time.", cls: 'not-great' }
+};
+
+const RELIEF_SUGGESTIONS = [
+  { title: 'Keep your next meal simple', body: 'Choose foods you usually tolerate when symptoms flare.', cta: 'See relief tips', type: 'rail' },
+  { title: 'Log what you\'re feeling', body: 'A quick symptom log helps us suggest better relief.', cta: 'Log symptom', type: 'symptom' },
+  { title: 'Sip water slowly', body: 'Small sips over the next hour can ease discomfort.', cta: 'Mark as tried', type: 'relief_done' },
+  { title: 'Save a note for later', body: 'Useful if you need to explain this to your doctor.', cta: 'Add note', type: 'note' },
+  { title: 'Check your care plan', body: 'See what\'s left on your simple plan for today.', cta: 'View plan', type: 'plan' }
+];
+
+const RAIL_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDMvNyGt-Y-MqbF6ZMYuAbi3ngNMO52jjr-Kx0vDm4xTkPl3AFP8VmNuu0Lrh9MZQamCF9UEdSIEc4xjNx7Z5_bDplo7XiFlbe8t-LK6w5nHf7q4cOfWAzHrKTqQWOg6czpGMTKvRnCJ9uIozDwW8QiTOuW4WQ9tql0Y3Ig5aU_vDlcmAVTVAnGdBWqxw8N9W2hycbX0F3uv3r8W1WIc0j0ZlIfeiKU09th04FkdOqWewAl8O5DJYXgsS089i95_1toOXQNx8whx4cm';
+
+function micon(name, filled) {
+  return '<span class="material-symbols-outlined' + (filled ? ' filled' : '') + '">' + name + '</span>';
+}
+
+const statusLabels = {
+  default: 'Optimizing',
+  struggling: 'Focusing on relief',
+  not_checked_in: 'Awaiting check-in',
+  not_great: 'Needs care',
+  evening: 'Reflecting'
+};
+
+function clearGutTimer() {
+  if (state.gutTimer) { clearTimeout(state.gutTimer); state.gutTimer = null; }
+}
+
+function startGutTimer(fn, ms) {
+  clearGutTimer();
+  state.gutTimer = setTimeout(fn, ms || GUT_TIMEOUT_MS);
+}
+
+function formatCheckInAgo() {
+  if (!state.checkInTime) return 'just now';
+  const mins = Math.floor((Date.now() - state.checkInTime) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + ' min ago';
+  return Math.floor(mins / 60) + 'h ago';
+}
+
+function feelingLabel() {
+  if (state.feeling === 'okay') return 'Okay';
+  if (state.feeling === 'not_great') return 'Not Great';
+  if (state.feeling === 'struggling') return 'Struggling';
+  return '';
+}
+
+function currentReliefStep() {
+  return RELIEF_STEPS[state.reliefStepIndex % RELIEF_STEPS.length];
+}
+
+function getCurrentSuggestion() {
+  if (state.feeling === 'struggling') {
+    return {
+      title: 'Start your flare routine',
+      body: 'A guided sequence for harder days — relief first, then log what you need.',
+      cta: 'Begin flare routine',
+      type: 'flare_routine'
+    };
+  }
+  if (state.feeling === 'okay') {
+    const firstPending = state.plan.find(function (p) { return p.status !== 'done'; });
+    if (firstPending) {
+      if (firstPending.id === 'med') {
+        return { title: firstPending.label, body: firstPending.meta, cta: 'Log medication', type: 'medication' };
+      }
+      if (firstPending.id === 'water') {
+        return { title: 'Log your lunch', body: firstPending.meta, cta: 'Log meal', type: 'meal' };
+      }
+      return { title: firstPending.label, body: firstPending.meta, cta: 'View plan', type: 'plan' };
+    }
+    if (!state.bowelLoggedToday) {
+      return { title: 'Quick bowel log', body: 'Keeps today\'s guidance accurate.', cta: 'Log bowel', type: 'bowel' };
+    }
+    return { title: 'Browse your Today Feed', body: 'You\'re caught up on care tasks.', cta: 'Open feed', type: 'feed' };
+  }
+  return RELIEF_SUGGESTIONS[state.reliefStepIndex % RELIEF_SUGGESTIONS.length];
+}
+
+function runSuggestionAction(type) {
+  clearGutTimer();
+  if (type === 'relief_done') {
+    state.reliefStepDone = true;
+    showToast('Nice — one small step done.');
+    collapseGutCard();
+    return;
+  }
+  collapseGutCard();
+  if (type === 'symptom') openSheet('symptom');
+  else if (type === 'bowel') openSheet('bowel');
+  else if (type === 'note') openSheet('note');
+  else if (type === 'medication') openSheet('medication');
+  else if (type === 'flare_routine') openSheet('flare_routine');
+  else if (type === 'box_breathing') openSheet('box_breathing');
+  else if (type === 'guided_routine') openSheet('guided_routine');
+  else if (type === 'plan') scrollToTodayFeedCard('simple_plan');
+  else if (type === 'feed' || type === 'rail') scrollToTodayFeed();
+  else if (type === 'meal') showToast('Meal logged (mock)');
+  else if (type === 'chat') showToast('Opening chat…');
+}
+
+function startNextActionTimer() {
+  startGutTimer(function () {
+    if (state.gutMode === 'next_action') showGutReflectionAfterTimeout();
+  });
+}
+
+function showGutReflectionAfterTimeout() {
+  clearGutTimer();
+  state.gutMode = 'reflection';
+  renderGutCard();
+}
+
+function collapseGutCard() {
+  clearGutTimer();
+  state.gutMode = 'compact';
+  renderGutCard();
+}
+
+function selectFeeling(f) {
+  clearGutTimer();
+  state.feeling = f;
+  state.checkInTime = Date.now();
+  state.reliefStepIndex = 0;
+  state.reliefStepDone = false;
+  state.lowData = false;
+  state.gutMode = 'next_action';
+  startNextActionTimer();
+  render();
+  syncProtoControls();
+}
+
+function resetCheckIn() {
+  clearGutTimer();
+  state.feeling = 'not_checked_in';
+  state.gutMode = 'checkin';
+  state.checkInTime = null;
+  state.reliefStepDone = false;
+  state.reliefStepIndex = 0;
+  render();
+}
+
+function dismissGutAction() {
+  showToast('No problem — you can come back to this anytime.');
+  showGutReflectionAfterTimeout();
+}
+
+function setFeeling(f) { selectFeeling(f); }
+
+function effectiveFeeling() {
+  return state.feeling;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function gutHeartHTML(cls, badge, pulse) {
+  return `<div class="gut-heart-wrap">
+    <div class="gut-heart ${cls} ${pulse ? 'pulse' : ''}">${GUT_HEART_SVG}</div>
+    ${badge ? '<span class="gut-badge">💊</span>' : ''}
+  </div>`;
+}
+
+function renderGutCard() {
+  const el = document.getElementById('gutCard');
+  if (!el) return;
+  if (state.lowData) { el.innerHTML = ''; return; }
+
+  el.onclick = null;
+
+  /* ── Compact logged check-in pill ── */
+  if (state.gutMode === 'compact') {
+    el.className = 'gut-card gut-card--compact-pill';
+    el.onclick = showGutReflectionAfterTimeout;
+    const icons = { okay: 'sentiment_satisfied', not_great: 'sentiment_neutral', struggling: 'sentiment_dissatisfied' };
+    const clses = { okay: 'feel-okay', not_great: 'feel-not-great', struggling: 'feel-struggling' };
+    const icon = icons[state.feeling] || 'sentiment_neutral';
+    const cls = clses[state.feeling] || 'feel-not-great';
+    el.innerHTML = `
+      <div class="gut-compact-left">
+        <span class="material-symbols-outlined ${cls}">${icon}</span>
+        <div>
+          <span class="gut-compact-status">Gut is ${feelingLabel()}</span>
+          <span class="caption" style="display:block;margin-top:2px">Checked in ${formatCheckInAgo()}</span>
+        </div>
+      </div>
+      <button type="button" class="gut-compact-update" onclick="event.stopPropagation();resetCheckIn()">Update gut status</button>`;
+    return;
+  }
+
+  /* ── Reflection after check-in ── */
+  if (state.gutMode === 'reflection') {
+    el.className = 'gut-card';
+    const ack = ACK_COPY[state.feeling] || ACK_COPY.okay;
+    const step = state.reliefStepDone ? 'You completed a relief step.' : 'We suggested: ' + currentReliefStep();
+    el.innerHTML = `
+      <div class="gut-ack-row" style="margin-bottom:12px">
+        <div class="gut-ack-icon ${ack.cls}">${micon('check_circle')}</div>
+        <div>
+          <div class="gut-card-title">${ack.title}</div>
+          <p class="gut-card-body" style="margin:0">${ack.msg}</p>
+        </div>
+      </div>
+      <div class="gut-reflection-box">
+        <strong>Today's reflection</strong>
+        You checked in as ${feelingLabel()} · ${formatCheckInAgo()}. ${step}
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" onclick="resetCheckIn()">Update gut status</button>
+        <button type="button" class="btn btn-ghost" onclick="collapseGutCard()">Minimize</button>
+      </div>`;
+    return;
+  }
+
+  /* ── Reassurance + timed next action ── */
+  if (state.gutMode === 'next_action') {
+    const ack = ACK_COPY[state.feeling] || ACK_COPY.okay;
+    const suggestion = getCurrentSuggestion();
+    const isStruggling = state.feeling === 'struggling';
+    const showAnother = state.feeling === 'not_great';
+    const actionBadge = isStruggling ? 'Suggested next step' : 'Log next step';
+    let actionButtons;
+    if (isStruggling) {
+      actionButtons = `
+        <button type="button" class="btn btn-primary" onclick="runSuggestionAction('flare_routine')">Begin flare routine</button>
+        <button type="button" class="btn btn-secondary" onclick="runSuggestionAction('symptom')">Log symptoms</button>`;
+    } else {
+      actionButtons = `
+        <button type="button" class="btn btn-primary" onclick="runSuggestionAction('${suggestion.type}')">${suggestion.cta}</button>
+        ${showAnother ? '<button type="button" class="btn btn-secondary" onclick="showAnotherRelief()">Another option</button>' : ''}
+        <button type="button" class="btn btn-ghost" onclick="collapseGutCard()">Skip for now</button>`;
+    }
+    el.className = 'gut-card gut-card--action';
+    el.innerHTML = `
+      <div class="gut-ack-row">
+        <div class="gut-ack-icon ${ack.cls}">${micon('check_circle')}</div>
+        <div>
+          <div class="gut-card-title">${ack.title}</div>
+          <p class="gut-card-body" style="margin:0">${ack.msg}</p>
+        </div>
+      </div>
+      <div class="gut-action-suggest">
+        <span class="gut-action-badge">${actionBadge}</span>
+        <h3 class="gut-card-title">${suggestion.title}</h3>
+        <p class="gut-card-body">${suggestion.body}</p>
+        <div class="btn-row">${actionButtons}</div>
+      </div>
+      <p class="gut-action-timer-label caption">This suggestion disappears in a few seconds</p>
+      <div class="gut-ack-bar"><div class="gut-ack-bar-fill"></div></div>`;
+    return;
+  }
+
+  /* ── Daily check-in ── */
+  if (state.feeling === 'not_checked_in' || state.gutMode === 'checkin') {
+    el.className = 'gut-card';
+    const options = FEELING_OPTIONS.map(function (o) {
+      return `<button type="button" class="feeling-option" onclick="selectFeeling('${o.id}')">
+        <span class="feeling-option-icon ${o.cls}">${micon(o.icon)}</span>
+        <div>
+          <p class="feeling-option-title">${o.title}</p>
+          <p class="feeling-option-sub">${o.sub}</p>
+        </div>
+      </button>`;
+    }).join('');
+    el.innerHTML = `
+      <div class="gut-checkin-head">
+        <div>
+          <p class="gut-checkin-label">Daily Check-in</p>
+          <h3 class="gut-card-title">How's your gut feeling right now?</h3>
+        </div>
+        <div class="gut-checkin-heart-deco">${micon('favorite', true)}</div>
+      </div>
+      <div class="feeling-options">${options}</div>`;
+    return;
+  }
+}
+
+function markReliefDone() {
+  state.reliefStepDone = true;
+  showToast('Done. That\'s one step toward making today easier.');
+  collapseGutCard();
+}
+
+function showAnotherRelief() {
+  state.reliefStepIndex = (state.reliefStepIndex + 1) % RELIEF_SUGGESTIONS.length;
+  state.reliefStepDone = false;
+  startNextActionTimer();
+  renderGutCard();
+}
+
+function completeMedication() {
+  state.medicationCompleted = true;
+  state.medicationDue = false;
+  state.scheduledMedication.status = 'completed';
+  logTrackEntry('medication', state.scheduledMedication.name + ' · completed');
+  const med = state.plan.find(p => p.id === 'med');
+  if (med) { med.status = 'done'; med.meta = 'Completed 7:08 PM'; }
+  showToast('Done. One care task left today.');
+  render();
+}
+
+function renderTrackerCard(type) {
+  const h = state.trackHistory[type];
+  const label = TRACKER_LABELS[type];
+  const icon = TRACKER_MATERIAL_ICONS[type];
+  const hasToday = !!(h.today || h.countToday);
+
+  let meta = hasToday ? ((h.countToday || 1) + ' logged today') : 'Not logged today';
+  let dueBadge = '';
+  let ctaLabel = 'Track now';
+  let ctaAction = "openSheet('" + type + "')";
+  let extraClass = '';
+  let btnClass = 'btn-primary';
+
+  if (type === 'medication') {
+    const med = state.scheduledMedication;
+    const isDone = state.medicationCompleted || med.status === 'completed';
+    const isSnoozed = med.status === 'snoozed';
+    const isSkipped = med.status === 'skipped';
+    if (isDone) {
+      meta = 'Completed today';
+      ctaLabel = 'View details';
+      btnClass = 'btn-secondary';
+    } else if (isSkipped) {
+      meta = 'Skipped today';
+      ctaLabel = 'View details';
+      btnClass = 'btn-secondary';
+    } else if (isSnoozed) {
+      meta = 'Reminder · 6:50 PM';
+      ctaLabel = 'Complete';
+      ctaAction = 'completeMedication()';
+      extraClass = ' tracker-card--due';
+    } else {
+      meta = 'Due ' + med.dueTime + ' · ' + med.streakDays + '-day streak';
+      dueBadge = '<span class="tracker-due">Due now</span>';
+      ctaLabel = 'Complete';
+      ctaAction = 'completeMedication()';
+      extraClass = ' tracker-card--due';
+    }
+  } else if (hasToday) {
+    btnClass = 'btn-secondary';
+    ctaLabel = 'Log again';
+  }
+
+  const historyLabel = h.today ? 'Today' : 'Last record';
+  const summary = h.today ? h.today.summary : (h.lastSummary || 'Nothing logged yet');
+  const time = h.today
+    ? (h.lastTime && h.lastTime.indexOf('Today') === 0 ? h.lastTime : 'Today · just now')
+    : (h.lastTime || '');
+  const summaryClass = !h.today && !h.lastSummary ? ' tracker-history--empty' : '';
+
+  return '<article class="tracker-card' + extraClass + '">' +
+    '<div class="tracker-head">' +
+      '<div class="tracker-icon-wrap"><span class="material-symbols-outlined">' + icon + '</span></div>' +
+      '<div><div class="tracker-title">' + label + '</div>' +
+      '<div class="tracker-meta">' + meta + '</div>' + dueBadge + '</div>' +
+    '</div>' +
+    '<div class="tracker-history">' +
+      '<span class="tracker-history-label">' + historyLabel + '</span>' +
+      '<p class="tracker-history-text' + summaryClass + '">' + summary + '</p>' +
+      (time ? '<p class="tracker-history-time">' + time + '</p>' : '') +
+    '</div>' +
+    '<button type="button" class="btn ' + btnClass + ' tracker-btn" onclick="' + ctaAction + '">' + ctaLabel + '</button>' +
+  '</article>';
+}
+
+function renderTrackerRail() {
+  const rail = document.getElementById('trackerRail');
+  const quickHead = document.getElementById('quickActionsHead');
+  const reliefWrap = document.getElementById('reliefCardWrap');
+  const checkedIn = isCheckedIn();
+  const showTrackers = checkedIn;
+
+  if (!rail) return;
+  if (!showTrackers) {
+    rail.innerHTML = '';
+    rail.classList.add('hidden');
+    if (quickHead) quickHead.classList.add('hidden');
+    if (reliefWrap) { reliefWrap.innerHTML = ''; reliefWrap.classList.add('hidden'); }
+    return;
+  }
+
+  if (reliefWrap) {
+    reliefWrap.innerHTML = '';
+    reliefWrap.classList.add('hidden');
+  }
+
+  if (quickHead) quickHead.classList.remove('hidden');
+  rail.classList.remove('hidden');
+  rail.innerHTML = ['symptom', 'bowel', 'medication', 'note'].map(renderTrackerCard).join('');
+}
+
+function renderQuickTrackers() { renderTrackerRail(); }
+
+function snoozeMedication() {
+  state.scheduledMedication.status = 'snoozed';
+  showToast('Reminder set for 6:50 PM');
+  render();
+}
+
+function skipMedication() {
+  state.scheduledMedication.status = 'skipped';
+  state.medicationDue = false;
+  state.medicationCompleted = false;
+  logTrackEntry('medication', state.scheduledMedication.name + ' · skipped');
+  const planMed = state.plan.find(p => p.id === 'med');
+  if (planMed) { planMed.status = 'done'; planMed.meta = 'Skipped today'; }
+  showToast('Skipped for today');
+  render();
+}
+
+function undoSkipMedication() {
+  state.scheduledMedication.status = 'due';
+  state.medicationDue = true;
+  state.trackHistory.medication.today = null;
+  state.trackHistory.medication.countToday = 0;
+  const planMed = state.plan.find(p => p.id === 'med');
+  if (planMed) { planMed.status = 'pending'; planMed.meta = 'Morning Dosage · 8:00 AM'; }
+  render();
+}
+
+function logTrackEntry(type, summary) {
+  const h = state.trackHistory[type];
+  const now = 'Just now';
+  h.today = { summary, time: now };
+  h.countToday = (h.countToday || 0) + 1;
+  h.lastSummary = summary;
+  h.lastTime = 'Today · ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  if (type === 'medication') {
+    h.dueLabel = null;
+  }
+}
+
+function renderGreeting() {
+  const severe = state.feeling === 'struggling';
+  const g = severe ? greetings.severe : greetings[state.timeOfDay];
+  document.getElementById('greetingTitle').textContent = g.title;
+  document.getElementById('greetingSub').textContent = g.sub;
+
+  const pending = state.plan.filter(p => p.status !== 'done').length;
+  let meta = '';
+  if (state.lowData) meta = '';
+  else if (pending) meta = pending + ' care task' + (pending > 1 ? 's' : '') + ' today';
+  else if (state.medicationDue && !state.medicationCompleted) meta = 'Medication due later';
+  else if (state.checkInTime) meta = 'Last check-in: ' + formatCheckInAgo();
+  else meta = 'Last check-in: yesterday evening';
+  document.getElementById('headerMeta').textContent = meta;
+
+  let status = statusLabels.default;
+  if (severe) status = statusLabels.struggling;
+  else if (state.feeling === 'not_checked_in') status = statusLabels.not_checked_in;
+  else if (state.feeling === 'not_great') status = statusLabels.not_great;
+  else if (state.timeOfDay === 'evening' && state.feeling === 'okay') status = statusLabels.evening;
+  else if (state.lowData) status = 'Getting started';
+  document.getElementById('statusPillText').textContent = status;
+}
+
+function render() {
+  document.body.classList.toggle('severe-mode', state.feeling === 'struggling');
+  document.getElementById('lowDataWelcome').classList.add('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+  renderGreeting();
+  renderGutCard();
+  renderQuickTrackers();
+  renderTodayFeed();
+}
+
+function completePlanItem(id) {
+  const item = state.plan.find(p => p.id === id);
+  if (!item) return;
+  item.status = 'done';
+  if (id === 'med') { state.medicationCompleted = true; item.meta = 'Completed 7:08 PM'; }
+  else if (id === 'symptom') item.meta = 'Completed';
+  else item.meta = 'Done for today';
+  showToast('Marked complete');
+  render();
+}
+
+function openDetail(title, body, why) {
+  const sheet = document.getElementById('sheet');
+  sheet.innerHTML = `
+    <div class="sheet-handle"></div>
+    <h2>${title}</h2>
+    <p>${body}</p>
+    ${why ? `<div class="why-block"><strong>Why you're seeing this</strong>${why}</div>` : ''}
+    <button type="button" class="btn btn-primary" style="width:100%" onclick="closeSheet()">Done</button>`;
+  document.getElementById('overlay').classList.add('open');
+}
+
+let sheetSymptom = { type: null, severity: null };
+let sheetBowel = { bristol: null, urgency: null, pain: null };
+
+function openSheet(type, doctorNote) {
+  const sheet = document.getElementById('sheet');
+  let html = '<div class="sheet-handle"></div>';
+
+  if (type === 'symptom') {
+    html += `<h2>Log symptom</h2><p>What are you feeling?</p>
+      <div class="chip-grid" id="symptomTypes">
+        ${['Bloating','Pain','Urgency','Nausea','Reflux','Constipation','Diarrhea'].map(s =>
+          `<button type="button" class="chip" data-s="${s}" onclick="pickChip(this,'symptom')">${s}</button>`).join('')}
+      </div>
+      <span class="form-label">Severity</span>
+      <div class="severity-row" id="severityRow">
+        ${[1,2,3,4,5].map(n => `<button type="button" class="severity-btn" data-n="${n}" onclick="pickSeverity(${n})">${n}</button>`).join('')}
+      </div>
+      <span class="form-label">Optional note</span>
+      <textarea rows="2" placeholder="Anything else to note?"></textarea>
+      <button type="button" class="btn btn-primary" style="width:100%" onclick="saveSymptom()">Save symptom</button>`;
+  } else if (type === 'bowel') {
+    html += `<h2>Log bowel movement</h2>
+      <span class="form-label">Bristol type</span>
+      <div class="severity-row">${[1,2,3,4,5,6,7].map(n =>
+        `<button type="button" class="severity-btn" data-b="${n}" onclick="pickBristol(${n})">${n}</button>`).join('')}</div>
+      <span class="form-label">Urgency?</span>
+      <div class="chip-grid">${['No','Mild','High'].map(u =>
+        `<button type="button" class="chip" onclick="sheetBowel.urgency='${u}';this.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">${u}</button>`).join('')}</div>
+      <span class="form-label">Pain?</span>
+      <div class="chip-grid">${['No','Mild','High'].map(u =>
+        `<button type="button" class="chip" onclick="sheetBowel.pain='${u}';this.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">${u}</button>`).join('')}</div>
+      <span class="form-label">Optional note</span>
+      <textarea rows="2" placeholder="Optional note"></textarea>
+      <button type="button" class="btn btn-primary" style="width:100%" onclick="saveBowel()">Save bowel log</button>`;
+  } else if (type === 'medication') {
+    html += `<h2>Medication</h2>
+      <p><strong>Evening probiotic</strong><br>Due at 7 PM</p>
+      <div class="btn-row" style="flex-direction:column">
+        <button type="button" class="btn btn-primary" onclick="completeMedication();closeSheet()">Complete</button>
+        <button type="button" class="btn btn-secondary" onclick="showToast('Snoozed');closeSheet()">Snooze</button>
+        <button type="button" class="btn btn-ghost" onclick="showToast('Skipped');closeSheet()">Skip</button>
+      </div>`;
+  } else if (type === 'box_breathing') {
+    html += `<h2>Box breathing reset</h2>
+      <p class="body-sm">Follow each phase for 4 counts. Repeat 4 cycles.</p>
+      <div class="breath-cycle">
+        <div class="breath-step"><div class="breath-step-num">4</div><div class="breath-step-label">Breathe in</div></div>
+        <div class="breath-step"><div class="breath-step-num">4</div><div class="breath-step-label">Hold</div></div>
+        <div class="breath-step"><div class="breath-step-num">4</div><div class="breath-step-label">Breathe out</div></div>
+        <div class="breath-step"><div class="breath-step-num">4</div><div class="breath-step-label">Hold</div></div>
+      </div>
+      <button type="button" class="btn btn-primary" style="width:100%" onclick="showToast('Breathing session started');closeSheet()">Start session</button>`;
+  } else if (type === 'guided_routine') {
+    html += `<h2>Gentle reset routine</h2>
+      <p class="body-sm">About 5 minutes · based on your check-in today</p>
+      <ol class="routine-steps">
+        <li data-step="1.">Sit comfortably and take 3 slow breaths</li>
+        <li data-step="2.">Sip water in small amounts over 5 minutes</li>
+        <li data-step="3.">Log any symptoms you notice</li>
+        <li data-step="4.">Review today's simple plan</li>
+      </ol>
+      <button type="button" class="btn btn-primary" style="width:100%" onclick="showToast('Routine started');closeSheet()">Begin routine</button>`;
+  } else if (type === 'flare_routine') {
+    html += `<h2>Flare routine</h2>
+      <p class="body-sm">For harder days — one step at a time</p>
+      <ol class="routine-steps">
+        <li data-step="1.">Log what's happening now</li>
+        <li data-step="2.">Find a comfortable position and breathe slowly</li>
+        <li data-step="3.">Take scheduled medication if due</li>
+        <li data-step="4.">Save a note if symptoms change</li>
+        <li data-step="5.">Follow today's simple plan</li>
+      </ol>
+      <div class="btn-row" style="flex-direction:column">
+        <button type="button" class="btn btn-primary" onclick="closeSheet();openSheet('symptom')">Log symptoms</button>
+        <button type="button" class="btn btn-secondary" onclick="showToast('Flare routine in progress');closeSheet()">Mark step done</button>
+      </div>`;
+  } else if (type === 'note') {
+    html += `<h2>${doctorNote ? 'Save doctor note' : 'Add note'}</h2>
+      <p>What should we remember?</p>
+      <textarea rows="4" placeholder="Describe what happened, when, and how you felt…"></textarea>
+      <span class="form-label">Optional tags</span>
+      <div class="chip-grid">${['Meal','Stress','Sleep','Doctor','Flare'].map(t =>
+        `<button type="button" class="chip">${t}</button>`).join('')}</div>
+      <button type="button" class="btn btn-primary" style="width:100%" onclick="saveNote()">Save note</button>`;
+  }
+
+  sheet.innerHTML = html;
+  document.getElementById('overlay').classList.add('open');
+}
+
+function pickChip(el, kind) {
+  el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (kind === 'symptom') sheetSymptom.type = el.dataset.s;
+}
+
+function pickSeverity(n) {
+  sheetSymptom.severity = n;
+  document.querySelectorAll('#severityRow .severity-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.n) === n);
+  });
+}
+
+function pickBristol(n) {
+  sheetBowel.bristol = n;
+  document.querySelectorAll('[data-b]').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.b) === n);
+  });
+}
+
+function saveSymptom() {
+  const type = sheetSymptom.type || 'Symptom';
+  const sev = sheetSymptom.severity ? ' · severity ' + sheetSymptom.severity : '';
+  logTrackEntry('symptom', type + sev);
+  state.symptomLoggedToday = true;
+  state.symptomHighSeverity = sheetSymptom.severity >= 3;
+  closeSheet();
+  showToast("Saved. This helps today's guidance become clearer.");
+  render();
+}
+
+function saveBowel() {
+  const b = sheetBowel.bristol ? 'Type ' + sheetBowel.bristol : 'Logged';
+  const urg = sheetBowel.urgency ? ' · ' + sheetBowel.urgency.toLowerCase() + ' urgency' : '';
+  logTrackEntry('bowel', b + urg);
+  state.bowelLoggedToday = true;
+  closeSheet();
+  showToast('Bowel log saved.');
+  render();
+}
+
+function saveNote() {
+  logTrackEntry('note', 'Note saved');
+  closeSheet();
+  showToast('Note saved.');
+  render();
+}
+
+function closeSheet(e) {
+  if (e && e.target !== document.getElementById('overlay')) return;
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function resetState() {
+  clearGutTimer();
+  Object.assign(state, {
+    feeling: 'not_checked_in',
+    gutMode: 'checkin',
+    checkInTime: null,
+    timeOfDay: 'afternoon',
+    lowData: false,
+    medicationDue: true,
+    medicationCompleted: false,
+    symptomLoggedToday: false,
+    bowelLoggedToday: false,
+    reliefStepDone: false,
+    reliefStepIndex: 0,
+    doctorVisitUpcoming: false,
+    hasChatThread: true,
+    weeklyPatternReady: true,
+    symptomHighSeverity: false,
+    feedMode: 'auto',
+    feedOverride: null,
+    plan: [
+      { id: 'med', label: 'Take medication at 7 PM', meta: 'Evening probiotic', status: 'pending', snooze: true },
+      { id: 'symptom', label: 'Log symptoms before bed', meta: 'Before bed', status: 'pending', snooze: false },
+      { id: 'water', label: 'Add lunch entry', meta: 'Waiting for input...', status: 'pending', snooze: false, action: 'Log' }
+    ]
+  });
+  sheetSymptom = { type: null, severity: null };
+  sheetBowel = { bristol: null, urgency: null, pain: null };
+  state.trackHistory = {
+    symptom: { today: null, lastSummary: 'Bloating · severity 3', lastTime: 'Yesterday · 8:42 PM', countToday: 0 },
+    bowel: { today: null, lastSummary: 'Type 4 · no urgency', lastTime: 'Yesterday · 7:15 AM', countToday: 0 },
+    medication: { today: null, lastSummary: 'Evening probiotic', lastTime: 'Yesterday · 7:02 PM', countToday: 0, dueLabel: 'Due 7 PM today' },
+    note: { today: null, lastSummary: 'Felt stressed after lunch', lastTime: 'Mon · 2:10 PM', countToday: 0 }
+  };
+  state.scheduledMedication = {
+    name: 'Evening probiotic',
+    dose: '1 capsule',
+    instructions: 'Take with dinner',
+    schedule: 'Daily · 7 PM',
+    dueTime: '7:00 PM',
+    streakDays: 14,
+    status: 'due'
+  };
+  render();
+  syncProtoControls();
+}
+
+function syncProtoControls() {
+  document.querySelectorAll('[data-gut]').forEach(btn => {
+    const g = btn.dataset.gut;
+    let active = false;
+    if (g === 'checkin') active = state.feeling === 'not_checked_in';
+    else if (g === 'okay') active = state.feeling === 'okay' && state.gutMode === 'next_action';
+    else if (g === 'not_great') active = state.feeling === 'not_great' && state.gutMode === 'next_action';
+    else if (g === 'struggling') active = state.feeling === 'struggling';
+    else if (g === 'compact') active = state.gutMode === 'compact';
+    else if (g === 'reflection') active = state.gutMode === 'reflection';
+    btn.classList.toggle('active', active);
+  });
+  document.querySelectorAll('[data-time]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.time === state.timeOfDay);
+  });
+  document.querySelectorAll('[data-care]').forEach(btn => {
+    const c = btn.dataset.care;
+    let active = false;
+    if (c === 'med_due') active = state.medicationDue && !state.medicationCompleted;
+    if (c === 'med_done') active = state.medicationCompleted;
+    if (c === 'lowdata') active = state.lowData || state.feedMode === 'lowdata';
+    if (c === 'doctor') active = state.doctorVisitUpcoming;
+    btn.classList.toggle('active', active);
+  });
+  document.querySelectorAll('[data-feed]').forEach(btn => {
+    const f = btn.dataset.feed;
+    let active = false;
+    if (f === 'auto') active = state.feedMode === 'auto' && !state.feedOverride;
+    else if (f === 'lowdata') active = state.lowData || state.feedMode === 'lowdata';
+    else if (f === 'severe') active = state.feedMode === 'severe' || (state.feedMode === 'auto' && state.feeling === 'struggling');
+    else active = state.feedMode === f && !state.feedOverride;
+    btn.classList.toggle('active', active);
+  });
+  syncThemeControls();
+}
+
+function getThemePreference() {
+  return localStorage.getItem('theme') || 'system';
+}
+
+function isDarkActive() {
+  const pref = getThemePreference();
+  if (pref === 'dark') return true;
+  if (pref === 'light') return false;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function applyTheme(pref) {
+  if (pref) localStorage.setItem('theme', pref);
+  const dark = isDarkActive();
+  document.documentElement.classList.toggle('dark', dark);
+  document.getElementById('themeColorMeta').setAttribute('content', dark ? '#1A1614' : '#F5EEE8');
+  syncThemeControls();
+}
+
+function syncThemeControls() {
+  const pref = getThemePreference();
+  document.querySelectorAll('[data-theme]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === pref);
+  });
+}
+
+function toggleTheme() {
+  applyTheme(isDarkActive() ? 'light' : 'dark');
+}
+
+document.getElementById('themeToggle').onclick = toggleTheme;
+
+document.querySelectorAll('[data-theme]').forEach(btn => {
+  btn.onclick = () => applyTheme(btn.dataset.theme);
+});
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (getThemePreference() === 'system') applyTheme('system');
+});
+
+document.getElementById('protoToggle').onclick = () => {
+  document.getElementById('protoPanel').classList.toggle('open');
+};
+
+document.querySelectorAll('[data-gut]').forEach(btn => {
+  btn.onclick = () => {
+    clearGutTimer();
+    const g = btn.dataset.gut;
+    state.lowData = false;
+    if (g === 'checkin') { resetCheckIn(); }
+    else if (g === 'okay') {
+      state.feeling = 'okay';
+      state.gutMode = 'next_action';
+      state.checkInTime = Date.now() - 120000;
+      startNextActionTimer();
+    } else if (g === 'not_great') {
+      state.feeling = 'not_great';
+      state.gutMode = 'next_action';
+      state.checkInTime = Date.now() - 300000;
+      startNextActionTimer();
+    } else if (g === 'struggling') {
+      state.feeling = 'struggling';
+      state.gutMode = 'next_action';
+      state.checkInTime = Date.now();
+      startNextActionTimer();
+    } else if (g === 'compact') {
+      state.feeling = state.feeling === 'not_checked_in' ? 'not_great' : state.feeling;
+      state.checkInTime = state.checkInTime || Date.now() - 600000;
+      state.gutMode = 'compact';
+    } else if (g === 'reflection') {
+      state.feeling = state.feeling === 'not_checked_in' ? 'not_great' : state.feeling;
+      state.checkInTime = state.checkInTime || Date.now() - 600000;
+      state.gutMode = 'reflection';
+    }
+    render();
+    syncProtoControls();
+  };
+});
+
+document.querySelectorAll('[data-care]').forEach(btn => {
+  btn.onclick = () => {
+    const c = btn.dataset.care;
+    if (c === 'med_due') {
+      state.medicationDue = true;
+      state.medicationCompleted = false;
+      state.scheduledMedication.status = 'due';
+      state.lowData = false;
+    } else if (c === 'med_done') {
+      completeMedication();
+      return;
+    } else if (c === 'lowdata') {
+      state.lowData = !state.lowData;
+      state.feedMode = state.lowData ? 'lowdata' : 'auto';
+      if (state.lowData) state.feedOverride = null;
+    } else if (c === 'doctor') {
+      state.doctorVisitUpcoming = !state.doctorVisitUpcoming;
+      state.lowData = false;
+    }
+    render();
+    syncProtoControls();
+  };
+});
+
+document.querySelectorAll('[data-time]').forEach(btn => {
+  btn.onclick = () => {
+    state.timeOfDay = btn.dataset.time;
+    render();
+    syncProtoControls();
+  };
+});
+
+document.querySelectorAll('[data-action]').forEach(btn => {
+  btn.onclick = () => {
+    const a = btn.dataset.action;
+    if (a === 'reset') resetState();
+    if (a === 'symptom') { logTrackEntry('symptom', 'Bloating · severity 2'); state.symptomLoggedToday = true; state.symptomHighSeverity = false; showToast('Sample symptom added'); render(); }
+    if (a === 'bowel') { logTrackEntry('bowel', 'Type 4 · no urgency'); state.bowelLoggedToday = true; showToast('Bowel log added'); render(); }
+    if (a === 'medication') completeMedication();
+    if (a === 'timeout') {
+      if (state.gutMode === 'next_action') collapseGutCard();
+      else if (state.gutMode === 'reflection') collapseGutCard();
+      else showToast('Set a check-in state first');
+    }
+  };
+});
+
+document.querySelectorAll('[data-feed]').forEach(btn => {
+  btn.onclick = () => {
+    const f = btn.dataset.feed;
+    state.feedOverride = null;
+    if (f === 'auto') {
+      state.feedMode = 'auto';
+      state.lowData = false;
+    } else if (f === 'relief') {
+      state.feedMode = 'relief';
+      state.lowData = false;
+    } else if (f === 'care') {
+      state.feedMode = 'care';
+      state.lowData = false;
+    } else if (f === 'doctor') {
+      state.feedMode = 'doctor';
+      state.lowData = false;
+    } else if (f === 'lowdata') {
+      state.feedMode = 'lowdata';
+      state.lowData = true;
+    } else if (f === 'severe') {
+      state.feedMode = 'severe';
+      state.lowData = false;
+      state.feeling = 'struggling';
+      state.gutMode = state.gutMode === 'checkin' ? 'compact' : state.gutMode;
+      state.checkInTime = state.checkInTime || Date.now();
+    }
+    render();
+    syncProtoControls();
+    if (window.GutsphereToday) GutsphereToday.getFeed();
+  };
+});
+
+const FEED_CARD_CATALOG = {
+  welcome: 'Welcome to Today',
+  guidance: 'Guidance gets clearer as you log',
+  simple_plan: 'Care Plan',
+  medication_due: 'Medication due',
+  medication_done: 'Medication completed',
+  relief: 'Relief step',
+  severe_relief: 'Severe relief step',
+  snapshot: 'Today snapshot',
+  missing_log: 'Missing log cue',
+  pattern: 'Pattern reflection',
+  similar_days: 'Similar days',
+  doctor_prep: 'Doctor prep',
+  doctor_note: 'Doctor note',
+  weekly_summary: 'Weekly summary',
+  chat: 'Continue conversation'
+};
+
+window.GutsphereToday = {
+  setFeed: function (cardIds) {
+    if (!Array.isArray(cardIds)) {
+      console.error('Pass an array of ids. Example: GutsphereToday.setFeed(["medication_due","snapshot"])');
+      return;
+    }
+    state.feedOverride = cardIds.slice(0, 6);
+    state.feedMode = 'auto';
+    renderTodayFeed();
+    console.log('Today Feed updated:', state.feedOverride);
+    return state.feedOverride;
+  },
+  clearFeed: function () {
+    state.feedOverride = null;
+    state.feedMode = 'auto';
+    renderTodayFeed();
+    console.log('Today Feed: automatic ranking restored.');
+  },
+  setFeedMode: function (mode) {
+    state.feedMode = mode || 'auto';
+    state.feedOverride = null;
+    if (mode === 'lowdata') state.lowData = true;
+    else if (mode === 'auto') state.lowData = false;
+    render();
+    syncProtoControls();
+    return state.feedMode;
+  },
+  listFeedCards: function () {
+    var rows = Object.keys(FEED_CARD_CATALOG).map(function (id) {
+      return { id: id, title: FEED_CARD_CATALOG[id] };
+    });
+    console.table(rows);
+    return Object.keys(FEED_CARD_CATALOG);
+  },
+  getFeed: function () {
+    var sections = getTodayFeedSections().map(function (s) {
+      return { section: s.label, cards: s.cards.map(function (c) { return c.id; }) };
+    });
+    console.log('Current Today Feed:', sections);
+    return sections;
+  }
+};
+console.log('[GutsphereToday] Console: listFeedCards(), setFeed([...]), getFeed(), clearFeed(), setFeedMode(mode)');
+
+render();
+syncProtoControls();
+applyTheme(getThemePreference());
+</script>
+</body>
+</html>

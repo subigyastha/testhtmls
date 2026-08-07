@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GutSphere · GI Visit Brief lab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{
+  --coral:#D93A3E;--coral-deep:#C7323A;--coral-soft:rgba(217,58,62,.08);--coral-border:rgba(217,58,62,.22);
+  --cream:#FFFAF7;--sand:#F5EEE8;--sand-light:#FAF6F2;--card:#fff;--ink:#1C1917;--text:#57534E;--muted:#746E69;
+  --border:#E7E0DA;--green:#2E7D32;--green-bg:#D1FAE5;--amber:#92400E;--amber-bg:#FEF3C7;--blue:#1E40AF;--blue-bg:#DBEAFE;
+  --shadow:0 8px 36px rgba(28,25,23,.10);--display:'Inter',sans-serif;--body:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:#E9E2DC;color:var(--ink);padding:22px 18px 60px;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit}
+.top{max-width:1180px;margin:0 auto 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.brand{font:700 15px var(--display)}.brand b{color:var(--coral)}.sub{max-width:680px;font-size:11.5px;line-height:1.5;color:var(--text)}
+.stage{max-width:1180px;margin:auto;display:flex;justify-content:center;align-items:flex-start;gap:36px;flex-wrap:wrap}
+.phonecol{display:flex;flex-direction:column;align-items:center;gap:10px}
+.phone{width:360px;height:740px;border:12px solid #15110F;border-radius:48px;background:var(--cream);box-shadow:0 28px 70px rgba(0,0,0,.25);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.notch{position:absolute;z-index:20;top:0;left:50%;transform:translateX(-50%);width:120px;height:25px;background:#15110F;border-radius:0 0 16px 16px}
+.status{height:43px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 7px;font-size:11px;font-weight:700;flex-shrink:0}
+.apphead{height:54px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:space-between;padding:0 18px;flex-shrink:0}
+.backlink{width:31px;height:31px;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;color:var(--text);cursor:pointer}
+.apptitle{font-size:14px;font-weight:700}.appmeta{font-size:9px;color:var(--muted);text-align:center;margin-top:1px}
+.avatar{width:31px;height:31px;border-radius:50%;background:var(--coral-soft);border:1px solid var(--coral-border);color:var(--coral-deep);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.screen{flex:1;overflow-y:auto;scrollbar-width:none;padding:14px 18px 24px}.screen::-webkit-scrollbar{display:none}
+.caption{font-size:10.5px;color:#57534E;max-width:340px;text-align:center;line-height:1.45}
+
+.flowtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.step{font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--coral-deep)}
+.save{border:0;background:transparent;color:var(--muted);font-size:10px;font-weight:700;cursor:pointer}
+.bar{display:flex;gap:3px;margin-bottom:18px}.bar i{height:4px;flex:1;border-radius:3px;background:var(--border)}.bar i.on{background:var(--coral)}
+.hero{padding:4px 2px 14px}.heroicon{width:48px;height:48px;border-radius:15px;background:var(--coral-soft);color:var(--coral-deep);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.hero h1{font:700 23px/1.16 var(--display);letter-spacing:-.025em}.hero p{font-size:12.5px;line-height:1.5;color:var(--text);margin-top:7px}
+.trust{display:flex;gap:7px;align-items:flex-start;background:var(--sand-light);border:1px solid var(--border);border-radius:11px;padding:9px 10px;font-size:10.5px;color:var(--text);line-height:1.4;margin:4px 0 12px}
+.trust svg{flex-shrink:0;color:var(--coral-deep)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:14px;margin-bottom:9px;box-shadow:0 1px 3px rgba(0,0,0,.025)}
+.eyebrow{font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.card h3{font-size:14px;line-height:1.3}.card p{font-size:11.5px;line-height:1.45;color:var(--text);margin-top:4px}
+.row{display:flex;gap:9px;align-items:flex-start;padding:9px 1px;border-bottom:1px solid var(--border)}.row:last-child{border-bottom:0}
+.ricon{width:27px;height:27px;border-radius:8px;background:var(--sand-light);display:flex;align-items:center;justify-content:center;color:var(--text);flex-shrink:0}
+.rbody{flex:1;min-width:0}.rtitle{font-size:12px;font-weight:700;line-height:1.25}.rmeta{font-size:9.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.pill{font-size:9px;font-weight:800;padding:3px 7px;border-radius:9px;background:var(--sand-light);border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.pill.rec{background:var(--coral-soft);border-color:var(--coral-border);color:var(--coral-deep)}.pill.ok{background:var(--green-bg);border-color:transparent;color:var(--green)}
+.label{font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:13px 2px 6px}
+.choices{display:grid;gap:7px}.choice{border:1.5px solid var(--border);background:var(--card);border-radius:12px;padding:10px 11px;display:flex;gap:9px;align-items:center;cursor:pointer}
+.choice.on{border-color:var(--coral);background:var(--coral-soft)}.radio{width:15px;height:15px;border-radius:50%;border:1.5px solid #C8BFB8;flex-shrink:0}.choice.on .radio{border-color:var(--coral);background:var(--coral);box-shadow:inset 0 0 0 3px #fff}
+.ct{font-size:11.5px;font-weight:700}.cm{font-size:9.5px;color:var(--muted);margin-top:2px;line-height:1.3}
+.chips{display:flex;flex-wrap:wrap;gap:5px}.chip{border:1px solid var(--border);background:var(--card);border-radius:14px;padding:6px 9px;font-size:10px;font-weight:700;color:var(--text);cursor:pointer}.chip.on{border-color:var(--coral);background:var(--coral-soft);color:var(--coral-deep)}
+.field{width:100%;border:1px solid var(--border);border-radius:11px;background:#fff;color:var(--ink);padding:9px 10px;font-size:11.5px;line-height:1.35;outline:none;margin-bottom:6px}.field:focus{border-color:var(--coral)}textarea.field{min-height:55px;resize:none}
+.hint{font-size:9px;color:var(--muted);line-height:1.35;margin:0 2px 7px}
+.toggle{width:32px;height:19px;border-radius:12px;background:var(--border);position:relative;flex-shrink:0;cursor:pointer}.toggle:after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;top:3px;left:3px;box-shadow:0 1px 2px rgba(0,0,0,.15)}.toggle.on{background:var(--coral)}.toggle.on:after{left:16px}
+.sectionrow{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px;margin-bottom:6px}.sectionrow.off{opacity:.52}.sectionrow .rbody{padding-top:1px}
+.cta{width:100%;border:0;border-radius:13px;background:var(--coral);color:#fff;font:700 12.5px var(--display);padding:11px 13px;cursor:pointer;margin-top:12px}.cta:active{transform:scale(.99)}.secondary{width:100%;border:1px solid var(--border);border-radius:13px;background:#fff;color:var(--text);font-size:11px;font-weight:700;padding:10px;cursor:pointer;margin-top:7px}
+.twobtn{display:flex;gap:7px;margin-top:12px}.twobtn>*{flex:1;margin:0}
+.coverage{display:grid;grid-template-columns:1fr 1fr;gap:6px}.cov{border:1px solid var(--border);background:var(--sand-light);border-radius:10px;padding:8px}.cov b{font:700 14px var(--display)}.cov span{display:block;font-size:8.5px;color:var(--muted);margin-top:2px}
+.review{border:1px solid var(--border);border-radius:13px;background:#fff;padding:3px 11px}.reviewline{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding:8px 0}.reviewline:last-child{border:0}.reviewline span:first-child{font-size:9.5px;color:var(--muted)}.reviewline span:last-child{font-size:10.5px;font-weight:700;text-align:right;max-width:63%}
+.warning{background:var(--amber-bg);color:var(--amber);border-radius:11px;padding:9px 10px;font-size:10.5px;line-height:1.4;margin:9px 0;display:flex;gap:7px;align-items:flex-start}
+.danger{background:var(--coral-soft);border:1px solid var(--coral-border);border-radius:13px;padding:12px;margin:8px 0}.danger h3{font-size:13px;color:var(--coral-deep)}.danger p{font-size:10.5px;line-height:1.45;color:var(--text);margin-top:4px}
+.gen{text-align:center;padding:78px 10px 20px}.spinner{width:58px;height:58px;border-radius:50%;border:5px solid var(--coral-border);border-top-color:var(--coral);animation:spin 1s linear infinite;margin:0 auto 18px}@keyframes spin{to{transform:rotate(360deg)}}.gen h2{font-size:17px}.gen p{font-size:10.5px;color:var(--muted);margin-top:5px}
+.doneicon{width:58px;height:58px;border-radius:18px;background:var(--green-bg);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+
+.panel{width:400px;background:#fff;border:1px solid #DED5CF;border-radius:20px;padding:18px;box-shadow:var(--shadow);position:sticky;top:18px;max-height:calc(100vh - 44px);overflow:auto}
+.panel h2{font:700 15px var(--display)}.panel>p{font-size:11px;line-height:1.45;color:var(--text);margin-top:4px}
+.group{margin-top:15px}.glabel{font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#837970;margin-bottom:6px;display:flex;justify-content:space-between}.glabel em{font-style:normal;color:var(--coral-deep);text-transform:none;letter-spacing:0}
+.segs{display:flex;flex-wrap:wrap;gap:5px}.seg{border:1.5px solid var(--border);background:#fff;border-radius:15px;padding:6px 9px;font-size:10.5px;font-weight:700;color:var(--text);cursor:pointer}.seg.on{background:var(--coral);border-color:var(--coral);color:#fff}
+.statebox{margin-top:15px;background:#1C1917;color:#E7E5E4;border-radius:13px;padding:11px;font:9.5px/1.55 ui-monospace,monospace}.statebox b{color:#FCA5A5}.foot{font-size:9px;color:#8A817A;line-height:1.45;margin-top:12px}
+
+/* Full document mode */
+.docmode{display:none;max-width:1050px;margin:0 auto}.docmode.on{display:block}.stage.off,.top.off{display:none}
+.doctools{position:sticky;top:10px;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.96);border:1px solid var(--border);border-radius:14px;padding:10px 12px;margin-bottom:14px;box-shadow:var(--shadow)}
+.doctools .left{display:flex;align-items:center;gap:8px}.doctools .right{display:flex;gap:6px;flex-wrap:wrap}.toolbtn{border:1px solid var(--border);background:#fff;border-radius:10px;padding:8px 11px;font-size:10.5px;font-weight:700;color:var(--text);cursor:pointer}.toolbtn.primary{background:var(--coral);border-color:var(--coral);color:#fff}
+.paper{width:794px;min-height:1123px;margin:0 auto 18px;background:#fff;box-shadow:0 12px 40px rgba(0,0,0,.14);padding:50px 56px;color:#24211F}
+.phead{border-bottom:2px solid var(--coral);padding-bottom:13px;margin-bottom:16px}.pbrand{font:800 12px var(--display);color:var(--coral-deep);letter-spacing:.04em}.ptitle{font:700 25px var(--display);letter-spacing:-.025em;margin-top:7px}.pprov{font-size:9.5px;color:#625C57;line-height:1.45;margin-top:7px}
+.pagenda{background:#FAF6F2;border-left:4px solid var(--coral);padding:12px 14px;margin-bottom:16px}.pagenda .k{font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#81766E}.pagenda .q{font:700 15px/1.35 var(--display);margin-top:5px}.pagenda ul{margin:7px 0 0 17px;font-size:10px;line-height:1.5;color:#4F4945}
+.psection{margin-top:15px}.psection h2{font:800 10px var(--display);letter-spacing:.08em;text-transform:uppercase;color:#4E4742;border-bottom:1px solid #DED6D0;padding-bottom:5px;margin-bottom:7px}
+.ptable{width:100%;border-collapse:collapse;font-size:9.5px}.ptable th{text-align:left;background:#F7F3EF;color:#5F5751;font-size:8px;text-transform:uppercase;letter-spacing:.04em;padding:6px}.ptable td{padding:7px 6px;border-bottom:1px solid #EAE4DF;vertical-align:top;line-height:1.35}.ptable td b{font-weight:700}
+.timeline{border-left:2px solid #D8D0CA;margin-left:5px;padding-left:14px}.tevent{position:relative;padding:0 0 10px;font-size:9.5px;line-height:1.4}.tevent:before{content:'';position:absolute;width:7px;height:7px;border-radius:50%;background:#fff;border:2px solid var(--coral);left:-19px;top:2px}.tevent b{display:inline-block;min-width:82px}
+.pcols{display:grid;grid-template-columns:1fr 1fr;gap:14px}.pbox{background:#FAF8F6;border:1px solid #E7E0DA;border-radius:8px;padding:9px}.pbox h3{font-size:9px;text-transform:uppercase;letter-spacing:.06em}.pbox p,.pbox li{font-size:9px;line-height:1.45;color:#514A46}.pbox ul{margin:5px 0 0 14px}
+.source{display:inline-block;font-size:7.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;border-radius:7px;padding:2px 6px;margin-bottom:4px;background:#EEE8E3;color:#655D57}.source.person{background:#FEF3C7;color:#92400E}.source.system{background:#DBEAFE;color:#1E40AF}
+.pfooter{border-top:1px solid #D8D0CA;margin-top:18px;padding-top:8px;font-size:8px;line-height:1.4;color:#6E6660}
+.chart{border:1px solid #E4DDD7;border-radius:8px;padding:10px;margin-top:7px}.charttitle{font-size:9px;font-weight:700}.chartmeta{font-size:8px;color:#716963;margin-top:2px}.plot{height:110px;position:relative;border-left:1px solid #AFA6A0;border-bottom:1px solid #AFA6A0;margin:15px 10px 20px 24px}.dot{position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;border:2px solid var(--coral);transform:translate(-50%,50%)}.xlabel{position:absolute;bottom:-17px;font-size:7px;color:#716963;transform:translateX(-50%)}.ylabel{position:absolute;left:-22px;font-size:7px;color:#716963}.eventmark{position:absolute;top:0;bottom:0;border-left:1px dashed #1E40AF}.eventmark span{position:absolute;top:-12px;left:3px;font-size:7px;color:#1E40AF;white-space:nowrap}
+.sparsebox{border:1px dashed #CFC5BE;border-radius:8px;padding:18px;text-align:center;font-size:9.5px;color:#6D645E;margin-top:7px}
+.detailtable{font-size:8px}.docnote{font-size:9px;color:#625C57;margin-bottom:10px;line-height:1.4}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1C1917;color:#fff;border-radius:11px;padding:9px 13px;font-size:10px;font-weight:700;z-index:100;display:none}.toast.on{display:block}
+@media(max-width:900px){.panel{position:static;width:100%;max-width:430px}.paper{width:100%;min-height:0;padding:28px 24px}.docmode{width:100%}.pcols{grid-template-columns:1fr}.doctools{position:static}}
+@media print{body{padding:0;background:#fff}.doctools,.top,.stage{display:none!important}.docmode{display:block!important}.paper{box-shadow:none;margin:0;width:210mm;min-height:297mm;page-break-after:always}.paper:last-child{page-break-after:auto}}
+</style>
+</head>
+<body>
+<div class="top" id="top">
+  <div class="brand">Gut<b>Sphere</b> · GI Visit Brief lab</div>
+  <div class="sub">A visit-specific, person-controlled discussion aid. Purpose and history slice stay independent; sparse data is visible; recorded facts, person observations, and optional GutSphere-generated observations remain separate.</div>
+</div>
+
+<div class="stage" id="stage">
+  <div class="phonecol">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status"><span>9:41</span><span>●  ▰</span></div>
+      <div class="apphead">
+        <button class="backlink" id="phone-back" aria-label="Back">←</button>
+        <div><div class="apptitle">GI Visit Brief</div><div class="appmeta" id="appmeta">Discussion aid</div></div>
+        <div class="avatar">MY</div>
+      </div>
+      <div class="screen" id="screen"></div>
+    </div>
+    <div class="caption">The brief is generated for a specific conversation. It is not the Personal Journey Review, a diagnosis, or a clinician-authored note.</div>
+  </div>
+
+  <aside class="panel">
+    <h2>Visit Brief scenarios</h2>
+    <p>Controls change lifecycle, purpose, history slice, data coverage, and account tier without appearing inside the product UI.</p>
+    <div class="group"><div class="glabel">User state <em>entry flow</em></div><div class="segs" id="ctl-flow"></div></div>
+    <div class="group"><div class="glabel">Scenario <em>swaps records</em></div><div class="segs" id="ctl-scenario"></div></div>
+    <div class="group"><div class="glabel">Purpose <em>report order</em></div><div class="segs" id="ctl-purpose"></div></div>
+    <div class="group"><div class="glabel">History slice <em>independent</em></div><div class="segs" id="ctl-range"></div></div>
+    <div class="group"><div class="glabel">Coverage <em>missingness rules</em></div><div class="segs" id="ctl-coverage"></div></div>
+    <div class="group"><div class="glabel">Tier <em>basic export always works</em></div><div class="segs" id="ctl-tier"></div></div>
+    <div class="group"><div class="glabel">Step <em id="step-count">1 of 7</em></div><div class="segs" id="ctl-step"></div></div>
+    <div class="group"><div class="glabel">View state</div><div class="segs" id="ctl-view"></div></div>
+    <div class="statebox" id="statebox"></div>
+    <div class="foot">Demo data only. The exported brief explicitly labels self-reported information and is not clinically reviewed. jsPDF is loaded from CDN for real client-side PDF generation.</div>
+  </aside>
+</div>
+
+<main class="docmode" id="docmode">
+  <div class="doctools">
+    <div class="left"><button class="toolbtn" data-doc-action="back">← Back to setup</button><strong>GI Visit Brief preview</strong></div>
+    <div class="right">
+      <button class="toolbtn" data-doc-action="detail">Detailed data</button>
+      <button class="toolbtn" data-doc-action="csv">Download CSV</button>
+      <button class="toolbtn" data-doc-action="download">Download PDF</button>
+      <button class="toolbtn primary" data-doc-action="share">Share PDF</button>
+    </div>
+  </div>
+  <div id="document-pages"></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const svg=(body,size=15)=>`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+const ICON={
+  doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8m-8 4h6"/>',
+  check:'<path d="m5 13 4 4L19 7"/>', shield:'<path d="M12 3l7 3v5c0 4.4-3 8.4-7 10-4-1.6-7-5.6-7-10V6Z"/>',
+  question:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1 .7-1.5 1.1-1.5 2.5M12 17h.01"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', chart:'<path d="M3 3v18h18"/><path d="m7 15 4-4 3 2 5-6"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  person:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>', plus:'<path d="M12 5v14M5 12h14"/>',
+  alert:'<path d="M12 3 2 21h20Z"/><path d="M12 9v5m0 3h.01"/>', copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
+};
+
+const PURPOSES={
+  concern:{label:'New or unexplained concern',short:'New concern',help:'Clarify onset, change, impact, and questions'},
+  treatment:{label:'Follow-up / treatment review',short:'Treatment review',help:'Compare recorded periods around a treatment change'},
+  flare:{label:'Flare or change from baseline',short:'Flare review',help:'Show what changed and the short dated course'},
+  visit:{label:'Upcoming GI visit preparation',short:'Visit preparation',help:'Bring a focused agenda and relevant history'},
+  procedure:{label:'Procedure / test period',short:'Procedure period',help:'Bound preparation, procedure, and recovery'},
+  history:{label:'Long digestive history',short:'Long history',help:'Summarize phases and major clinical events'},
+  other:{label:'Other discussion',short:'Other',help:'Choose the evidence that supports your conversation'}
+};
+const RANGES={
+  d14:{label:'Last 14 days',days:14},d28:{label:'Last 28 days',days:28},m3:{label:'Last 3 months',days:90},
+  m6:{label:'Last 6 months',days:180},y1:{label:'Last year',days:365},years:{label:'Multiple years',days:1095},
+  all:{label:'All history',days:3000},event:{label:'Defined event period',days:21}
+};
+const SECTIONS={
+  problems:{label:'Current problem picture',why:'Counts and severity for the selected concern'},
+  timeline:{label:'Meaningful timeline',why:'Dated changes, events, and current state'},
+  function:{label:'Function + selected concerns',why:'How this affected daily life'},
+  treatments:{label:'Treatments + self-care',why:'What was tried and the reported response'},
+  plans:{label:'Plans + routines',why:'Adherence, context, and person-reported effect'},
+  tests:{label:'Tests, procedures + visits',why:'Relevant clinical events with dates'},
+  evidence:{label:'Selected tracking evidence',why:'One to three purpose-relevant views'},
+  questions:{label:'Questions for clinician',why:'Your ranked agenda in your own words'},
+  observation:{label:'My observations',why:'Clearly attributed to you'}
+};
+const RECOMMENDED={
+  concern:['problems','timeline','function','treatments','tests','evidence','questions'],
+  treatment:['problems','timeline','function','treatments','plans','evidence','questions'],
+  flare:['problems','timeline','function','treatments','evidence','questions'],
+  visit:['problems','timeline','function','treatments','tests','questions','observation'],
+  procedure:['problems','timeline','function','treatments','tests','questions'],
+  history:['problems','timeline','treatments','plans','tests','questions'],
+  other:['problems','timeline','function','treatments','questions']
+};
+
+const SCENARIOS={
+  appointment:{
+    label:'Upcoming appointment',name:'Maya Young',dob:'1991-05-14',focus:'Bloating + bowel change',
+    question:'What could explain the recent change in bloating and bowel pattern?',
+    secondary:['Do I need any testing now?','What should I monitor next?'],
+    observation:'I noticed the change became harder to ignore after late July, but I am not sure what is related.',
+    impacts:['eating','sleep'],impactNote:'I skipped dinner twice and woke because of discomfort on two nights.',
+    events:[
+      {kind:'sym',date:'2026-07-10',entered:'2026-07-10',name:'Bloating',sev:4,duration:'2h'},
+      {kind:'bm',date:'2026-07-11',entered:'2026-07-11',type:4,urgency:2,strain:2},
+      {kind:'sym',date:'2026-07-15',entered:'2026-07-15',name:'Bloating',sev:6,duration:'4h'},
+      {kind:'routine',date:'2026-07-16',entered:'2026-07-16',name:'Post-meal walk',source:'Self-directed',adherence:'3 of 5 opportunities',effect:'I felt somewhat less full on 2 of 3 tries.'},
+      {kind:'bm',date:'2026-07-18',entered:'2026-07-18',type:3,urgency:3,strain:4},
+      {kind:'sym',date:'2026-07-22',entered:'2026-07-22',name:'Bloating',sev:7,duration:'5h'},
+      {kind:'treatment',date:'2026-07-24',entered:'2026-07-24',name:'Psyllium',source:'OTC supplement',adherence:'Most mornings',effect:'No clear change recorded.'},
+      {kind:'bm',date:'2026-07-27',entered:'2026-07-27',type:2,urgency:1,strain:6},
+      {kind:'sym',date:'2026-07-29',entered:'2026-07-29',name:'Abdominal discomfort',sev:5,duration:'3h'},
+      {kind:'sleep',date:'2026-07-29',entered:'2026-07-30',hours:5.8},
+      {kind:'sym',date:'2026-08-01',entered:'2026-08-01',name:'Bloating',sev:6,duration:'3h'},
+      {kind:'visit',date:'2026-08-12',entered:'2026-08-01',name:'Gastroenterology appointment',status:'Scheduled'}
+    ]
+  },
+  followup:{
+    label:'Returning follow-up',name:'Alex Morgan',dob:'1987-09-02',focus:'Constipation treatment response',
+    question:'Has the new treatment changed bowel frequency or straining enough to continue?',
+    secondary:['Are the side effects expected?'],observation:'I think mornings are easier, but the weekly pattern still feels inconsistent.',
+    impacts:['work'],impactNote:'Long bathroom visits made me late for work twice before treatment.',
+    events:[
+      {kind:'bm',date:'2026-06-04',entered:'2026-06-04',type:2,strain:7},{kind:'bm',date:'2026-06-08',entered:'2026-06-08',type:2,strain:6},
+      {kind:'treatment',date:'2026-06-10',entered:'2026-06-10',name:'Prescribed constipation treatment',source:'Clinician-prescribed',adherence:'Recorded 24 of 28 days',effect:'I reported easier passage on 14 days.'},
+      {kind:'bm',date:'2026-06-15',entered:'2026-06-15',type:3,strain:5},{kind:'bm',date:'2026-06-22',entered:'2026-06-22',type:3,strain:4},
+      {kind:'sym',date:'2026-06-24',entered:'2026-06-24',name:'Cramping',sev:4},{kind:'bm',date:'2026-07-02',entered:'2026-07-02',type:4,strain:3},
+      {kind:'routine',date:'2026-07-03',entered:'2026-07-03',name:'Morning bowel relaxation',source:'Self-directed routine',adherence:'5 of 7 mornings',effect:'I reported less gripping on 4 of 5 sessions.'},
+      {kind:'bm',date:'2026-07-12',entered:'2026-07-12',type:4,strain:3},{kind:'sym',date:'2026-07-18',entered:'2026-07-18',name:'Bloating',sev:3},
+      {kind:'bm',date:'2026-07-25',entered:'2026-07-25',type:3,strain:3},{kind:'visit',date:'2026-08-20',entered:'2026-07-30',name:'Treatment follow-up',status:'Scheduled'}
+    ]
+  },
+  history:{
+    label:'Years of history',name:'Jules Patel',dob:'1978-02-19',focus:'Changing digestive symptoms',
+    question:'Which parts of my longer history are most relevant to deciding what to evaluate next?',
+    secondary:['What previous treatments are worth revisiting?'],observation:'Symptoms have changed character over time rather than staying the same.',
+    impacts:['eating','work','activity'],impactNote:'Impact has varied by phase; the 2025 flare affected work most.',
+    phases:[
+      {date:'2023',title:'Onset / early tracking',text:'Intermittent bloating and constipation recorded; sparse diary coverage.'},
+      {date:'2024',title:'Diet and routine trials',text:'Low-FODMAP period and post-meal walking recorded; response was mixed.'},
+      {date:'2025',title:'Higher-impact flare',text:'Pain and urgency recorded more often; work disruption noted.'},
+      {date:'2026',title:'Current phase',text:'Bowel form is more stable; bloating remains the main discussion priority.'}
+    ],
+    events:[
+      {kind:'test',date:'2023-05-12',entered:'2023-05-12',name:'Initial GI testing',status:'Result text stored by user'},
+      {kind:'treatment',date:'2024-02-01',entered:'2024-02-01',name:'Low-FODMAP trial',source:'Dietitian-guided',adherence:'6 weeks recorded',effect:'I reported less bloating initially; symptoms returned during reintroduction.'},
+      {kind:'routine',date:'2024-08-14',entered:'2024-08-14',name:'Post-meal walk',source:'Self-directed routine',adherence:'Intermittent',effect:'Mixed response.'},
+      {kind:'sym',date:'2025-03-02',entered:'2025-03-04',name:'Urgency',sev:8},{kind:'sym',date:'2025-03-05',entered:'2025-03-05',name:'Pain',sev:7},
+      {kind:'visit',date:'2025-03-18',entered:'2025-03-18',name:'GI follow-up',status:'Completed'},
+      {kind:'treatment',date:'2025-04-01',entered:'2025-04-01',name:'Medication adjustment',source:'Clinician-prescribed',adherence:'Recorded as directed',effect:'Person reported fewer urgency days by May.'},
+      {kind:'bm',date:'2026-07-10',entered:'2026-07-10',type:4,strain:2},{kind:'sym',date:'2026-07-16',entered:'2026-07-16',name:'Bloating',sev:5},
+      {kind:'bm',date:'2026-07-24',entered:'2026-07-24',type:4,strain:2},{kind:'sym',date:'2026-07-28',entered:'2026-07-28',name:'Bloating',sev:6}
+    ]
+  },
+  focused:{
+    label:'Focused constipation',name:'Noor Ahmed',dob:'1994-11-21',focus:'Constipation',
+    question:'What does the last six months show about stool form, frequency, and straining?',
+    secondary:['Could pelvic-floor assessment be relevant to discuss?'],observation:'Soft stool can still be difficult to pass.',
+    impacts:['work','activity'],impactNote:'Bathroom time disrupts mornings on harder days.',
+    events:[
+      {kind:'bm',date:'2026-03-04',entered:'2026-03-04',type:2,strain:7},{kind:'bm',date:'2026-03-10',entered:'2026-03-10',type:3,strain:6},
+      {kind:'sym',date:'2026-03-10',entered:'2026-03-10',name:'Incomplete evacuation',sev:6},{kind:'routine',date:'2026-04-02',entered:'2026-04-02',name:'Bowel relaxation',source:'Self-directed routine',adherence:'9 sessions',effect:'Better on 5 of 9 sessions.'},
+      {kind:'bm',date:'2026-04-18',entered:'2026-04-18',type:4,strain:6},{kind:'bm',date:'2026-05-09',entered:'2026-05-09',type:3,strain:5},
+      {kind:'treatment',date:'2026-05-15',entered:'2026-05-15',name:'Psyllium',source:'OTC supplement',adherence:'Most days',effect:'Stool form changed; difficulty persisted.'},
+      {kind:'bm',date:'2026-06-02',entered:'2026-06-02',type:4,strain:5},{kind:'bm',date:'2026-06-20',entered:'2026-06-20',type:4,strain:5},
+      {kind:'sym',date:'2026-07-02',entered:'2026-07-02',name:'Incomplete evacuation',sev:5},{kind:'bm',date:'2026-07-25',entered:'2026-07-25',type:4,strain:5}
+    ]
+  },
+  flare:{
+    label:'Acute flare',name:'Sam Rivera',dob:'1990-03-08',focus:'Urgency + loose stool',
+    question:'What changed during this flare, and what should I discuss if it continues?',
+    secondary:['Could dehydration risk change what I do before the visit?'],observation:'This episode began after travel, but I do not know whether travel was related.',
+    impacts:['eating','sleep','work'],impactNote:'I missed one workday and limited food because of urgency.',
+    events:[
+      {kind:'bm',date:'2026-07-28',entered:'2026-07-28',type:4,strain:2},{kind:'event',date:'2026-07-30',entered:'2026-07-30',name:'Returned from travel'},
+      {kind:'sym',date:'2026-08-01',entered:'2026-08-01',name:'Urgency',sev:8},{kind:'bm',date:'2026-08-01',entered:'2026-08-01',type:7,strain:1},
+      {kind:'bm',date:'2026-08-02',entered:'2026-08-02',type:6,strain:1},{kind:'sym',date:'2026-08-02',entered:'2026-08-02',name:'Cramping',sev:7},
+      {kind:'routine',date:'2026-08-02',entered:'2026-08-02',name:'Urgency calming',source:'Self-directed routine',adherence:'2 sessions',effect:'I reported the edge came off once.'},
+      {kind:'sym',date:'2026-08-03',entered:'2026-08-03',name:'Urgency',sev:7},{kind:'bm',date:'2026-08-03',entered:'2026-08-03',type:6,strain:1}
+    ]
+  },
+  treatment:{
+    label:'Plan / treatment review',name:'Maya Young',dob:'1991-05-14',focus:'Plan response',
+    question:'Which parts of the current plan appear feasible, and what response did I report?',
+    secondary:['Should anything be adapted at the next visit?'],observation:'The evening routine is easier to follow than meal pacing.',
+    impacts:['sleep'],impactNote:'Evening discomfort delayed sleep on three logged nights.',
+    events:[
+      {kind:'treatment',date:'2026-06-28',entered:'2026-06-28',name:'Plan started',source:'GutSphere guided plan',adherence:'Day 10 of 14',effect:'Review pending.'},
+      {kind:'routine',date:'2026-07-01',entered:'2026-07-01',name:'Evening wind-down',source:'Plan routine',adherence:'6 of 8 opportunities',effect:'Better on 4 of 6 sessions.'},
+      {kind:'routine',date:'2026-07-03',entered:'2026-07-03',name:'Meal pacing',source:'Plan routine',adherence:'2 of 6 opportunities',effect:'Often not practical at work.'},
+      {kind:'sym',date:'2026-07-05',entered:'2026-07-05',name:'Bloating',sev:6},{kind:'sym',date:'2026-07-11',entered:'2026-07-11',name:'Bloating',sev:4},
+      {kind:'routine',date:'2026-07-13',entered:'2026-07-13',name:'Post-meal walk',source:'Outside plan',adherence:'3 sessions',effect:'Better on 2 of 3 sessions.'},
+      {kind:'sym',date:'2026-07-18',entered:'2026-07-18',name:'Bloating',sev:5},{kind:'bm',date:'2026-07-20',entered:'2026-07-20',type:4,strain:2}
+    ]
+  },
+  procedure:{
+    label:'Procedure period',name:'Robin Chen',dob:'1982-07-30',focus:'Colonoscopy preparation + recovery',
+    question:'Is the recovery course and current bowel pattern useful to discuss at follow-up?',
+    secondary:['Which symptoms should I mention from the preparation period?'],observation:'Recovery felt slower than I expected, but symptoms are now settling.',
+    impacts:['eating','activity'],impactNote:'Reduced activity for two days after the procedure.',
+    events:[
+      {kind:'event',date:'2026-07-08',entered:'2026-07-08',name:'Preparation started'},
+      {kind:'sym',date:'2026-07-09',entered:'2026-07-09',name:'Nausea',sev:5},{kind:'procedure',date:'2026-07-10',entered:'2026-07-10',name:'Colonoscopy',status:'Completed; result source retained'},
+      {kind:'sym',date:'2026-07-11',entered:'2026-07-11',name:'Abdominal discomfort',sev:6},{kind:'bm',date:'2026-07-12',entered:'2026-07-12',type:6,strain:1},
+      {kind:'bm',date:'2026-07-14',entered:'2026-07-14',type:5,strain:1},{kind:'sym',date:'2026-07-14',entered:'2026-07-14',name:'Bloating',sev:4},
+      {kind:'bm',date:'2026-07-18',entered:'2026-07-18',type:4,strain:2},{kind:'visit',date:'2026-08-15',entered:'2026-07-20',name:'Procedure follow-up',status:'Scheduled'}
+    ]
+  }
+};
+
+let S={
+  flow:'first',scenario:'appointment',purpose:'visit',range:'m3',coverage:'adequate',tier:'free',
+  step:1,view:'phone',focus:'selected',selected:new Set(RECOMMENDED.visit),impacts:new Set(['eating','sleep']),
+  primary:'',secondary:[],observation:'',exclude:'',includeDob:false,includeCopilot:false,copilotChoice:false,
+  safetyAck:false,generating:null,generated:false,detail:false,saved:false
+};
+
+function data(){
+  const base=SCENARIOS[S.scenario];
+  let events=base.events.map(x=>({...x}));
+  if(S.coverage==='sparse') events=events.filter((_,i)=>i%3===0).slice(0,4);
+  if(S.coverage==='backfilled') events=events.map((e,i)=>i%2?{...e,entered:addDays(e.date,4)}:e);
+  if(S.coverage==='safety') events=[...events,{kind:'concern',date:'2026-08-05',entered:'2026-08-05',name:'Blood in stool',note:'Self-reported; care status not yet confirmed'}];
+  return {...base,events};
+}
+function addDays(iso,n){const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function fmt(iso){if(!iso)return'—';return new Date(iso+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
+function clampEvents(d){
+  const days=RANGES[S.range].days;if(S.range==='all'||S.range==='years')return d.events;
+  const max=new Date('2026-08-06T12:00:00');const min=new Date(max);min.setDate(min.getDate()-days);
+  return d.events.filter(e=>new Date(e.date+'T12:00:00')>=min);
+}
+function trackedDays(events,kinds){return new Set(events.filter(e=>kinds.includes(e.kind)).map(e=>e.date)).size}
+function late(events){return events.filter(e=>e.entered&&e.entered!==e.date).length}
+function rangeLabel(){return RANGES[S.range].label}
+
+function recommendations(purpose){
+  S.selected=new Set(RECOMMENDED[purpose]||RECOMMENDED.other);
+}
+function initializeFromScenario(reset=true){
+  const d=SCENARIOS[S.scenario];
+  if(reset){
+    S.primary=d.question;S.secondary=[...d.secondary];S.observation=d.observation;
+    S.impacts=new Set(d.impacts);S.exclude='';S.includeCopilot=S.tier==='copilot';
+  }
+  if(S.scenario==='history'){S.purpose='history';S.range='years'}
+  if(S.scenario==='focused'){S.purpose='concern';S.range='m6'}
+  if(S.scenario==='flare'){S.purpose='flare';S.range='d14'}
+  if(S.scenario==='treatment'){S.purpose='treatment';S.range='d28'}
+  if(S.scenario==='procedure'){S.purpose='procedure';S.range='event'}
+  recommendations(S.purpose);
+}
+
+function buildReport(){
+  const d=data(),events=clampEvents(d),days=RANGES[S.range].days;
+  const syms=events.filter(e=>e.kind==='sym'),bms=events.filter(e=>e.kind==='bm');
+  const tries=events.filter(e=>['treatment','routine'].includes(e.kind)).slice(0,5);
+  const clinical=events.filter(e=>['test','procedure','visit','event','concern'].includes(e.kind));
+  const coverage=[
+    {domain:'Symptoms',tracked:trackedDays(events,['sym']),events:syms.length},
+    {domain:'Bowel',tracked:trackedDays(events,['bm']),events:bms.length},
+    {domain:'Treatments / routines',tracked:trackedDays(events,['treatment','routine']),events:tries.length},
+    {domain:'Context',tracked:trackedDays(events,['sleep','event','visit','procedure']),events:events.filter(e=>['sleep','event','visit','procedure'].includes(e.kind)).length}
+  ];
+  const bySym={};syms.forEach(e=>(bySym[e.name]??=[]).push(e));
+  const problems=Object.entries(bySym).map(([name,xs])=>({
+    name,count:xs.length,tracked:new Set(xs.map(x=>x.date)).size,
+    typical:Math.round(xs.reduce((a,x)=>a+(x.sev||0),0)/xs.length),worst:Math.max(...xs.map(x=>x.sev||0)),
+    wording:`${name} recorded on ${new Set(xs.map(x=>x.date)).size} days · ${xs.length} rated episode${xs.length===1?'':'s'} · typical ${Math.round(xs.reduce((a,x)=>a+(x.sev||0),0)/xs.length)}/10 · worst ${Math.max(...xs.map(x=>x.sev||0))}/10`
+  }));
+  if(bms.length) problems.push({
+    name:'Bowel pattern',count:bms.length,tracked:new Set(bms.map(x=>x.date)).size,
+    wording:`${bms.length} logged bowel events · Bristol types ${[...new Set(bms.map(x=>x.type))].sort().join(', ')}${bms.some(x=>x.strain!=null)?` · straining recorded ${bms.filter(x=>x.strain!=null).length} times`:''}`
+  });
+  const timeline=(d.phases&&S.range==='years')
+    ? d.phases.map(x=>({...x,phase:true}))
+    : [...clinical,...syms,...tries].sort((a,b)=>a.date.localeCompare(b.date)).slice(-6).map(e=>({
+        date:fmt(e.date),title:eventTitle(e),text:eventText(e),late:e.entered&&e.entered!==e.date
+      }));
+  const observations=[];
+  if(S.includeCopilot&&S.tier==='copilot'){
+    const bloating=bySym.Bloating||[];
+    if(bloating.length>=3)observations.push({
+      type:'system',title:'GutSphere-generated observation',
+      text:`Bloating was recorded on ${new Set(bloating.map(x=>x.date)).size} days in this range; median rated severity ${median(bloating.map(x=>x.sev))}/10 among ${bloating.length} rated episodes.`,
+      limits:`Inputs: self-reported bloating ratings · ${rangeLabel()} · n=${bloating.length}. Descriptive only; no cause inferred.`
+    });
+    if(bms.length>=3)observations.push({
+      type:'system',title:'GutSphere-generated observation',
+      text:`Bristol type ${mode(bms.map(x=>x.type))} was the most frequently recorded form among ${bms.length} bowel entries.`,
+      limits:`Inputs: logged bowel events · ${rangeLabel()} · n=${bms.length}. Untracked days are not treated as days without bowel movements.`
+    });
+  }
+  const evidence=[
+    {key:'symptom',title:'Selected symptom ratings',enough:syms.length>=4,count:syms.length,events:syms},
+    {key:'bowel',title:'Bowel-event view',enough:bms.length>=3,count:bms.length,events:bms},
+    {key:'overlay',title:'Treatment / event overlay',enough:tries.length>=1&&(syms.length+bms.length)>=3,count:tries.length,events:[...tries,...syms,...bms]}
+  ].filter(v=>S.selected.has('evidence')).slice(0,3);
+  return {
+    title:'GI Visit Brief',version:'prototype-v1',generated:new Date(),
+    person:d.name,dob:S.includeDob?d.dob:null,purpose:PURPOSES[S.purpose].label,focus:S.focus==='all'?'All digestive issues':d.focus,
+    period:rangeLabel(),days,events,coverage,late:late(events),questions:{primary:S.primary||d.question,secondary:S.secondary.slice(0,2)},
+    problems:problems.slice(0,3),timeline,impacts:[...S.impacts],impactNote:d.impactNote,tries,
+    tests:clinical.filter(e=>['test','procedure','visit'].includes(e.kind)),personObservation:S.observation,
+    observations,evidence,selected:[...S.selected],exclude:S.exclude,
+    source:`The following information was recorded by ${d.name} in GutSphere. It has not been clinically reviewed.`
+  };
+}
+function median(xs){const a=[...xs].sort((x,y)=>x-y),m=Math.floor(a.length/2);return a.length%2?a[m]:Math.round((a[m-1]+a[m])/2)}
+function mode(xs){const c={};xs.forEach(x=>c[x]=(c[x]||0)+1);return Object.keys(c).sort((a,b)=>c[b]-c[a])[0]}
+function eventTitle(e){return e.name||({bm:'Bowel event',sym:'Symptom recorded',routine:'Routine tried',treatment:'Treatment change'}[e.kind]||'Recorded event')}
+function eventText(e){
+  if(e.kind==='sym')return`Severity ${e.sev}/10${e.duration?` · duration ${e.duration}`:''}`;
+  if(e.kind==='bm')return`Bristol type ${e.type}${e.strain!=null?` · straining ${e.strain}/10`:''}`;
+  if(['routine','treatment'].includes(e.kind))return`${e.source} · ${e.adherence} · ${e.effect}`;
+  return e.status||e.note||'Self-reported event';
+}
+
+function progress(step,total){return`<div class="flowtop"><span class="step">${step} of ${total}</span><button class="save" data-action="save">Save & exit</button></div><div class="bar">${Array.from({length:total},(_,i)=>`<i class="${i<step?'on':''}"></i>`).join('')}</div>`}
+function choice(key,label,meta,current,attr='choice'){return`<div class="choice ${current===key?'on':''}" data-${attr}="${key}"><span class="radio"></span><span><span class="ct">${label}</span>${meta?`<span class="cm" style="display:block">${meta}</span>`:''}</span></div>`}
+function nav(next='Continue',back=true){return`<div class="twobtn">${back?'<button class="secondary" data-action="back">Back</button>':''}<button class="cta" data-action="next">${next}</button></div>`}
+
+function firstIntro(){
+  return`${progress(1,7)}<div class="hero"><div class="heroicon">${svg(ICON.doc,24)}</div><h1>Prepare a focused brief for your visit.</h1><p>Choose the part of your GutSphere history that matters for this conversation, review it, then create a one-page handoff.</p></div>
+  <div class="card"><div class="row"><span class="ricon">${svg(ICON.question)}</span><span class="rbody"><span class="rtitle">Starts with your visit question</span><span class="rmeta">Not a generic weekly dashboard</span></span></div>
+  <div class="row"><span class="ricon">${svg(ICON.chart)}</span><span class="rbody"><span class="rtitle">Shows coverage and missingness</span><span class="rmeta">No entry is never treated as symptom-free</span></span></div>
+  <div class="row"><span class="ricon">${svg(ICON.edit)}</span><span class="rbody"><span class="rtitle">You control what is shared</span><span class="rmeta">Preview, edit, remove, download</span></span></div></div>
+  <div class="trust">${svg(ICON.shield,13)}<span>Self-reported information · not clinically reviewed · not a diagnosis or substitute for history-taking.</span></div>${nav('Choose visit purpose',false)}`;
+}
+function recentDashboard(){
+  const d=data();
+  return`<div class="hero"><div class="heroicon">${svg(ICON.doc,24)}</div><h1>${S.flow==='reuse'?'Reuse a previous setup.':'Create another GI Visit Brief.'}</h1><p>Your prior brief remains unchanged. Reusing copies its configuration, then updates the range and data.</p></div>
+  <div class="card"><div class="eyebrow"><span>Recent brief</span><span class="pill ok">Generated</span></div><h3>${PURPOSES[S.purpose].label}</h3><p>${d.focus} · ${rangeLabel()} · generated 24 Jul 2026</p>
+  <div class="row"><span class="ricon">${svg(ICON.copy)}</span><span class="rbody"><span class="rtitle">Use last GI visit setup</span><span class="rmeta">Questions and included sections can be revised</span></span><button class="pill rec" data-action="reuse">Use setup</button></div></div>
+  <button class="cta" data-action="new">Generate another brief</button><button class="secondary" data-action="help">How Visit Briefs work</button>`;
+}
+function purposeStep(){
+  return`${progress(2,7)}<div class="hero"><h1>What would you like this appointment to help with?</h1><p>This changes what appears first. You’ll choose the time period separately.</p></div><div class="choices">${Object.entries(PURPOSES).map(([k,v])=>choice(k,v.label,v.help,S.purpose,'purpose')).join('')}</div>${nav('Set visit priority')}`;
+}
+function priorityStep(){
+  const impacts=[['work','Work / school'],['eating','Eating'],['sleep','Sleep'],['activity','Activity'],['none','None recorded']];
+  return`${progress(3,7)}<div class="hero"><h1>Set the agenda in your own words.</h1><p>One priority question is easiest to use in a short visit. Add up to two secondary questions.</p></div>
+  <div class="label">Priority question</div><textarea class="field" id="primary" maxlength="180">${S.primary}</textarea>
+  <div class="label">Secondary questions · optional</div><input class="field" id="secondary-0" maxlength="140" value="${S.secondary[0]||''}"><input class="field" id="secondary-1" maxlength="140" value="${S.secondary[1]||''}">
+  <div class="label">Functional impact</div><div class="chips">${impacts.map(([k,l])=>`<button class="chip ${S.impacts.has(k)?'on':''}" data-impact="${k}">${l}</button>`).join('')}</div>
+  <div class="hint" style="margin-top:6px">Questions are kept as you wrote them. GutSphere does not turn them into diagnostic demands.</div>${nav('Choose focus and period')}`;
+}
+function scopeStep(){
+  const d=data();
+  return`${progress(4,7)}<div class="hero"><h1>Choose the relevant slice of history.</h1><p>Focus and time range are independent. A focused question can still use months or years of history.</p></div>
+  <div class="label">Focus</div><div class="choices">${choice('selected',d.focus,'Prioritize this topic',S.focus,'focus')}${choice('all','All digestive issues','Use only the most visit-relevant items',S.focus,'focus')}</div>
+  <div class="label">Time or event range</div><div class="chips">${Object.entries(RANGES).map(([k,v])=>`<button class="chip ${S.range===k?'on':''}" data-range="${k}">${v.label}</button>`).join('')}</div>
+  ${S.range==='years'||S.range==='all'?`<div class="warning">${svg(ICON.clock,13)}<span>Long history mode summarizes phases, major changes, treatments, tests, and tracking gaps. Daily entries remain in detailed data.</span></div>`:''}${nav('Choose what to include')}`;
+}
+function contentsStep(){
+  return`${progress(5,7)}<div class="hero"><h1>Recommended for this conversation.</h1><p>The set is purpose-led and bounded. Remove anything that would not help this visit.</p></div>
+  ${Object.entries(SECTIONS).map(([k,v])=>`<div class="sectionrow ${S.selected.has(k)?'':'off'}"><span class="toggle ${S.selected.has(k)?'on':''}" data-section="${k}"></span><span class="rbody"><span class="rtitle">${v.label}</span><span class="rmeta">${v.why}</span></span>${(RECOMMENDED[S.purpose]||[]).includes(k)?'<span class="pill rec">Recommended</span>':''}</div>`).join('')}${nav('Add personal context')}`;
+}
+function contextStep(){
+  return`${progress(6,7)}<div class="hero"><h1>Keep your words separate from the data.</h1><p>Your observation is shown as person-authored context, never as a GutSphere finding.</p></div>
+  <div class="label">What I have noticed · optional</div><textarea class="field" id="observation" maxlength="360">${S.observation}</textarea>
+  <div class="label">Exclude or correct · optional</div><textarea class="field" id="exclude" maxlength="240" placeholder="Anything you do not want in this brief…">${S.exclude}</textarea>
+  <div class="sectionrow"><span class="toggle ${S.includeDob?'on':''}" data-dob="1"></span><span class="rbody"><span class="rtitle">Include date of birth</span><span class="rmeta">Off by default; include only if useful for the handoff</span></span></div>
+  <div class="trust">${svg(ICON.shield,13)}<span>Do not enter another person’s identity or contact details. You will preview exactly what is shared.</span></div>${nav('Review before generation')}`;
+}
+function reviewStep(){
+  const r=buildReport(),selected=r.selected.map(k=>SECTIONS[k]?.label).filter(Boolean);
+  return`${progress(7,7)}<div class="hero"><h1>Review what will be shared.</h1><p>Every number keeps its period and denominator. Missing data stays visible.</p></div>
+  ${S.coverage==='safety'&&!S.safetyAck?`<div class="danger"><h3>Care guidance before export</h3><p>A concerning change is present in the selected records. Do not rely on this PDF being reviewed promptly. Use the care options appropriate to your situation first.</p><button class="secondary" data-action="safety">I’ve seen the care guidance</button></div>`:''}
+  <div class="review"><div class="reviewline"><span>Purpose</span><span>${r.purpose}</span></div><div class="reviewline"><span>Priority</span><span>${r.questions.primary}</span></div><div class="reviewline"><span>Focus</span><span>${r.focus}</span></div><div class="reviewline"><span>Period</span><span>${r.period}</span></div><div class="reviewline"><span>Coverage</span><span>${r.events.length} selected records · ${r.late} entered later</span></div><div class="reviewline"><span>Included</span><span>${selected.length} sections</span></div><div class="reviewline"><span>Person observation</span><span>${r.personObservation?'Included':'Not included'}</span></div></div>
+  <div class="label">Coverage by domain</div><div class="coverage">${r.coverage.map(c=>`<div class="cov"><b>${c.tracked}/${Math.min(r.days,999)}</b><span>${c.domain} days · ${c.events} records</span></div>`).join('')}</div>
+  ${r.late?`<div class="warning">${svg(ICON.clock,13)}<span>${r.late} record${r.late===1?' was':'s were'} entered after the event date. Event time and entry time remain distinct in detailed data.</span></div>`:''}
+  <button class="secondary" data-action="edit-sections">Edit included sections</button><button class="cta" data-action="generate" ${S.coverage==='safety'&&!S.safetyAck?'disabled style="opacity:.45"':''}>Generate GI Visit Brief</button>`;
+}
+function generating(){
+  const stages=['Organizing selected records','Calculating coverage and summaries','Building the visit-specific brief','Brief created'];
+  const i=S.generating||0;
+  return`<div class="gen">${i<3?'<div class="spinner"></div>':`<div class="doneicon">${svg(ICON.check,26)}</div>`}<h2>${stages[i]}</h2><p>${i+1} of 4 · ${i<3?'The current setup remains editable until generation completes.':'Ready to review before sharing.'}</p></div>`;
+}
+function completeScreen(){
+  const r=buildReport();
+  return`<div class="gen" style="padding-top:45px"><div class="doneicon">${svg(ICON.check,26)}</div><h2>Your GI Visit Brief is ready.</h2><p>${r.period} · ${r.events.length} selected records · ${r.selected.length} sections</p></div>
+  ${S.tier==='free'&&!S.copilotChoice?`<div class="card"><div class="eyebrow"><span>Optional</span><span class="pill rec">Copilot</span></div><h3>Add GutSphere-generated observations?</h3><p>The basic brief is complete without them. Copilot adds removable descriptive observations with inputs, denominators, period, and limitations.</p><button class="cta" data-action="add-copilot">Preview with Copilot</button><button class="secondary" data-action="basic">Continue with basic brief</button></div>`:
+  `<button class="cta" data-action="view-doc">View GI Visit Brief</button><button class="secondary" data-action="start-over">Generate another brief</button>`}`;
+}
+function savedScreen(){return`<div class="hero" style="padding-top:42px"><div class="heroicon">${svg(ICON.check,24)}</div><h1>Setup saved.</h1><p>Your choices and person-authored context remain in this demo. No brief was generated.</p></div><button class="cta" data-action="resume">Resume setup</button>`}
+
+function renderPhone(){
+  let html='';
+  if(S.saved)html=savedScreen();
+  else if(S.generating!=null)html=generating();
+  else if(S.generated)html=completeScreen();
+  else if((S.flow==='returning'||S.flow==='reuse')&&S.step===0)html=recentDashboard();
+  else html=[firstIntro,purposeStep,priorityStep,scopeStep,contentsStep,contextStep,reviewStep][Math.max(0,Math.min(6,S.step-1))]();
+  document.getElementById('screen').innerHTML=html;
+  document.getElementById('appmeta').textContent=S.generated?'Generated preview':S.flow==='first'?'Create a brief':'New brief';
+  wirePhone();
+}
+function saveInputs(){
+  const p=document.getElementById('primary');if(p)S.primary=p.value.trim();
+  S.secondary=[0,1].map(i=>document.getElementById('secondary-'+i)?.value.trim()).filter(Boolean).slice(0,2);
+  const o=document.getElementById('observation');if(o)S.observation=o.value.trim();
+  const x=document.getElementById('exclude');if(x)S.exclude=x.value.trim();
+}
+function wirePhone(){
+  document.querySelectorAll('[data-action]').forEach(el=>el.onclick=()=>handleAction(el.dataset.action));
+  document.querySelectorAll('[data-purpose]').forEach(el=>el.onclick=()=>{S.purpose=el.dataset.purpose;recommendations(S.purpose);renderAll()});
+  document.querySelectorAll('[data-focus]').forEach(el=>el.onclick=()=>{S.focus=el.dataset.focus;renderAll()});
+  document.querySelectorAll('[data-range]').forEach(el=>el.onclick=()=>{S.range=el.dataset.range;renderAll()});
+  document.querySelectorAll('[data-impact]').forEach(el=>el.onclick=()=>{const k=el.dataset.impact;if(k==='none')S.impacts.clear();else{S.impacts.delete('none');S.impacts.has(k)?S.impacts.delete(k):S.impacts.add(k)}renderAll()});
+  document.querySelectorAll('[data-section]').forEach(el=>el.onclick=()=>{const k=el.dataset.section;S.selected.has(k)?S.selected.delete(k):S.selected.add(k);renderAll()});
+  document.querySelectorAll('[data-dob]').forEach(el=>el.onclick=()=>{S.includeDob=!S.includeDob;renderAll()});
+}
+function handleAction(a){
+  saveInputs();
+  if(a==='next')S.step=Math.min(7,S.step+1);
+  if(a==='back')S.step=Math.max(1,S.step-1);
+  if(a==='save')S.saved=true;
+  if(a==='resume')S.saved=false;
+  if(a==='new'){S.flow='returning';S.step=2}
+  if(a==='reuse'){S.flow='reuse';S.step=7}
+  if(a==='help'){S.flow='first';S.step=1}
+  if(a==='edit-sections')S.step=5;
+  if(a==='safety')S.safetyAck=true;
+  if(a==='generate'&&(S.coverage!=='safety'||S.safetyAck))startGeneration();
+  if(a==='add-copilot'){S.tier='copilot';S.includeCopilot=true;S.copilotChoice=true;renderAll();return}
+  if(a==='basic'){S.includeCopilot=false;S.copilotChoice=true;renderAll();return}
+  if(a==='view-doc')openDocument();
+  if(a==='start-over'){S.generated=false;S.step=2;S.flow='returning'}
+  renderAll();
+}
+document.getElementById('phone-back').onclick=()=>{if(S.generated){S.generated=false;S.step=7}else if(S.step>1)S.step--;else location.href='patterns-journey-variant-lab.html';renderAll()};
+function startGeneration(){
+  S.generating=0;renderAll();let token=Date.now();S.genToken=token;
+  [1,2,3].forEach((n,i)=>setTimeout(()=>{if(S.genToken!==token)return;S.generating=n;renderAll();if(n===3)setTimeout(()=>{if(S.genToken!==token)return;S.generating=null;S.generated=true;S.includeCopilot=S.tier==='copilot';renderAll()},450)},(i+1)*520));
+}
+
+function documentHtml(r){
+  const problemRows=r.selected.includes('problems')?r.problems.map(p=>`<tr><td><b>${p.name}</b></td><td>${p.wording}</td><td>Self-reported entries</td></tr>`).join(''):'';
+  const timeline=r.selected.includes('timeline')?r.timeline.map(e=>`<div class="tevent"><b>${e.date}</b> ${e.title} · ${e.text||''}${e.late?' <span class="source">entered later</span>':''}</div>`).join(''):'';
+  const tryRows=r.tries.map(e=>`<tr><td><b>${e.name}</b><br><span class="source">${e.source}</span></td><td>${fmt(e.date)}</td><td>${e.adherence}</td><td>${e.effect}</td></tr>`).join('');
+  const cov=r.coverage.map(c=>`${c.domain}: ${c.tracked} tracked day${c.tracked===1?'':'s'} / ${Math.min(r.days,999)}; ${c.events} record${c.events===1?'':'s'}`).join(' · ');
+  return`<section class="paper" id="page1"><div class="phead"><div class="pbrand">GUTSPHERE · PERSON-GENERATED DISCUSSION AID</div><div class="ptitle">GI Visit Brief</div><div class="pprov"><b>${r.person}</b>${r.dob?` · DOB ${fmt(r.dob)}`:''} · Generated ${r.generated.toLocaleString('en-GB')}<br>${r.purpose} · ${r.period} · ${r.focus}<br>${r.source} Coverage: ${cov}. ${r.late?`${r.late} record${r.late===1?' was':'s were'} entered later.`:''}</div></div>
+  <div class="pagenda"><div class="k">Priority for this visit</div><div class="q">${r.questions.primary}</div>${r.questions.secondary.length?`<ul>${r.questions.secondary.map(q=>`<li>${q}</li>`).join('')}</ul>`:''}</div>
+  ${problemRows?`<div class="psection"><h2>Current problem picture</h2><table class="ptable"><thead><tr><th style="width:22%">Recorded item</th><th>What the selected records show</th><th style="width:20%">Source</th></tr></thead><tbody>${problemRows}</tbody></table></div>`:''}
+  ${timeline?`<div class="psection"><h2>Change over time</h2><div class="timeline">${timeline}</div></div>`:''}
+  <div class="pcols">
+    ${r.selected.includes('function')?`<div class="pbox"><span class="source person">Person-reported</span><h3>Function and impact</h3><p>${r.impacts.length?r.impacts.join(', '):'No functional impact selected.'}</p><p>${r.impactNote||''}</p></div>`:''}
+    ${r.selected.includes('observation')&&r.personObservation?`<div class="pbox"><span class="source person">Person’s observation</span><h3>What I noticed</h3><p>${r.personObservation}</p></div>`:''}
+  </div>
+  ${r.selected.includes('treatments')&&tryRows?`<div class="psection"><h2>What was tried</h2><table class="ptable"><thead><tr><th>Item + source</th><th>Date</th><th>Adherence / context</th><th>Person-reported effect</th></tr></thead><tbody>${tryRows}</tbody></table></div>`:''}
+  ${r.observations.length?`<div class="psection"><h2>Optional GutSphere-generated observations</h2>${r.observations.map(o=>`<div class="pbox" style="margin-bottom:6px"><span class="source system">${o.title}</span><p>${o.text}</p><p><b>Limitations:</b> ${o.limits}</p></div>`).join('')}</div>`:''}
+  <div class="psection"><h2>Evidence pointer</h2><p style="font-size:9.5px">See the selected evidence page for purpose-relevant views. Detailed selected records are available as CSV and are not part of the default reading path.</p></div>
+  <div class="pfooter">Self-reported in GutSphere · not clinically reviewed · not a diagnosis, assessment, plan, or inbox alert. The clinician remains responsible for verification, interpretation, assessment, and planning. Filters: ${r.purpose}; ${r.period}; ${r.focus}. Report ${r.version}.</div></section>`;
+}
+function evidenceHtml(r){
+  if(!r.selected.includes('evidence'))return'';
+  return`<section class="paper" id="page2"><div class="phead"><div class="pbrand">GUTSPHERE · SELECTED EVIDENCE</div><div class="ptitle">Evidence for this visit question</div><div class="pprov">${r.period} · views selected by purpose · self-reported entries</div></div>
+  ${r.evidence.map(v=>evidenceView(v,r)).join('')}
+  <div class="pfooter">No-entry days are not interpreted as symptom-free, bowel-movement-free, or adherent days. Event and entry dates remain available in detailed data.</div></section>`;
+}
+function evidenceView(v,r){
+  if(!v.enough)return`<div class="psection"><h2>${v.title}</h2><div class="sparsebox">Not enough entries to summarize this period · n=${v.count}</div></div>`;
+  if(v.key==='symptom'){
+    const xs=v.events.slice(-10),max=Math.max(...xs.map(e=>e.sev||0),10);
+    return`<div class="psection"><h2>${v.title}</h2><div class="chart"><div class="charttitle">Reported symptom severity</div><div class="chartmeta">${r.period} · 0–10 self-reported scale · n=${v.count}</div><div class="plot"><span class="ylabel" style="top:-4px">10</span><span class="ylabel" style="bottom:-4px">0</span>${xs.map((e,i)=>`<i class="dot" style="left:${(i/(xs.length-1))*100}%;bottom:${(e.sev/max)*100}%"></i><span class="xlabel" style="left:${(i/(xs.length-1))*100}%">${fmt(e.date).split(' ').slice(0,2).join(' ')}</span>`).join('')}</div></div></div>`;
+  }
+  if(v.key==='bowel')return`<div class="psection"><h2>${v.title}</h2><table class="ptable"><thead><tr><th>Date</th><th>Bristol type</th><th>Urgency</th><th>Straining</th></tr></thead><tbody>${v.events.slice(-8).map(e=>`<tr><td>${fmt(e.date)}</td><td>Type ${e.type}</td><td>${e.urgency!=null?e.urgency+'/10':'Not recorded'}</td><td>${e.strain!=null?e.strain+'/10':'Not recorded'}</td></tr>`).join('')}</tbody></table><div class="docnote">Logged events only · n=${v.count}. No inference is made for untracked days.</div></div>`;
+  const events=v.events.slice(-12).sort((a,b)=>a.date.localeCompare(b.date));
+  return`<div class="psection"><h2>${v.title}</h2><div class="timeline">${events.map(e=>`<div class="tevent"><b>${fmt(e.date)}</b>${eventTitle(e)} · ${eventText(e)}</div>`).join('')}</div><div class="docnote">Dated treatment/context overlay · ${r.period} · n=${events.length}</div></div>`;
+}
+function detailHtml(r){
+  if(!S.detail)return'';
+  return`<section class="paper"><div class="phead"><div class="pbrand">GUTSPHERE · DETAILED SELECTED DATA</div><div class="ptitle">Selected records</div><div class="pprov">Optional reference layer · not the default clinician reading path</div></div><table class="ptable detailtable"><thead><tr><th>Event date</th><th>Entry date</th><th>Type</th><th>Recorded detail</th></tr></thead><tbody>${r.events.map(e=>`<tr><td>${fmt(e.date)}</td><td>${fmt(e.entered)}${e.entered!==e.date?' · entered later':''}</td><td>${e.kind}</td><td>${eventTitle(e)} · ${eventText(e)}</td></tr>`).join('')}</tbody></table><div class="pfooter">${r.source} Detailed data may contain context not promoted to the one-page brief.</div></section>`;
+}
+function openDocument(){S.view='document';renderAll()}
+function renderDocument(){
+  if(S.view!=='document')return;
+  const r=buildReport();document.getElementById('document-pages').innerHTML=documentHtml(r)+evidenceHtml(r)+detailHtml(r);
+  document.getElementById('docmode').classList.add('on');document.getElementById('stage').classList.add('off');document.getElementById('top').classList.add('off');wireDoc();
+}
+function closeDocument(){S.view='phone';document.getElementById('docmode').classList.remove('on');document.getElementById('stage').classList.remove('off');document.getElementById('top').classList.remove('off');renderAll()}
+function wireDoc(){document.querySelectorAll('[data-doc-action]').forEach(el=>el.onclick=async()=>{const a=el.dataset.docAction;if(a==='back')closeDocument();if(a==='detail'){S.detail=!S.detail;renderDocument()}if(a==='csv')downloadCsv();if(a==='download')downloadPdf();if(a==='share')await sharePdf()})}
+
+function pdfInstance(){
+  if(!window.jspdf?.jsPDF)throw new Error('PDF library is still loading. Try again in a moment.');
+  return new window.jspdf.jsPDF({unit:'pt',format:'a4'});
+}
+function addWrapped(doc,text,x,y,width,opts={}){
+  doc.setFont('helvetica',opts.bold?'bold':'normal');doc.setFontSize(opts.size||9);doc.setTextColor(...(opts.color||[65,60,56]));
+  const lines=doc.splitTextToSize(String(text).replace(/<[^>]+>/g,''),width);doc.text(lines,x,y);return y+lines.length*(opts.leading||12);
+}
+function makePdfBlob(){
+  const r=buildReport(),doc=pdfInstance(),W=595,H=842,M=42;let y=42;
+  const line=()=>{doc.setDrawColor(217,58,62);doc.setLineWidth(1.5);doc.line(M,y,W-M,y);y+=14};
+  const section=t=>{if(y>760){doc.addPage();y=42}doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(70,64,60);doc.text(t.toUpperCase(),M,y);y+=5;doc.setDrawColor(220);doc.line(M,y,W-M,y);y+=12};
+  doc.setTextColor(199,50,58);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('GUTSPHERE · PERSON-GENERATED DISCUSSION AID',M,y);y+=18;
+  doc.setTextColor(28,25,23);doc.setFontSize(21);doc.text('GI Visit Brief',M,y);y+=16;line();
+  y=addWrapped(doc,`${r.person}${r.dob?` · DOB ${fmt(r.dob)}`:''} · Generated ${r.generated.toLocaleString('en-GB')}`,M,y,W-2*M,{size:8});
+  y=addWrapped(doc,`${r.purpose} · ${r.period} · ${r.focus}`,M,y,W-2*M,{size:8});
+  y=addWrapped(doc,`${r.source} ${r.events.length} selected records; ${r.late} entered later.`,M,y+2,W-2*M,{size:8});y+=7;
+  doc.setFillColor(250,246,242);doc.rect(M,y,W-2*M,58,'F');y+=14;
+  doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(110);doc.text('PRIORITY FOR THIS VISIT',M+10,y);y+=15;
+  y=addWrapped(doc,r.questions.primary,M+10,y,W-2*M-20,{bold:true,size:12,leading:14});
+  r.questions.secondary.forEach(q=>{y=addWrapped(doc,'• '+q,M+14,y+2,W-2*M-28,{size:8,leading:10})});y+=12;
+  if(r.selected.includes('problems')&&r.problems.length){section('Current problem picture');r.problems.forEach(p=>{y=addWrapped(doc,p.name,M,y,115,{bold:true,size:9});y=addWrapped(doc,p.wording,M+120,y-12,W-2*M-120,{size:8,leading:10});y+=5})}
+  if(r.selected.includes('timeline')&&r.timeline.length){section('Change over time');r.timeline.forEach(e=>{const date=e.date;y=addWrapped(doc,`${date} · ${e.title} · ${e.text||''}${e.late?' · entered later':''}`,M,y,W-2*M,{size:8,leading:10});y+=3})}
+  if(r.selected.includes('function')){section('Function and impact');y=addWrapped(doc,`${r.impacts.length?r.impacts.join(', '):'No functional impact selected.'} ${r.impactNote||''}`,M,y,W-2*M,{size:8});y+=7}
+  if(r.selected.includes('observation')&&r.personObservation){section(\"Person's observation\");y=addWrapped(doc,r.personObservation,M,y,W-2*M,{size:8});y+=7}
+  if(r.selected.includes('treatments')&&r.tries.length){section('What was tried');r.tries.forEach(e=>{y=addWrapped(doc,`${e.name} (${e.source}) · ${fmt(e.date)} · ${e.adherence} · ${e.effect}`,M,y,W-2*M,{size:8,leading:10});y+=3})}
+  if(r.observations.length){section('Optional GutSphere-generated observations');r.observations.forEach(o=>{y=addWrapped(doc,`${o.text} Limitations: ${o.limits}`,M,y,W-2*M,{size:8,leading:10});y+=5})}
+  section('Evidence pointer');y=addWrapped(doc,'See the selected evidence page for purpose-relevant views. Detailed selected records are available as CSV.',M,y,W-2*M,{size:8});
+  doc.setFontSize(7);doc.setTextColor(100);doc.text(doc.splitTextToSize(`Self-reported in GutSphere · not clinically reviewed · not a diagnosis, assessment, or plan. Filters: ${r.purpose}; ${r.period}; ${r.focus}. Report ${r.version}.`,W-2*M),M,H-36);
+  if(r.selected.includes('evidence')){doc.addPage();y=42;doc.setTextColor(199,50,58);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('GUTSPHERE · SELECTED EVIDENCE',M,y);y+=22;doc.setTextColor(28);doc.setFontSize(18);doc.text('Evidence for this visit question',M,y);y+=20;line();r.evidence.forEach(v=>{section(v.title);if(!v.enough){y=addWrapped(doc,`Not enough entries to summarize this period · n=${v.count}`,M,y,W-2*M,{size:9});y+=10}else{v.events.slice(-10).forEach(e=>{y=addWrapped(doc,`${fmt(e.date)} · ${eventTitle(e)} · ${eventText(e)}`,M,y,W-2*M,{size:8,leading:10});y+=2})}})}
+  return doc.output('blob');
+}
+function safeName(ext){return`gutsphere-gi-visit-brief-${new Date().toISOString().slice(0,10)}.${ext}`}
+function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function downloadPdf(){try{downloadBlob(makePdfBlob(),safeName('pdf'));toast('PDF downloaded')}catch(e){toast(e.message)}}
+async function sharePdf(){try{const blob=makePdfBlob(),file=new File([blob],safeName('pdf'),{type:'application/pdf'});if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({title:'GI Visit Brief',text:'Person-generated GI Visit Brief for discussion.',files:[file]});toast('Share sheet opened')}else{downloadBlob(blob,file.name);toast('File sharing unavailable · PDF downloaded')}}catch(e){if(e.name!=='AbortError')toast(e.message)}}
+function csvText(){
+  const r=buildReport(),q=v=>`"${String(v??'').replaceAll('"','""')}"`;
+  return[['event_date','entry_date','type','name','detail','entered_later'],...r.events.map(e=>[e.date,e.entered,e.kind,eventTitle(e),eventText(e),e.entered!==e.date])].map(row=>row.map(q).join(',')).join('\n');
+}
+function downloadCsv(){downloadBlob(new Blob([csvText()],{type:'text/csv;charset=utf-8'}),safeName('csv'));toast('CSV downloaded')}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),2200)}
+
+function segs(id,obj,key,after){
+  const el=document.getElementById(id);el.innerHTML=Object.entries(obj).map(([k,l])=>`<button class="seg ${S[key]===k?'on':''}" data-k="${k}">${l}</button>`).join('');
+  el.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{S[key]=b.dataset.k;if(after)after(b.dataset.k);renderAll()});
+}
+function renderControls(){
+  segs('ctl-flow',{first:'First brief',returning:'Returning',reuse:'Reuse setup'},'flow',k=>{S.step=k==='first'?1:0;S.generated=false;S.saved=false});
+  segs('ctl-scenario',Object.fromEntries(Object.entries(SCENARIOS).map(([k,v])=>[k,v.label])),'scenario',()=>{initializeFromScenario(true);S.step=S.flow==='first'?1:0;S.generated=false;S.safetyAck=false});
+  segs('ctl-purpose',Object.fromEntries(Object.entries(PURPOSES).map(([k,v])=>[k,v.short])),'purpose',k=>recommendations(k));
+  segs('ctl-range',Object.fromEntries(Object.entries(RANGES).map(([k,v])=>[k,v.label])),'range');
+  segs('ctl-coverage',{sparse:'Sparse',adequate:'Adequate',backfilled:'Backfilled',safety:'Safety concern'},'coverage',()=>S.safetyAck=false);
+  segs('ctl-tier',{free:'Free',copilot:'Copilot'},'tier',k=>{S.includeCopilot=k==='copilot'});
+  const total=7,steps=Object.fromEntries(Array.from({length:total},(_,i)=>[String(i+1),String(i+1)]));
+  const st=document.getElementById('ctl-step');st.innerHTML=Object.entries(steps).map(([k,l])=>`<button class="seg ${S.step===+k?'on':''}" data-k="${k}">${l}</button>`).join('');st.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{S.step=+b.dataset.k;S.generated=false;S.saved=false;renderAll()});
+  document.getElementById('step-count').textContent=`${S.step||0} of 7`;
+  segs('ctl-view',{phone:'Phone',document:'Document'},'view',k=>{if(k==='document'){S.generated=true}else closeDocument()});
+  const r=buildReport();document.getElementById('statebox').innerHTML=`<b>${S.flow}</b> · ${S.scenario} · ${S.purpose} · ${S.range}<br>${r.events.length} selected records · ${r.late} entered later · ${r.coverage.map(c=>c.domain+':'+c.tracked).join(' / ')}<br>${S.selected.size} sections · tier <b>${S.tier}</b> · Copilot ${S.includeCopilot?'included':'excluded'}<br>Output: one-page brief${S.selected.has('evidence')?' + evidence page':''} + CSV`;
+}
+function renderAll(){renderPhone();renderControls();if(S.view==='document')renderDocument();else{document.getElementById('docmode').classList.remove('on');document.getElementById('stage').classList.remove('off');document.getElementById('top').classList.remove('off')}}
+initializeFromScenario(true);renderAll();
+</script>
+</body>
+</html>

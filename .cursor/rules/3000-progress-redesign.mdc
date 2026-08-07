@@ -1,0 +1,517 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+
+
+
+🔧 What Needs Refinement
+1. Missing the “Why” Behind the Progress Page
+We need to anchor this PRD in our product’s secret: shortening the feedback loop. Right now, it reads like a great analytics dashboard, but not a co-pilot that learns and nudges.
+Add a “Purpose” section at the top: What decisions will this page help users make today, this week, and over time?
+
+
+Reframe "Progress" as a feedback system — not just display but loop-closure.
+
+
+📌 Example: Instead of just showing “hydration was low on 3 days,” the system should say “On days you drank <5 cups, constipation severity was higher. Add a hydration streak goal?”
+
+2. From Analytics to Agency
+The current design stops short at observation. We must push toward recommendation, habit suggestion, or copilot guidance.
+
+
+Every card must end in:
+
+
+a “Suggested Habit”,
+
+
+an “Add to Tracker”, or
+
+
+a “CoPilot Ask” (e.g., “Ask me why bloating spiked Wednesday”).
+
+
+
+3. Visualization Needs Clinical & User Alignment
+“Gut Score” is ambiguous. Is it symptom severity? Balance of all metrics? A risk score?
+
+
+Let’s define a multi-dimensional score or drop it altogether in favor of "Trends You Should Know."
+
+
+Add “Download for Doctor” and “Pattern Summary for Clinician” buttons.
+
+
+Show export formats we support, how they align with clinical codes (e.g., Rome IV, Bristol Stool Chart), and ICD/AI-supported formats if possible.
+
+
+
+4. Trigger → Insight → Action Loop Isn’t Closed
+Each card should follow this cycle:
+Trigger: "You’ve logged X times this week"
+
+
+Insight: "This pattern is associated with Y symptom"
+
+
+Action: "Try Z habit, Copilot will check in Friday"
+
+
+We need to model this logic per card.
+
+5. Redundancy Across Sections
+There’s some repetition between the Card Design, AI Insight Types, and Agentic Flow sections. Consider:
+Merging AI Insight Types with Agentic Flow — show how agents power each card.
+
+
+Creating a visual or table mapping cards → agents → insights → recommended actions.
+
+
+
+6. Missing: Feedback/Reflection Loop
+This page should allow users to reflect or respond:
+“Did this insight resonate with you?” 👍👎
+
+
+“Would you like to add this habit?”
+
+
+“Did this help you poop better this week?” → micro-NPS.
+
+
+This feedback can go into improving insight accuracy (RLHF-like) and closing the loop.
+
+7. Language Needs Compliance Check
+Flag any claims that could be interpreted as diagnostic or therapeutic. Use phrasing like:
+“Patterns suggest…”
+
+
+“You might consider…”
+
+
+“Some users with similar patterns have…”
+
+
+Let’s make sure the Compliance Check Agent is embedded in every card’s insight generator.
+
+✅ Suggested Next Steps
+Add a Purpose Statement at the top.
+
+
+Map each card to: agent → insight → habit/call-to-action.
+
+
+Draft a few example user journeys (e.g., user with bloating + poor sleep + high stress — what would they see after 7 days?).
+
+
+Include feedback options and copilot nudges in every card.
+
+
+Tighten up language for medical compliance.
+
+
+
+Thanks again — this is a really solid v1. Let’s make it truly copilot-grade in v2.
+
+
+Below in more detail:
+
+Product Requirements Document (PRD)
+
+
+
+Overview
+This document outlines the redesigned architecture for the Gutsphere Progress Page, transitioning it from a retrospective, data-heavy layout to a dynamic, agent-driven system that closes the most important feedback loops in a GI patient's journey. Every insight must drive action and every data view should be multidisciplinary, interactive, and longitudinal.
+
+Core Objective
+To turn the Progress Page into a true co-pilot that:
+Closes symptom and treatment feedback loops
+
+
+Surfaces root causes and subtle patterns
+
+
+Helps users navigate clinical care (diagnostics + preparation)
+
+
+Promotes prevention, performance, and gut microbiome rebuilding
+
+
+
+The 8 Feedback Loops & Their Cards
+#
+Feedback Loop
+Card Name
+Primary Goal
+1
+Flare-Up Support
+Flare-Up Triage Card
+Immediate support during symptom spikes
+2
+Trigger/Root Cause Detection
+Insight Summary Card
+Multivariable pattern identification
+3
+Clinical Visit & Procedure Preparation
+Visit Prep Card
+Structured symptom summaries & guidance
+4
+Diagnostic Support
+Diagnostic Hypothesis Card
+Probable conditions + test recommendations
+5
+Treatment Tracking
+Treatment Support Card
+See if current treatments or habits are helping
+6
+Prevention & Risk Stability
+Stability Score Card
+Flagging trends and reinforcing safe habits
+7
+Gut Microbiome Recovery
+Microbiome Recovery Card
+Diet, fiber, probiotic-based rebuilding guidance
+8
+Human Performance Optimization
+Performance Support Card
+Enhance focus, energy, mood via gut metrics
+
+Each card will feature:
+A dynamic confidence score based on data completeness
+
+
+Multi-agent synthesis logic
+
+
+A clear call-to-action (e.g., add habit, export for visit, ask Copilot, share it)
+
+
+
+Multidisciplinary AI Review Board
+To power the above cards, every week (or upon key events), a virtual "review board" of agents will analyze the user’s data:
+Agents Involved:
+Nutritionist Agent
+
+
+Gastroenterologist Agent
+
+
+Psychologist Agent
+
+
+Sleep Expert Agent
+
+
+Exercise Therapist Agent
+
+
+Microbiome Research Agent
+
+
+Compliance Agent
+
+
+Review Triggers:
+Weekly cadence
+
+
+Flare-up detection
+
+
+New treatment start
+
+
+Pre-visit preparation
+
+
+Output:
+Card-level insight updates
+
+
+Optional Weekly Digest Summary card
+
+
+Copilot nudge suggestions
+
+
+
+Card Interaction Model
+Horizontally swipeable cards
+
+
+Dot indicators + card filter by loop
+
+
+Tap to expand insight, long-press for explanation
+
+
+Pull-to-refresh across all cards
+
+
+Copilot nudge embedded in each card footer
+
+
+
+Example Actions per Card
+Flare-Up Triage: "Log what helped you today" → Add to habit tracker
+
+
+Diagnostic Support: "Consider asking about this test" → Export for doctor
+
+
+Treatment Tracking: "Magnesium seems to help. Want to keep tracking it?"
+
+
+Stability Score: "Your stress is rising again — want to set a bedtime reminder?"
+
+
+
+Compliance Protocols
+Every insight must:
+Avoid diagnostic or prescriptive claims
+
+
+Use compliant language via Compliance Agent
+
+
+Example: "This pattern may suggest..." or "Others with similar symptoms have tried..."
+
+
+
+Engineering Next Steps
+Map each card to responsible agents and insight generation logic
+
+
+Define agent prompts and feedback scoring logic
+
+
+Prepare mock data test cases across 8 feedback loops
+
+
+Design insight quality scoring logic (confidence, completeness, coherence)
+
+
+Implement export functions for doctor summaries where relevant
+
+
+
+Success Metrics
+Reduction in average time from flare-up to action
+
+
+Increase in user habit adherence post-insight
+
+
+% of insights with follow-through behavior change
+
+
+% of users exporting clinical summaries for doctor visits
+
+
+Qualitative feedback from early users: "I finally understood what's happening"
+
+
+
+Let’s ensure every line of this page helps the user make sense of their symptoms, treatments, and next steps — with the help of a true copilot, not just a tracker.
+
+UI Sections
+
+
+
+Section 1: Tracker Graph Summary (Top Section) ( Gut at a glance)
+Objective
+Surface real-time, personalized trends from trackers to help users immediately understand what’s changing.
+Trackers to Display( all trackers trends in horizontal scroll):
+Bowel Movements (frequency, type)
+
+
+Hydration (glasses per day)
+
+
+Sleep (duration + quality)
+
+
+Stress Levels
+
+
+Nutrition (fiber, FODMAPs, diversity)
+
+
+Movement / Activity
+And more
+Design Requirements:
+Horizontally scrollable set of graph tiles
+
+
+Each graph tile contains:
+
+
+Title (e.g., Hydration)
+
+
+Summary insight (e.g., "3-day hydration drop")
+
+
+Graph image or real chart (line or bar)
+Suggestions
+Habits
+CTA
+Add habit
+Personalized Prompts
+Share
+
+Each of these: users can give feedback ( up, down, and comment)
+
+
+Color-coded feedback
+
+
+Green = good trend
+
+
+Yellow = needs attention
+
+
+Red = risk detected
+
+
+
+Section 2: Feedback Loop Cards (Middle Section)
+Objective
+Turn user data into proactive, personalized insights that address real user questions.
+Cards to Include:
+Flare-Up Triage
+
+
+Trigger Detection
+
+
+Diagnostic Hypothesis
+
+
+Treatment Support
+
+
+Visit Prep
+
+
+Microbiome Recovery
+
+
+Prevention Support
+
+
+Performance Optimization
+
+
+Design Requirements:
+Horizontally scrollable cards with snap scrolling
+
+
+Each card contains:
+
+
+Title (e.g., Trigger Detection)
+
+
+Summary insight (1–2 sentences)
+
+
+CTA button (e.g., "Explore", "Export Summary")
+
+
+Tap-to-expand for deeper detail
+Each of these: users can give feedback ( up, down, and comment)
+
+Footer integration with Copilot:
+
+
+Prompt to ask questions
+
+
+Suggested next step (e.g., log a habit)
+
+
+
+Section 3: Weekly Holistic AI Review (Bottom Section)
+Objective
+Give users a sense that a real multidisciplinary team has reviewed their data and delivered a human-like interpretation.
+Agent Perspectives:
+Nutritionist
+
+
+Gastroenterologist
+
+
+Psychologist
+
+
+Sleep Specialist
+
+
+Movement Coach
+
+
+Compliance & Risk Check Agent
+
+
+Each of these: users can give feedback ( up, down, and comment)
+Section 4 Clinical Proof & Feedback Loop Validation
+Purpose:
+Gather real-world, real-user evidence that validates:
+We are helping users and clinicians identify root causes faster
+We are closing the loop from symptom → insight → action → relief
+Features:
+Occasional quizzes or quick reflection prompts embedded in:
+Weekly summary section
+Card-level feedback (“Was this helpful?”)
+Copilot follow-up questions (“Did this insight lead to action?”)
+Optional NPS-style check-in: “Did we help you make sense of your symptoms this week?”
+Exportable reports users can bring to doctors — include post-visit feedback option
+Core Clinical Validation Metric:
+“Did we help shorten your feedback loop?”
+Measured via:
+Symptom relief timelines
+User-reported understanding/confidence
+Doctor feedback (beta pilot phase)
+
+Section 5 Habit feedback
+Design Requirements:
+Single vertically scrollable box with 3–5 expert summaries
+
+
+Personalization engine selects relevant agents based on recent data
+
+
+Copilot CTA: “Want to go deeper?”, “Ask why this matters”, etc.
+
+
+
+Global Interaction Design
+Progressive Disclosure Pattern:
+Summary first → user can tap to reveal more depth
+
+
+Collapse all cards by default on load
+
+
+Recent data appears before historical views
+
+
+
+
+
+
+Let’s create a product experience that makes users feel like they have a real care team in their pocket — personalized, insightful, and truly actionable.
+
+
+
+
+
+
+
+
+
