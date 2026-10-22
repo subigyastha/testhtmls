@@ -598,8 +598,169 @@ function walkIn(f, rect) {
   else morph(a, b, m, f, rect, x, opts)
 }
 
+// ---------------------------------------------------------------- the app's breathing player
+// Tokens and copy from gutsphere_app (gs_product.css, box_player.css, box_breathing.en.yml).
+const APP = {
+  CANVAS: "#f6f3ed", CARD: "#ffffff", INK: "#10110f", MUTED: "#555950", LINE: "#dcddd7", SOFT: "#ebe9e3", CURRENT: "#a9aba4",
+  AIR_IN: "84,143,134", AIR_OUT: "183,128,97", // #548f86 to the nose, #b78061 out of the mouth
+  FONT: "'Gutsphere Inter', Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif",
+  LABEL: { in: "Breathe in", hold: "Hold gently", out: "Breathe out", sip: "A little more in", natural: "Breathe naturally" },
+  CUE: { in: "Through your nose.", hold: "Breathe sooner if you need.", out: "An easy breath out.", sip: "One more small sip of air.", natural: "" }
+}
+let brand
+
+// Breath level at s seconds into the cycle: the app's curve (smootherstep in and out, flat holds).
+function levelAt(s) {
+  const sigh = phases.some(p => p.role === "sip"), starts = [], ends = []
+  let level = 0, i = 0
+  for (const p of phases) {
+    starts.push(level)
+    level = p.role === "in" ? (sigh ? 0.72 : 1) : p.role === "sip" ? 1 : p.role === "out" || p.role === "natural" ? 0 : level
+    ends.push(level)
+  }
+  while (i < phases.length - 1 && s >= phases[i].seconds) { s -= phases[i].seconds; i++ }
+  return mix(starts[i], ends[i], ease(s / phases[i].seconds))
+}
+
+// The soft stage behind him: a light wash and two blurred clouds drifting a few pixels (poses.mjs sceneFor).
+function appScenery(rect, t, alpha) {
+  if (alpha <= 0.001) return
+  const cx = rect.x + rect.w / 2, cy = rect.y + rect.h * 0.46, k = rect.w / 300
+  ctx.save(); ctx.globalAlpha = alpha
+  const wash = ctx.createRadialGradient(cx, cy, 0, cx, cy, rect.w * 0.75)
+  wash.addColorStop(0, "rgba(255,255,255,0.55)"); wash.addColorStop(1, "rgba(255,255,255,0)")
+  ctx.fillStyle = wash; ctx.fillRect(0, 0, W, H)
+  ctx.filter = `blur(${Math.round(17 * k)}px)`
+  const cloud = (x, y, w, h, a) => { ctx.fillStyle = `rgba(85,89,80,${a})`; ctx.beginPath(); ctx.ellipse(x, y, w / 2, h / 2, 0, 0, TAU); ctx.fill() }
+  cloud(rect.x + rect.w * 0.12 + 4 * k * Math.sin(t / 17), rect.y + rect.h * 0.47 + 2 * k * Math.sin(t / 23), rect.w * 0.46, rect.h * 0.28, 0.10)
+  cloud(rect.x + rect.w * 0.86 + 3 * k * Math.sin(t / 21 + 0.8), rect.y + rect.h * 0.24 + 2 * k * Math.sin(t / 29 + 0.4), rect.w * 0.40, rect.h * 0.24, 0.08)
+  ctx.restore()
+}
+
+// Air at the nose and mouth: a curved ribbon with three particles riding it, in teal on the way in and
+// warm brown on the way out. Paths are the app's (332 × 360 stage units), moved onto the warped face.
+function airRibbon(f, rect, alpha) {
+  if (f.guide == null || alpha <= 0) return
+  const ph = phaseAt(f.guide), inhale = ph.role === "in" || ph.role === "sip"
+  if (!inhale && ph.role !== "out") return
+  const sec = ph.seconds, fin = Math.min(0.28, 0.18 * sec), fout = Math.min(0.32, 0.2 * sec)
+  const a = alpha * ease(ph.offset / fin) * (1 - ease((ph.offset - (sec - fout)) / fout))
+  if (a <= 0.001) return
+  const S = rect.w / 332, toScreen = (v, o, s) => o + s * (0.5 + (v - 0.5) * ART_SCALE)
+  const [ax, ay] = warp(0.5, inhale ? 0.232 : 0.285, f.p), anchor = [toScreen(ax, rect.x, rect.w), toScreen(ay, rect.y, rect.h)]
+  const pts = inhale ? [[258, 88], [224, 68], [207, 129], [166, 106]] : [[166, 124], [205, 107], [221, 156], [258, 140]]
+  const end = inhale ? pts[3] : pts[0], dx = anchor[0] - (rect.x + end[0] * S), dy = anchor[1] - (rect.y + end[1] * S)
+  const P = pts.map(([x, y]) => [rect.x + x * S + dx, rect.y + y * S + dy])
+  const at = u => { const v = 1 - u; return [0, 1].map(j => v * v * v * P[0][j] + 3 * v * v * u * P[1][j] + 3 * v * u * u * P[2][j] + u * u * u * P[3][j]) }
+  const color = inhale ? APP.AIR_IN : APP.AIR_OUT
+  ctx.save(); ctx.lineCap = "round"
+  ctx.strokeStyle = `rgba(${color},${0.5 * a})`; ctx.lineWidth = 2.7 * S
+  ctx.beginPath(); ctx.moveTo(...P[0]); ctx.bezierCurveTo(...P[1], ...P[2], ...P[3]); ctx.stroke()
+  const period = sec * 0.45 * (ph.role === "sip" ? 0.7 : 1)
+  for (let k = 0; k < 3; k++) {
+    const u = (ph.offset / period + k / 3) % 1, [x, y] = at(u)
+    ctx.fillStyle = `rgba(${color},${Math.sin(Math.PI * u) * 0.95 * a})`
+    ctx.beginPath(); ctx.arc(x, y, 2.6 * S, 0, TAU); ctx.fill()
+  }
+  ctx.restore()
+}
+
+// The app's wave guide: one breath cycle as a line, a black dot riding it; the count sits above the dot.
+function appWave(f, y0, alpha) {
+  if (f.guide == null || alpha <= 0.001) return
+  const w = W * 0.8, h = w * 66 / 340, x0 = (W - w) / 2, s = w / 340
+  const now = f.guide % cycle, X = t => x0 + (10 + 320 * t / cycle) * s, Y = l => y0 + (56 - 46 * l) * s
+  ctx.save(); ctx.globalAlpha = alpha; ctx.lineCap = "round"; ctx.lineJoin = "round"
+  ctx.strokeStyle = APP.LINE; ctx.lineWidth = 2.5 * s
+  ctx.beginPath(); for (let k = 0; k <= 240; k++) { const t = cycle * k / 240; k ? ctx.lineTo(X(t), Y(levelAt(t))) : ctx.moveTo(X(t), Y(levelAt(t))) } ctx.stroke()
+  ctx.strokeStyle = APP.MUTED
+  ctx.beginPath(); for (let k = 0; k <= 240; k++) { const t = now * k / 240; k ? ctx.lineTo(X(t), Y(levelAt(t))) : ctx.moveTo(X(t), Y(levelAt(t))) } ctx.stroke()
+  const dx = X(now), dy = Y(levelAt(now))
+  ctx.fillStyle = APP.INK; ctx.beginPath(); ctx.arc(dx, dy, 4 * s, 0, TAU); ctx.fill()
+  ctx.restore()
+  if (spec.count !== false) {
+    const ph = phaseAt(f.guide)
+    text(String(ph.count), dy - 7 * s, { x: dx, font: `600 ${Math.round(10 * s)}px ${APP.FONT}`, color: APP.MUTED, alpha: alpha * ease(ph.offset / 0.25) })
+  }
+  return y0 + h
+}
+
+// Rounds as segments along the top, as in the prep routine: done in ink, the current one fills over its round.
+function appSegments(f, y, alpha) {
+  if (alpha <= 0.001) return
+  const n = spec.rounds, gap = 10, x0 = 72, w = (W - 2 * x0 - gap * (n - 1)) / n, hgt = 12
+  const done = f.guide == null ? (f.t >= f.guideEnd ? n : 0) : f.guide / cycle
+  ctx.save(); ctx.globalAlpha = alpha
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * (w + gap), fill = clamp(done - i)
+    ctx.fillStyle = fill > 0 && fill < 1 ? APP.CURRENT : fill >= 1 ? APP.INK : APP.SOFT
+    ctx.beginPath(); ctx.roundRect(x, y, w, hgt, hgt / 2); ctx.fill()
+    if (fill > 0 && fill < 1) { ctx.fillStyle = APP.INK; ctx.beginPath(); ctx.roundRect(x, y, Math.max(hgt, w * fill), hgt, hgt / 2); ctx.fill() }
+  }
+  ctx.restore()
+}
+
+// End card: the app's check-in, as chips.
+function appCheckIn(y, alpha) {
+  const chips = ["Calmer", "About the same", "More tense", "Not sure"], font = `600 40px ${APP.FONT}`, h = 92, gap = 18
+  ctx.font = font
+  const widths = chips.map(c => ctx.measureText(c).width + 76), boxes = []
+  ;[[0, 1], [2, 3]].forEach((row, r) => {
+    let x = (W - row.reduce((s, i) => s + widths[i], 0) - gap * (row.length - 1)) / 2
+    for (const i of row) { boxes.push({ label: chips[i], x, y: y + r * (h + gap), w: widths[i] }); x += widths[i] + gap }
+  })
+  ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = APP.CARD; ctx.strokeStyle = APP.LINE; ctx.lineWidth = 3
+  for (const b of boxes) { ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, h, h / 2); ctx.fill(); ctx.stroke() }
+  ctx.restore()
+  for (const b of boxes) text(b.label, b.y + h / 2 + 14, { x: b.x + b.w / 2, font, color: APP.INK, alpha })
+  return y + 2 * h + gap
+}
+
+const loadImage = src => new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = fail; i.src = src })
+
 // ---------------------------------------------------------------- styles
 const STYLES = {
+  // The app's breathing player, at 9:16: warm off-white canvas, Inter, monochrome UI; colour only in
+  // Bello, the peach ripples and the air at his nose and mouth.
+  app(f, v) {
+    const { CANVAS, INK, MUTED, FONT } = APP
+    ctx.fillStyle = CANVAS; ctx.fillRect(0, 0, W, H)
+    const rect = walkRect()
+    // The stage softens in as he sits, and stays for the end card.
+    appScenery(rect, f.t, ease((f.t - (spec.guideAt - 1.6)) / 1.4))
+    walkIn(f, rect)
+    airRibbon(f, rect, v.guide)
+
+    // Intro lines: one at a time, Inter bold, sentence case.
+    for (const line of spec.lines) {
+      const a = ease((f.t - line.from) / 0.45) * (1 - ease((f.t - line.to + 0.4) / 0.4)), rise = 18 * (1 - ease((f.t - line.from) / 0.45))
+      if (line.quiet) { text(line.text, H * 0.415 + rise, { font: `600 46px ${FONT}`, color: MUTED, alpha: a }); continue }
+      const y = text(line.text, (line.y ? H * line.y : H * 0.16) + rise, { font: `700 ${line.size || 88}px ${FONT}`, color: INK, alpha: a, spacing: "-2px", maxWidth: W - 140, lineHeight: (line.size || 88) * 1.12 })
+      if (line.sub) text(line.sub, y + 20 + rise, { font: `400 46px ${FONT}`, color: MUTED, alpha: a, maxWidth: W - 220 })
+    }
+
+    // Practice: segments and round on top, one instruction line with its quiet cue, the wave under it.
+    appSegments(f, H * 0.045, v.guide)
+    if (f.guide != null && v.guide > 0) {
+      const ph = phaseAt(f.guide)
+      text(`Round ${Math.min(ph.round + 1, spec.rounds)} of ${spec.rounds}`, H * 0.045 + 74, { font: `600 34px ${FONT}`, color: MUTED, alpha: v.guide })
+      const a = v.guide * ease(ph.offset / 0.35), rise = 14 * (1 - ease(ph.offset / 0.35))
+      text(APP.LABEL[ph.role], H * 0.2 + rise, { font: `700 96px ${FONT}`, color: INK, alpha: a, spacing: "-2px" })
+      text(APP.CUE[ph.role], H * 0.2 + 76 + rise, { font: `400 46px ${FONT}`, color: MUTED, alpha: a })
+      appWave(f, H * 0.262, v.guide)
+    }
+
+    if (v.outro > 0) {
+      const y = text(spec.outro.text, H * 0.13, { font: `700 96px ${FONT}`, color: INK, alpha: v.outro, spacing: "-2px" })
+      const y2 = text(spec.outro.ask || "How do you feel?", y + 6, { font: `400 46px ${FONT}`, color: MUTED, alpha: v.outro })
+      appCheckIn(y2 + 30, v.outro)
+      if (brand?.logo) {
+        const lw = 300, lh = lw * 156 / 603
+        ctx.save(); ctx.globalAlpha = v.outro; ctx.drawImage(brand.logo, (W - lw) / 2, H * 0.915, lw, lh); ctx.restore()
+      }
+    }
+  },
+
   // The app's own stage: warm paper, faint halo and ground shadow, quiet type.
   minimal(f, v) {
     ctx.fillStyle = "#EFECE6"; ctx.fillRect(0, 0, W, H)
@@ -843,6 +1004,10 @@ window.setup = async s => {
   spec = s; [W, H] = s.size || [1080, 1920]
   out.width = W; out.height = H
   await Promise.all([`600 80px Fraunces`, `400 80px "Nunito Sans"`, `600 80px "Nunito Sans"`, `800 80px "Nunito Sans"`, `300 80px Inter`, `400 80px Inter`, `500 80px Inter`, `600 80px Inter`].map(f => document.fonts.load(f)))
+  if (s.style === "app") {
+    await Promise.all([400, 600, 700].map(w => document.fonts.load(`${w} 80px "Gutsphere Inter"`)))
+    brand ||= { logo: await loadImage("art/brand/main_gutsphere_logo.svg").catch(() => null) }   // the end card skips the logo if it fails
+  }
   character ||= await loadCharacter("breathing", "../animation-kit")
   if (s.format === "walkin") { if (!sprites) await loadSprites(); walkTrack = null }
   frames = build(s)

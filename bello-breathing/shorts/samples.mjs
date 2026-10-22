@@ -102,6 +102,26 @@ export const SAMPLES = {
     outro: { seconds: 5, text: "How did that feel?", cta: "Save this for your next busy moment." }
   },
 
+  // H4: H3's story in the app's own look (gutsphere_app breathing player): Inter, monochrome UI on the
+  // #f6f3ed canvas, soft stage, wave guide, air at the nose and mouth, peach ripples, round segments,
+  // the app's check-in on the end card.
+  "h4-app": {
+    ...base, format: "walkin", mirror: true, style: "app", sound: "app", exercise: "box", rounds: 4,
+    ripple: { color: "226,140,118", strength: 2.4 },
+    walk: { peek: { in: 0.7, out: 4.2, art: true, angle: 0, drop: 2.7 }, walkFrom: 4.5, walk: 5.8,
+      steps: ["walk1", "walk3", "walk6", "walk7", "walk8", "walk9"] },
+    welcomeAt: 8.0, guideAt: 9.0,
+    lines: [
+      { from: -1, to: 2.4, text: "Is stress bothering you?", y: 0.3, size: 100 },
+      { from: 2.4, to: 4.8, text: "Let me guide you through box breathing.", sub: "4 rounds · about a minute", y: 0.17, size: 88 },
+      { from: 7.4, to: 8.9, text: "Let's start.", size: 96 },
+      { from: 25.2, to: 28.6, text: "Nice. Keep going.", quiet: true },
+      { from: 41.2, to: 44.6, text: "Halfway there.", quiet: true },
+      { from: 57.2, to: 60.6, text: "Last round.", quiet: true }
+    ],
+    outro: { seconds: 5, text: "Finished for now", ask: "How do you feel?" }
+  },
+
   // Locked E1: hook always on top, the line pans under the rider (playhead at ⅓ width), loop.
   "e1-line-dot": {
     ...base, format: "loop", style: "line", rider: "dot", exercise: "box", rounds: 2,

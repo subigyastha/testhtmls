@@ -5,6 +5,10 @@
 
 export function buildStems(spec, EXERCISES) {
   const SR = 48000, TAU = Math.PI * 2
+  // spec.sound "app" (H4): no water anywhere (the sound-design rule for routines). An air bed that
+  // breathes instead of the ocean, cues on the app's chime pitches (in 440, hold 523, out 330 Hz),
+  // an Fmaj7 pad that holds those pitches, wooden taps instead of the droplet.
+  const app = spec.sound === "app"
   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x))
   const ease = x => { x = clamp(x); return x * x * x * (x * (x * 6 - 15) + 10) }
   
@@ -65,10 +69,10 @@ export function buildStems(spec, EXERCISES) {
   }
   
   // Kalimba-ish pluck: warm fundamental, a quick metallic overtone for the attack, a soft 2nd.
-  function pluck(buf, t0, f, amp, pan = 0) {
-    addTone(buf, t0, 2.2, pan, t => {
+  function pluck(buf, t0, f, amp, pan = 0, decay = 0.9) {
+    addTone(buf, t0, decay * 2.5, pan, t => {
       const a = Math.min(1, t / 0.004)
-      return amp * a * (Math.sin(TAU * f * t) * Math.exp(-t / 0.9) + 0.22 * Math.sin(TAU * f * 5.4 * t) * Math.exp(-t / 0.07) + 0.12 * Math.sin(TAU * f * 2 * t) * Math.exp(-t / 0.35))
+      return amp * a * (Math.sin(TAU * f * t) * Math.exp(-t / decay) + 0.22 * Math.sin(TAU * f * 5.4 * t) * Math.exp(-t / 0.07) + 0.12 * Math.sin(TAU * f * 2 * t) * Math.exp(-t / 0.35))
     })
   }
   // Hollow bamboo tube: inharmonic partials, short and woody.
@@ -122,8 +126,22 @@ export function buildStems(spec, EXERCISES) {
   }
   
   // ---------------------------------------------------------------- layers
-  const ocean = stereo()
-  {
+  const bed = stereo()
+  if (app) {
+    // Air: white noise in a soft band that opens and brightens on the inhale (like the app's breath
+    // sound, 750 → 1450 Hz) and settles on the exhale. White, not brown, so it reads as air, not surf.
+    for (const ch of [0, 1]) {
+      let h1 = 0, h2 = 0, l1 = 0, l2 = 0
+      for (let i = 0; i < N; i++) {
+        const t = i / SR, lvl = level(t), d = Math.abs(level(t + 0.05) - lvl) / 0.05
+        const w = white()
+        h1 += coef(160) * (w - h1); h2 += coef(160) * ((w - h1) - h2)
+        const fc = 650 + 800 * lvl, x = (w - h1) - h2
+        l1 += coef(fc) * (x - l1); l2 += coef(fc) * (l1 - l2)
+        bed[ch][i] = l2 * (0.16 + 0.22 * lvl + 0.10 * clamp(d * 1.5))
+      }
+    }
+  } else {
     const step = 64
     for (const ch of [0, 1]) {
       let brown = 0, y = 0, hp = 0, lp = 0
@@ -135,36 +153,46 @@ export function buildStems(spec, EXERCISES) {
         y += coef(220 + 1000 * lvl) * (brown * 3.2 - y)               // waves: brighter as they swell
         hp += coef(1800) * (w - hp); lp += coef(6000) * ((w - hp) - lp)  // foam: 1.8–6 kHz, soft like water
         const foam = lp * (0.012 + 0.04 * clamp(-d * 1.6))               // hiss as the water recedes
-        ocean[ch][i] = y * (0.18 + 0.36 * lvl) + foam
+        bed[ch][i] = y * (0.18 + 0.36 * lvl) + foam
       }
     }
   }
   
   const pad = stereo()
   {
-    const voices = [[146.83, 0], [220, -0.3], [293.66, 0.3], [369.99, -0.15], [440, 0.15]]
-    const extra = [659.25, 0.2]                                       // joins for the last two rounds
+    const voices = app ? [[174.61, 0], [220, -0.3], [261.63, 0.3], [329.63, -0.15], [440, 0.15]]   // Fmaj7: A, C, E = the cue pitches
+      : [[146.83, 0], [220, -0.3], [293.66, 0.3], [369.99, -0.15], [440, 0.15]]
+    const extra = app ? [392, 0.2] : [659.25, 0.2]                    // joins for the last two rounds
+    // App: the pad itself breathes a little with the routine (about +2 dB on a full breath).
+    const breathe = t => app && t >= guideAt && t < guideEnd ? 1 + 0.26 * cycleLevel(t - guideAt) : 1
     const lift = t => ease((t - (guideAt + 2 * cycle)) / 6) * (1 - ease((t - guideEnd - 1) / 3))
     const env = t => ease(t / 4) * (1 - ease((t - (duration - 3)) / 3))
     for (const [f, pan] of [...voices, extra]) {
       const isExtra = f === extra[0], lfo = 9 + (f % 5)
       addTone(pad, 0, duration, pan, t => {
-        const a = env(t) * (isExtra ? lift(t) * 0.7 : 1) * (0.75 + 0.25 * Math.sin(TAU * t / lfo))
+        const a = env(t) * breathe(t) * (isExtra ? lift(t) * 0.7 : 1) * (0.75 + 0.25 * Math.sin(TAU * t / lfo))
         return 0.012 * a * (Math.sin(TAU * f * t) + Math.sin(TAU * (f + 0.18) * t + 1)) * 0.5
       })
     }
   }
   
   const tones = stereo()
-  for (const c of cues) {
+  for (const c of app ? [] : cues) {
     const soft = c.round >= 2 ? 0.85 : 1, a = 0.11 * soft
     if (c.role === "in") { pluck(tones, c.t, 440, a, -0.15); pluck(tones, c.t + 0.14, 587.33, a * 0.9, 0.15) }
     if (c.role === "hold") pluck(tones, c.t, 369.99, a * 0.7, 0)
     if (c.role === "out") { pluck(tones, c.t, 587.33, a, 0.15); pluck(tones, c.t + 0.16, 440, a * 0.9, -0.15) }
   }
+  // App cues land on the app's pitches: in rises E→A (440), out falls A→E (330), hold is one soft C (523).
+  for (const c of app ? cues : []) {
+    const a = 0.11 * (c.round >= 2 ? 0.85 : 1)
+    if (c.role === "in" || c.role === "sip") { pluck(tones, c.t, 329.63, a * 0.55, -0.15); pluck(tones, c.t + 0.15, 440, a, 0.1, 1.1) }
+    if (c.role === "hold") pluck(tones, c.t, 523.25, a * 0.6, 0, 0.8)
+    if (c.role === "out") { pluck(tones, c.t, 440, a * 0.55, 0.15); pluck(tones, c.t + 0.17, 329.63, a, -0.1, 1.4) }
+  }
   const chimes = stereo()
   const chime = (t0, count = 6) => {
-    const notes = [587.33, 659.25, 739.99, 880, 987.77]
+    const notes = app ? [523.25, 587.33, 659.25, 783.99, 880] : [587.33, 659.25, 739.99, 880, 987.77]
     for (let k = 0; k < count; k++) bamboo(chimes, t0 + k * 0.17 + rand() * 0.08, notes[Math.floor(rand() * notes.length)], 0.07 * (1 - k / (count + 2)), rand() * 1.2 - 0.6)
   }
   const startAt = spec.chimeAt ?? lineAt("Let's start.")
@@ -172,7 +200,8 @@ export function buildStems(spec, EXERCISES) {
   chime(guideEnd + 0.15, 7)
   
   const foley = stereo()
-  if (W?.peek) { droplet(foley, W.peek.in + 0.25, 880, 0.16, -0.5); droplet(foley, W.peek.in + 0.42, 1240, 0.08, -0.45) }
+  if (W?.peek && app) { bamboo(foley, W.peek.in + 0.25, 783.99, 0.07, -0.5); bamboo(foley, W.peek.in + 0.42, 1046.5, 0.04, -0.45) }
+  else if (W?.peek) { droplet(foley, W.peek.in + 0.25, 880, 0.16, -0.5); droplet(foley, W.peek.in + 0.42, 1240, 0.08, -0.45) }
   steps.forEach((t, k) => thump(foley, t, 0.11, (spec.mirror ? -1 : 1) * (0.35 - 0.3 * (k / Math.max(1, steps.length - 1))) + (k % 2 ? 0.08 : -0.08)))
   if (W) {
     thump(foley, W.walk + 0.22, 0.07, 0)                                                   // feet together
@@ -183,5 +212,5 @@ export function buildStems(spec, EXERCISES) {
   reverb(tones, 0.28); reverb(chimes, 0.35); reverb(foley, 0.12)
   
   
-  return { SR, N, duration, guideAt, guideEnd, cycle, phases, stems: { ocean, pad, cues: tones, chimes, foley } }
+  return { SR, N, duration, guideAt, guideEnd, cycle, phases, stems: { bed, pad, cues: tones, chimes, foley } }
 }

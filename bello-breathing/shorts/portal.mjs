@@ -15,7 +15,10 @@ const basePhases = ex.roles.map((role, i) => ({ role, seconds: ex.phases[i] })).
 const phases = () => basePhases.map(p => ({ ...p, seconds: +state.phaseSec || p.seconds }))
 const cycle = () => phases().reduce((s, p) => s + p.seconds, 0)
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight"]
-const LABEL = { in: "Breathe in", hold: "Hold", out: "Breathe out", sip: "Sip in", natural: "Breathe normally" }
+const LABELS = {
+  h3: { in: "Breathe in", hold: "Hold", out: "Breathe out", sip: "Sip in", natural: "Breathe normally" },
+  app: { in: "Breathe in", hold: "Hold gently", out: "Breathe out", sip: "A little more in", natural: "Breathe naturally" }   // the app's copy
+}
 const cap = s => s[0].toUpperCase() + s.slice(1)
 const range = (a, b) => Array.from({ length: Math.max(0, b - a) }, (_, i) => a + i)
 
@@ -26,16 +29,24 @@ const defaults = {
   outroTitle: "How did that feel?", outroCta: "Save this for your next busy moment.",
   rounds: 4, phaseSec: 4, introPace: 1.25, countUp: true,
   ripple: true, rippleStrength: 1, rippleColor: "201,47,53", progress: true,
-  vol: { master: 1, ocean: 1, pad: 1, cues: 1, chimes: 1, foley: 1, voice: 1 },
+  vol: { master: 1, bed: 1, pad: 1, cues: 1, chimes: 1, foley: 1, voice: 1 }, look: "h3",
   voSource: "off", voice: "af_heart", speed: 0.78, voStyle: "meditation", counting: "first", duck: 8, name: "h3-final"
 }
 // Online, the published preset (the settings the build was made with) replaces the defaults.
-if (STATIC?.preset) Object.assign(defaults, STATIC.preset, { vol: { ...defaults.vol, ...STATIC.preset.vol } })
+// The ocean stem is now "bed" (ocean in H3, air in H4); older presets and saved settings say "ocean".
+const migrate = vol => vol && vol.ocean != null && vol.bed == null ? { ...vol, bed: vol.ocean } : vol
+if (STATIC?.preset) Object.assign(defaults, STATIC.preset, { vol: { ...defaults.vol, ...migrate(STATIC.preset.vol) } })
 let state = structuredClone(defaults)
-try { const saved = JSON.parse(localStorage.getItem("bello-portal") || "null"); if (saved) state = { ...state, ...saved, vol: { ...state.vol, ...saved.vol } } } catch {}
+try { const saved = JSON.parse(localStorage.getItem("bello-portal") || "null"); if (saved) state = { ...state, ...saved, vol: { ...state.vol, ...migrate(saved.vol) } } } catch {}
 const save = () => { try { localStorage.setItem("bello-portal", JSON.stringify(state)) } catch {} }
 const get = k => k.split(".").reduce((o, p) => o[p], state)
 const set = (k, v) => { const p = k.split("."), last = p.pop(); p.reduce((o, q) => o[q], state)[last] = v }
+
+// Look: H3 (paper and serif) or H4 (the app's breathing player). Each has its own base sample.
+const app = () => state.look === "app"
+const lookBase = () => SAMPLES[app() ? "h4-app" : "h3-polished"]
+const LABEL = new Proxy({}, { get: (_, k) => LABELS[app() ? "app" : "h3"][k] })
+const LOOK_PRESET = { h3: { rippleColor: "201,47,53", rippleStrength: 1 }, app: { rippleColor: "226,140,118", rippleStrength: 2.4 } }
 
 const roundsText = () => `${cap(WORDS[state.rounds])} rounds`
 const guideSub = () => state.guideSub || `${state.rounds} rounds. About ${state.rounds * cycle() < 50 ? "half a minute" : state.rounds * cycle() < 80 ? "a minute" : state.rounds * cycle() < 110 ? "a minute and a half" : "two minutes"}.`
@@ -50,7 +61,7 @@ function roundText(r) {
 const T = x => +(x * (+state.introPace || 1)).toFixed(3)
 
 function buildSpec() {
-  const g = T(base.guideAt), R = +state.rounds, C = cycle()
+  const base = lookBase(), g = T(base.guideAt), R = +state.rounds, C = cycle()
   return {
     ...structuredClone(base), name: state.name.replace(/[^a-z0-9-]/gi, "-") || "h3-final", rounds: R,
     pattern: phases(), countUp: !!state.countUp,
@@ -59,12 +70,13 @@ function buildSpec() {
     progress: state.progress, ripple: state.ripple ? { color: state.rippleColor, strength: +state.rippleStrength } : null,
     breathOutline: false,
     lines: [
-      { from: -1, to: T(2.4), text: state.hook, y: 0.33, size: 104 },
-      { from: T(2.4), to: T(4.8), text: state.guide, sub: guideSub(), y: 0.2, size: 88 },
+      { from: -1, to: T(2.4), text: state.hook, y: app() ? 0.3 : 0.33, size: app() ? 100 : 104 },
+      { from: T(2.4), to: T(4.8), text: state.guide, sub: guideSub(), y: app() ? 0.17 : 0.2, size: 88 },
       { from: T(7.4), to: T(8.9), text: state.start, size: 96 },
-      ...range(1, R).map(r => ({ from: g + r * C + 0.2, to: g + r * C + 3.6, text: roundText(r), size: 64 }))
+      ...range(1, R).map(r => ({ from: g + r * C + 0.2, to: g + r * C + 3.6, text: roundText(r), size: 64, quiet: app() }))
     ],
-    outro: { ...base.outro, text: state.outroTitle, cta: state.outroCta }
+    // The app's end card keeps "Finished for now" and asks the end-card title under it, over the check-in.
+    outro: app() ? { ...base.outro, ask: state.outroTitle, cta: state.outroCta } : { ...base.outro, text: state.outroTitle, cta: state.outroCta }
   }
 }
 
@@ -100,7 +112,7 @@ function voEvents(spec) {
       ev.push({ id: text === state.last ? "vo-12" : text === state.halfway ? "vo-11" : "vo-14", at: g + r * C, text, kind: "encourage", round: r })
     }
   }
-  ev.push({ id: "vo-13", at: g + R * C + 0.3, text: `Nice work… ${state.outroTitle}`, kind: "outro" })
+  ev.push({ id: "vo-13", at: g + R * C + 0.3, text: `${app() ? "Finished for now" : "Nice work"}… ${state.outroTitle}`, kind: "outro" })
   return ev
 }
 
@@ -164,11 +176,24 @@ for (const el of document.querySelectorAll("[data-k]")) {
   el.addEventListener("input", () => {
     set(k, el.type === "checkbox" ? el.checked : el.type === "range" ? +el.value : k === "countUp" ? el.value === "true" : el.value); show(); save()
     if (k.startsWith("vol.")) return liveGains()
+    if (k === "look") { applyLook(); return refresh({ audio: true }) }
     if (["rounds", "phaseSec", "introPace"].includes(k)) return refresh({ audio: true })
     if (["voSource", "counting", "voice", "speed", "voStyle", "countUp"].includes(k)) { showVoBoxes(); return refresh({ vo: true }) }
     if (k === "duck") return
     refresh({})
   })
+}
+// Switching look brings that look's ripple defaults and output name; the controls show them.
+function applyLook() {
+  Object.assign(state, LOOK_PRESET[app() ? "app" : "h3"])
+  state.name = state.name.replace(/^h[34]-/, app() ? "h4-" : "h3-")
+  for (const el of document.querySelectorAll("[data-k]")) {
+    if (!["rippleColor", "rippleStrength", "name"].includes(el.dataset.k)) continue
+    el.value = get(el.dataset.k); el.dispatchEvent(new Event("change"))
+    const out = el.nextElementSibling?.tagName === "OUTPUT" ? el.nextElementSibling : null
+    if (out) out.textContent = (+el.value).toFixed(2)
+  }
+  save()
 }
 function showVoBoxes() { $("aiBox").hidden = state.voSource !== "ai"; $("recBox").hidden = state.voSource !== "recorded" }
 showVoBoxes()
@@ -252,7 +277,7 @@ function buildGraph(ctx, offset, when) {
   for (const [k, buf] of Object.entries(stems.buffers)) {
     const src = ctx.createBufferSource(), g = ctx.createGain()
     src.buffer = buf; g.gain.value = state.vol[k] ?? 1
-    src.connect(g); g.connect(k === "ocean" || k === "pad" ? duckBus : master)
+    src.connect(g); g.connect(k === "bed" || k === "pad" ? duckBus : master)
     src.start(when, offset); sources.push(src); gains[k] = g
   }
   const voBus = ctx.createGain(), comp = ctx.createDynamicsCompressor()
@@ -473,7 +498,7 @@ $("export").addEventListener("click", async () => {
   btn.disabled = true
   try {
     say("Mixing sound…")
-    const off = new OfflineAudioContext(2, stems.buffers.ocean.length, 48000)
+    const off = new OfflineAudioContext(2, stems.buffers.bed.length, 48000)
     buildGraph(off, 0, 0)
     const audio = wav(await off.startRendering())
     await fetch(`/api/audio?name=${encodeURIComponent(spec.name)}`, { method: "POST", body: audio })

@@ -56,7 +56,7 @@
 </head>
 <body>
 <header>
-  <h1>Bello Studio · H3</h1>
+  <h1>Bello Studio</h1>
   <span>Change anything, press Play to hear and see it, then export the MP4.</span>
 </header>
 <main>
@@ -86,27 +86,28 @@
 
     <section>
       <h2>Routine &amp; visuals</h2>
+      <label>Look<select data-k="look"><option value="h3">H3 · paper &amp; serif</option><option value="app">H4 · app look (breathing player)</option></select></label>
       <label>Rounds of box breathing (4 · 4 · 4 · 4)
         <select data-k="rounds"><option>2</option><option>3</option><option selected>4</option></select></label>
       <label>Seconds per phase (in · hold · out · hold)<select data-k="phaseSec"><option value="4">4 s (app standard)</option><option value="5">5 s · slower</option><option value="6">6 s · slowest</option></select></label>
       <label>On-screen count<select data-k="countUp"><option value="true">Count up 1 → 4 (matches spoken counting)</option><option value="false">Count down 4 → 1</option></select></label>
       <div class="slider"><span>Intro pace</span><input type="range" min="1" max="1.7" step="0.05" data-k="introPace"><output></output></div>
       <div class="check"><input type="checkbox" id="ripple" data-k="ripple"><label for="ripple" style="margin:0;color:inherit">Breathing circle &amp; ripples</label></div>
-      <div class="slider"><span>Ripple strength</span><input type="range" min="0.3" max="1.8" step="0.05" data-k="rippleStrength"><output></output></div>
-      <label>Ripple colour<select data-k="rippleColor"><option value="201,47,53">Bello red</option><option value="35,35,33">Soft ink</option><option value="217,150,90">Warm sand</option></select></label>
+      <div class="slider"><span>Ripple strength</span><input type="range" min="0.3" max="3" step="0.05" data-k="rippleStrength"><output></output></div>
+      <label>Ripple colour<select data-k="rippleColor"><option value="201,47,53">Bello red</option><option value="35,35,33">Soft ink</option><option value="217,150,90">Warm sand</option><option value="226,140,118">Soft peach (H4)</option></select></label>
       <div class="check"><input type="checkbox" id="progress" data-k="progress"><label for="progress" style="margin:0;color:inherit">Progress bar</label></div>
-      <p class="hint">Phase length, rounds and intro pace also rebuild the sound (a few seconds), since the ocean breathes with the routine. 4 s is the app&rsquo;s timing; check longer phases with your reviewer before publishing.</p>
+      <p class="hint">Phase length, rounds and intro pace also rebuild the sound (a few seconds), since the sound bed breathes with the routine. 4 s is the app&rsquo;s timing; check longer phases with your reviewer before publishing.</p>
     </section>
 
     <section>
       <h2>Sound</h2>
       <div class="slider"><span>Master</span><input type="range" min="0" max="1.5" step="0.01" data-k="vol.master"><output></output></div>
-      <div class="slider"><span>Ocean</span><input type="range" min="0" max="2" step="0.01" data-k="vol.ocean"><output></output></div>
+      <div class="slider"><span>Bed (ocean · air)</span><input type="range" min="0" max="2" step="0.01" data-k="vol.bed"><output></output></div>
       <div class="slider"><span>Warm pad</span><input type="range" min="0" max="3" step="0.01" data-k="vol.pad"><output></output></div>
       <div class="slider"><span>Breath cues</span><input type="range" min="0" max="2" step="0.01" data-k="vol.cues"><output></output></div>
       <div class="slider"><span>Chimes</span><input type="range" min="0" max="2" step="0.01" data-k="vol.chimes"><output></output></div>
       <div class="slider"><span>Foley</span><input type="range" min="0" max="2" step="0.01" data-k="vol.foley"><output></output></div>
-      <p class="hint">Everything here is generated (ocean that breathes with the routine, kalimba-like cues, footsteps, bamboo chimes), so it's free to use commercially. Exports are levelled to −14 LUFS.</p>
+      <p class="hint">Everything here is generated, so it's free to use commercially. H3: ocean that breathes with the routine, kalimba-like cues, footsteps, bamboo chimes. H4: no water; an air bed that breathes, kalimba cues on the app's chime pitches (in 440 · hold 523 · out 330 Hz), wooden taps. Exports are levelled to −14 LUFS.</p>
     </section>
 
     <section>
