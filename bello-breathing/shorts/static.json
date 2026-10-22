@@ -1,0 +1,130 @@
+{
+ "preset": {
+  "hook": "Is stress bothering you?",
+  "guide": "Let me guide you through box breathing.",
+  "guideSub": "",
+  "start": "Let's start.",
+  "encourage": "Nice. Keep going.",
+  "halfway": "Halfway there.",
+  "last": "Last round.",
+  "outroTitle": "How did that feel?",
+  "outroCta": "Save this for your next busy moment.",
+  "rounds": 4,
+  "phaseSec": 4,
+  "introPace": 1.25,
+  "countUp": true,
+  "ripple": true,
+  "rippleStrength": 1.45,
+  "rippleColor": "201,47,53",
+  "progress": true,
+  "vol": {
+   "master": 1,
+   "ocean": 1,
+   "pad": 1,
+   "cues": 1,
+   "chimes": 1,
+   "foley": 1,
+   "voice": 1
+  },
+  "voSource": "ai",
+  "voice": "af_nicole",
+  "speed": 0.78,
+  "voStyle": "natural",
+  "counting": "none",
+  "duck": 8,
+  "name": "h3-final"
+ },
+ "voices": {
+  "af_nicole": {
+   "speed": 0.78,
+   "style": "natural",
+   "demoText": "Let me guide you… through box breathing. Breathe in… and hold.",
+   "clips": {
+    "Is stress bothering you?": "voice/af_nicole/00.wav",
+    "Let's start.": "voice/af_nicole/01.wav",
+    "Nice. Keep going.": "voice/af_nicole/02.wav",
+    "Halfway there.": "voice/af_nicole/03.wav",
+    "Last round.": "voice/af_nicole/04.wav",
+    "Nice work… How did that feel?": "voice/af_nicole/05.wav",
+    "Breathe in…": "voice/af_nicole/06.wav",
+    "Hold…": "voice/af_nicole/07.wav",
+    "Breathe out…": "voice/af_nicole/08.wav",
+    "Let me guide you through box breathing… Two rounds.": "voice/af_nicole/09.wav",
+    "Let me guide you through box breathing… Three rounds.": "voice/af_nicole/10.wav",
+    "Let me guide you through box breathing… Four rounds.": "voice/af_nicole/11.wav",
+    "One.": "voice/af_nicole/12.wav",
+    "Two.": "voice/af_nicole/13.wav",
+    "Three.": "voice/af_nicole/14.wav",
+    "Four.": "voice/af_nicole/15.wav",
+    "Five.": "voice/af_nicole/16.wav",
+    "Six.": "voice/af_nicole/17.wav",
+    "Let me guide you… through box breathing. Breathe in… and hold.": "voice/af_nicole/18.wav"
+   }
+  },
+  "af_heart": {
+   "speed": 0.78,
+   "style": "natural",
+   "demoText": "Let me guide you… through box breathing. Breathe in… and hold.",
+   "clips": {
+    "Let me guide you… through box breathing. Breathe in… and hold.": "voice/af_heart/00.wav"
+   }
+  },
+  "af_sky": {
+   "speed": 0.78,
+   "style": "natural",
+   "demoText": "Let me guide you… through box breathing. Breathe in… and hold.",
+   "clips": {
+    "Let me guide you… through box breathing. Breathe in… and hold.": "voice/af_sky/00.wav"
+   }
+  },
+  "bf_emma": {
+   "speed": 0.78,
+   "style": "natural",
+   "demoText": "Let me guide you… through box breathing. Breathe in… and hold.",
+   "clips": {
+    "Let me guide you… through box breathing. Breathe in… and hold.": "voice/bf_emma/00.wav"
+   }
+  },
+  "bf_isabella": {
+   "speed": 0.78,
+   "style": "natural",
+   "demoText": "Let me guide you… through box breathing. Breathe in… and hold.",
+   "clips": {
+    "Let me guide you… through box breathing. Breathe in… and hold.": "voice/bf_isabella/00.wav"
+   }
+  },
+  "af_bella": {
+   "speed": 0.78,
+   "style": "natural",
+   "demoText": "Let me guide you… through box breathing. Breathe in… and hold.",
+   "clips": {
+    "Let me guide you… through box breathing. Breathe in… and hold.": "voice/af_bella/00.wav"
+   }
+  },
+  "am_michael": {
+   "speed": 0.78,
+   "style": "natural",
+   "demoText": "Let me guide you… through box breathing. Breathe in… and hold.",
+   "clips": {
+    "Let me guide you… through box breathing. Breathe in… and hold.": "voice/am_michael/00.wav"
+   }
+  },
+  "bm_george": {
+   "speed": 0.78,
+   "style": "natural",
+   "demoText": "Let me guide you… through box breathing. Breathe in… and hold.",
+   "clips": {
+    "Let me guide you… through box breathing. Breathe in… and hold.": "voice/bm_george/00.wav"
+   }
+  },
+  "bm_lewis": {
+   "speed": 0.78,
+   "style": "natural",
+   "demoText": "Let me guide you… through box breathing. Breathe in… and hold.",
+   "clips": {
+    "Let me guide you… through box breathing. Breathe in… and hold.": "voice/bm_lewis/00.wav"
+   }
+  }
+ },
+ "recorded": {}
+}
