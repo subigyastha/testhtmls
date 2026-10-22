@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Bello Breathing Shorts</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #191919; --bg2: #222; --t: #f0efe8; --t2: #9a9990; --coral: #e8705a; --red: #c92f35; --border: #2a2a2a; --r: 18px; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      min-height: 100vh; min-height: 100dvh; background: var(--bg); color: var(--t);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+      padding: max(20px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .back { color: var(--t2); text-decoration: none; font-size: 13px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--coral); margin: 18px 0 20px; }
+    .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); }
+    h1 { font-size: clamp(26px, 7vw, 34px); font-weight: 700; letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 10px; }
+    .sub { font-size: 15px; color: var(--t2); line-height: 1.5; max-width: 640px; margin-bottom: 22px; }
+    a.studio { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-decoration: none; color: inherit;
+      background: var(--bg2); border: 0.5px solid rgba(201,47,53,0.5); border-radius: var(--r); padding: 18px 20px; margin-bottom: 28px; max-width: 640px; }
+    a.studio b { display: block; font-size: 17px; margin-bottom: 4px; }
+    a.studio span { font-size: 14px; color: var(--t2); line-height: 1.45; }
+    a.studio i { font-style: normal; color: var(--coral); font-weight: 600; white-space: nowrap; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; }
+    .card.star { border-color: rgba(201,47,53,0.55); }
+    .card video { width: 100%; aspect-ratio: 9 / 16; display: block; background: #000; }
+    .meta { padding: 14px 16px 16px; }
+    .tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; padding: 4px 9px; border-radius: 20px; background: #241a18; color: var(--coral); margin-bottom: 8px; }
+    .card.star .tag { background: var(--red); color: #fff; }
+    .meta h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 6px; }
+    .meta p { font-size: 13.5px; color: var(--t2); line-height: 1.45; }
+    .footer { margin-top: 32px; font-size: 12px; color: #5a5955; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="../">← All prototypes</a>
+    <div class="logo"><span class="logo-dot"></span> Gutsphere · Bello</div>
+    <h1>Breathing shorts</h1>
+    <p class="sub">Every version of the box-breathing short with Bello, newest first. Turn sound on for the ones marked “with sound”. Open the studio to try settings yourself.</p>
+
+    <a class="studio" href="shorts/portal.html">
+      <div><b>H3 studio</b><span>Live preview with the full sound mix: text, rounds, phase length, intro pace, ripple, every sound layer, AI voice audition and the voice timeline. Best on a laptop.</span></div>
+      <i>Open →</i>
+    </a>
+
+    <div class="grid">
+      <article class="card star">
+        <video src="videos/h3-final-nicole-sound.mp4" controls playsinline preload="metadata"></video>
+        <div class="meta">
+          <span class="tag">Final · with sound</span>
+          <h2>H3 · Bello guides box breathing</h2>
+          <p>Hook alone, Bello peeks from the left and waves, walks in and sits, then 4 rounds with the breathing circle, ripples, progress bar, generated ocean and cues, and the AI voice (nicole). 80 s.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/h3-final-ai-voice1-sound.mp4" controls playsinline preload="metadata"></video>
+        <div class="meta">
+          <span class="tag">H3 · with sound</span>
+          <h2>H3 · earlier export</h2>
+          <p>An earlier export from the studio, before the calmer pacing and voice planning.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/h3-peek-box.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">H3 · intro</span>
+          <h2>H3 · peek, walk in, sit</h2>
+          <p>The chosen intro direction: the hook alone, a peek-and-wave from the corner, the walk to centre, sitting straight down, “Let's start.”, then the routine. No sound.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/h2-walkin-caring-box.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">H2</span>
+          <h2>Walk in, sit, caring face</h2>
+          <p>He walks in and sits first, then asks “Is stress bothering you?” with a caring expression.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/h-walkin-box.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">H</span>
+          <h2>Walk in, wave, sit</h2>
+          <p>First version with the new walking, waving and sitting art. Hook lines while he stands.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/g-story-hop-in.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">G</span>
+          <h2>Hop-in prototype</h2>
+          <p>Made with the app art only: he hops in already seated, waves, then the routine.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/e1-line-dot.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">E1 · loop</span>
+          <h2>Panning line · dot</h2>
+          <p>No mascot. The hook stays on top; a thick breath line pans under an orange dot; count over cue.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/e1b-line-cloud.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">E1b · loop</span>
+          <h2>Panning line · Bello on a cloud</h2>
+          <p>Same layout; Bello rides the line on a cloud and breathes along.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/f-scroll-mascot.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">F · loop</span>
+          <h2>Panning line + mascot</h2>
+          <p>Hook on top, a thin breath strip, Bello, and the cue text.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/d-loop-graph-box.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">D · loop</span>
+          <h2>Graph · minimal</h2>
+          <p>No mascot. One breath cycle as a graph with a moving dot, in a Dieter Rams-style layout.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/c2-loop-head-ring-long-exhale.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">C2 · loop</span>
+          <h2>Evening glow · outline</h2>
+          <p>Long exhale (4 · 6). An outline follows Bello's shape and widens with each breath.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/c-loop-glow-long-exhale.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">C · loop</span>
+          <h2>Evening glow</h2>
+          <p>Long exhale (4 · 6) on a dusk background with a warm glow and breath ring.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/b-loop-tracer-box.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">B · loop</span>
+          <h2>Box tracer</h2>
+          <p>A dot travels one side of a square per phase.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/a-card-minimal-box.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">A</span>
+          <h2>Hook, then routine</h2>
+          <p>The app look: hook card, two rounds of box breathing, then an outro.</p>
+        </div>
+      </article>
+    </div>
+
+    <p class="footer">Sound is generated in code (no samples). Voice: Kokoro-82M (Apache-2.0), pre-recorded for the online studio. Videos are 1080 × 1920, 30 fps.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bello Studio Portal</title>
+<style>
+  :root { --bg: #f3f2ee; --panel: #fbfaf8; --ink: #232321; --muted: #8e8c86; --line: #e1ded8; --accent: #c92f35; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #171716; --panel: #1f1f1d; --ink: #ecebe7; --muted: #9b978f; --line: #33322f; color-scheme: dark; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, "Segoe UI", sans-serif; }
+  header { padding: 16px 20px 6px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; } header span { color: var(--muted); font-size: 13px; }
+  main { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 20px; padding: 10px 20px 28px; align-items: start; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; padding: 10px 16px 28px; } }
+  .stage { position: sticky; top: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .screen { width: 100%; aspect-ratio: 9 / 16; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: #000; }
+  .screen iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .transport { display: flex; gap: 8px; align-items: center; }
+  .transport input { flex: 1; min-width: 0; }
+  .time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; min-width: 92px; text-align: right; }
+  .status { font-size: 12.5px; color: var(--muted); min-height: 1.4em; }
+  .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  section h2 { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  label { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+  input[type=text], select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; width: 100%; }
+  .slider { display: grid; grid-template-columns: 92px 1fr 46px; gap: 8px; align-items: center; font-size: 12.5px; margin-bottom: 8px; }
+  .slider output { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .check { display: flex; gap: 8px; align-items: center; color: var(--ink); font-size: 13px; margin-bottom: 8px; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 9px; padding: 7px 12px; cursor: pointer; }
+  button.primary { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+  button:disabled { opacity: .5; cursor: default; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .hint { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+  .vo-list { font-size: 12px; color: var(--muted); max-height: 140px; overflow: auto; border-top: 1px solid var(--line); margin-top: 8px; padding-top: 6px; }
+  .vo-list div { display: flex; gap: 8px; } .vo-list b { color: var(--ink); font-weight: 500; min-width: 44px; font-variant-numeric: tabular-nums; }
+  .ok { color: #2e7d4f; } .bad { color: var(--accent); }
+  .timeline-wrap { margin-top: 10px; }
+  .timeline { position: relative; height: 34px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+  .timeline .tl { position: absolute; top: 9px; height: 16px; border-radius: 3px; background: #2e7d4f; opacity: .85; }
+  .timeline .tl.count { top: 22px; height: 7px; opacity: .6; }
+  .timeline .tl.encourage, .timeline .tl.intro { top: 3px; height: 12px; }
+  .timeline .tl.moved { background: #c98a1b; } .timeline .tl.replaced { background: var(--muted); opacity: .25; } .timeline .tl.dropped { background: var(--accent); opacity: .5; } .timeline .tl.missing { background: var(--muted); opacity: .4; }
+  .timeline .tl-guide { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); opacity: .35; }
+  .tl-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+  .tl-legend .ok { color: #2e7d4f; } .tl-legend .moved { color: #c98a1b; } .tl-legend .dropped { color: var(--accent); }
+  .vo-list .moved { color: #c98a1b; } .vo-list .dropped { color: var(--accent); } .vo-list i { color: var(--muted); font-style: normal; }
+  .voices { display: grid; gap: 4px; max-height: 260px; overflow: auto; margin-bottom: 6px; padding-right: 4px; }
+  .voice { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 8px; border: 1px solid transparent; font-size: 13px; }
+  .voice.chosen { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, transparent); }
+  .voice button { padding: 3px 8px; font-size: 12px; }
+  .voice small { color: var(--muted); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Bello Studio · H3</h1>
+  <span>Change anything, press Play to hear and see it, then export the MP4.</span>
+</header>
+<main>
+  <div class="stage">
+    <div class="screen"><iframe id="view" src="compose.html" title="Video preview"></iframe></div>
+    <div class="transport">
+      <button id="play" class="primary" style="min-width:74px" disabled>Play</button>
+      <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Position">
+      <span class="time" id="time">0.0 / 0.0 s</span>
+    </div>
+    <div class="status" id="status">Loading…</div>
+  </div>
+
+  <div class="panels">
+    <section>
+      <h2>Text</h2>
+      <label>Hook (first screen)<input type="text" data-k="hook"></label>
+      <label>Second line (while he waves)<input type="text" data-k="guide"></label>
+      <label>Under the second line<input type="text" data-k="guideSub"></label>
+      <label>Before the routine<input type="text" data-k="start"></label>
+      <label>Between rounds<input type="text" data-k="encourage"></label>
+      <label>Halfway<input type="text" data-k="halfway"></label>
+      <label>Last round<input type="text" data-k="last"></label>
+      <label>End card title<input type="text" data-k="outroTitle"></label>
+      <label>End card line<input type="text" data-k="outroCta"></label>
+    </section>
+
+    <section>
+      <h2>Routine &amp; visuals</h2>
+      <label>Rounds of box breathing (4 · 4 · 4 · 4)
+        <select data-k="rounds"><option>2</option><option>3</option><option selected>4</option></select></label>
+      <label>Seconds per phase (in · hold · out · hold)<select data-k="phaseSec"><option value="4">4 s (app standard)</option><option value="5">5 s · slower</option><option value="6">6 s · slowest</option></select></label>
+      <label>On-screen count<select data-k="countUp"><option value="true">Count up 1 → 4 (matches spoken counting)</option><option value="false">Count down 4 → 1</option></select></label>
+      <div class="slider"><span>Intro pace</span><input type="range" min="1" max="1.7" step="0.05" data-k="introPace"><output></output></div>
+      <div class="check"><input type="checkbox" id="ripple" data-k="ripple"><label for="ripple" style="margin:0;color:inherit">Breathing circle &amp; ripples</label></div>
+      <div class="slider"><span>Ripple strength</span><input type="range" min="0.3" max="1.8" step="0.05" data-k="rippleStrength"><output></output></div>
+      <label>Ripple colour<select data-k="rippleColor"><option value="201,47,53">Bello red</option><option value="35,35,33">Soft ink</option><option value="217,150,90">Warm sand</option></select></label>
+      <div class="check"><input type="checkbox" id="progress" data-k="progress"><label for="progress" style="margin:0;color:inherit">Progress bar</label></div>
+      <p class="hint">Phase length, rounds and intro pace also rebuild the sound (a few seconds), since the ocean breathes with the routine. 4 s is the app&rsquo;s timing; check longer phases with your reviewer before publishing.</p>
+    </section>
+
+    <section>
+      <h2>Sound</h2>
+      <div class="slider"><span>Master</span><input type="range" min="0" max="1.5" step="0.01" data-k="vol.master"><output></output></div>
+      <div class="slider"><span>Ocean</span><input type="range" min="0" max="2" step="0.01" data-k="vol.ocean"><output></output></div>
+      <div class="slider"><span>Warm pad</span><input type="range" min="0" max="3" step="0.01" data-k="vol.pad"><output></output></div>
+      <div class="slider"><span>Breath cues</span><input type="range" min="0" max="2" step="0.01" data-k="vol.cues"><output></output></div>
+      <div class="slider"><span>Chimes</span><input type="range" min="0" max="2" step="0.01" data-k="vol.chimes"><output></output></div>
+      <div class="slider"><span>Foley</span><input type="range" min="0" max="2" step="0.01" data-k="vol.foley"><output></output></div>
+      <p class="hint">Everything here is generated (ocean that breathes with the routine, kalimba-like cues, footsteps, bamboo chimes), so it's free to use commercially. Exports are levelled to −14 LUFS.</p>
+    </section>
+
+    <section>
+      <h2>Voice-over</h2>
+      <label>Voice<select data-k="voSource"><option value="off">Off</option><option value="ai">AI voice (Kokoro, local)</option><option value="recorded">My recordings</option></select></label>
+      <div id="aiBox">
+        <label>AI voice<select data-k="voice"></select></label>
+        <label>Style<select data-k="voStyle"><option value="meditation">Meditation · slower, warmer, softer</option><option value="natural">Natural</option></select></label>
+        <div class="slider"><span>Speed</span><input type="range" min="0.6" max="1" step="0.01" data-k="speed"><output></output></div>
+        <details id="audition" open>
+          <summary style="cursor:pointer;font-size:12.5px;color:var(--muted);margin-bottom:8px">Audition voices</summary>
+          <label>Demo line<input type="text" id="demoText" value="Let me guide you… through box breathing. Breathe in… and hold."></label>
+          <div class="voices" id="voiceList"></div>
+          <p class="hint">▶ plays the demo in the current style and speed (first play of each voice takes a few seconds). ★ = calm, soft voices.</p>
+        </details>
+        <div class="row"><button id="genVo" class="primary">Generate voice-over</button><span class="status" id="voStatus"></span></div>
+      </div>
+      <div id="recBox" hidden>
+        <p class="hint">Drop your files (vo-01.wav … vo-13.wav, see VOICE-SCRIPT-H3.md) into <code id="recFolder">shorts/vo/recorded</code>, then load. Noise reduction, de-essing, levelling and trimming are applied automatically.</p>
+        <div class="row"><button id="loadRec">Load &amp; clean recordings</button><span class="status" id="recStatus"></span></div>
+      </div>
+      <label style="margin-top:10px">Counting<select data-k="counting"><option value="first">Count in round 1 only</option><option value="all">Count every round</option><option value="none">No counting, phase names only</option></select></label>
+      <div class="slider"><span>Voice level</span><input type="range" min="0" max="2" step="0.01" data-k="vol.voice"><output></output></div>
+      <div class="slider"><span>Duck under voice</span><input type="range" min="0" max="18" step="0.5" data-k="duck"><output></output></div>
+      <div class="timeline-wrap"><div class="timeline" id="voTimeline" aria-label="Voice timeline"></div>
+        <div class="tl-legend"><span class="ok">■ on time</span><span class="moved">■ moved to fit</span><span class="dropped">■ text only</span><span>│ routine starts</span></div></div>
+      <div class="vo-list" id="voList"></div>
+    </section>
+
+    <section>
+      <h2>Export</h2>
+      <label>File name<input type="text" data-k="name"></label>
+      <div class="row"><button id="export" class="primary" disabled>Export MP4</button><span class="status" id="exportStatus"></span></div>
+      <p class="hint">Renders every frame at 1080 × 1920, 30 fps (about 2 minutes), mixes the sound exactly as you hear it here, and saves to <code>shorts/out/</code>.</p>
+    </section>
+  </div>
+</main>
+<script type="module" src="portal.mjs"></script>
+</body>
+</html>
