@@ -90,14 +90,14 @@ export const SAMPLES = {
     progress: true, ripple: { color: "201,47,53", strength: 1 },
     walk: { peek: { in: 0.7, out: 4.2, art: true, angle: 0, drop: 2.7 }, walkFrom: 4.5, walk: 5.8,
       steps: ["walk1", "walk3", "walk6", "walk7", "walk8", "walk9"] },
-    welcomeAt: 8.0, guideAt: 9.0,
+    welcomeAt: 7.95, guideAt: 10.95,   // settle: sit (7.95) → smile + wave, "Let's start." → routine
     lines: [
       { from: -1, to: 2.4, text: "Is stress bothering you?", y: 0.33, size: 104 },
       { from: 2.4, to: 4.8, text: "Let me guide you through box breathing.", sub: "4 rounds. About a minute.", y: 0.2, size: 88 },
-      { from: 7.4, to: 8.9, text: "Let's start.", size: 96 },
-      { from: 25.2, to: 28.6, text: "Nice. Keep going.", size: 64 },
-      { from: 41.2, to: 44.6, text: "Halfway there.", size: 64 },
-      { from: 57.2, to: 60.6, text: "Last round.", size: 64 }
+      { from: 9.15, to: 10.85, text: "Let's start.", size: 96 },
+      { from: 27.15, to: 30.55, text: "Nice. Keep going.", size: 64 },
+      { from: 43.15, to: 46.55, text: "Halfway there.", size: 64 },
+      { from: 59.15, to: 62.55, text: "Last round.", size: 64 }
     ],
     outro: { seconds: 5, text: "How did that feel?", cta: "Save this for your next busy moment." }
   },
@@ -110,14 +110,14 @@ export const SAMPLES = {
     ripple: { color: "226,140,118", strength: 2.4 },
     walk: { peek: { in: 0.7, out: 4.2, art: true, angle: 0, drop: 2.7 }, walkFrom: 4.5, walk: 5.8,
       steps: ["walk1", "walk3", "walk6", "walk7", "walk8", "walk9"] },
-    welcomeAt: 8.0, guideAt: 9.0,
+    welcomeAt: 7.95, guideAt: 10.95,   // settle: sit (7.95) → smile + wave, "Let's start." → routine
     lines: [
       { from: -1, to: 2.4, text: "Is stress bothering you?", y: 0.3, size: 100 },
       { from: 2.4, to: 4.8, text: "Let me guide you through box breathing.", sub: "4 rounds · about a minute", y: 0.17, size: 88 },
-      { from: 7.4, to: 8.9, text: "Let's start.", size: 96 },
-      { from: 25.2, to: 28.6, text: "Nice. Keep going.", quiet: true },
-      { from: 41.2, to: 44.6, text: "Halfway there.", quiet: true },
-      { from: 57.2, to: 60.6, text: "Last round.", quiet: true }
+      { from: 9.15, to: 10.85, text: "Let's start.", size: 96 },
+      { from: 27.15, to: 30.55, text: "Nice. Keep going.", quiet: true },
+      { from: 43.15, to: 46.55, text: "Halfway there.", quiet: true },
+      { from: 59.15, to: 62.55, text: "Last round.", quiet: true }
     ],
     outro: { seconds: 5, text: "Finished for now", ask: "How do you feel?" }
   },

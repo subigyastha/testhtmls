@@ -104,12 +104,12 @@ export async function loadCharacter(set, root = ".") {
 }
 
 // An approximation of the routine page scene (tracker_ui.css .visit-routine__scene):
-// a faint halo that swells with the breath and a soft ground shadow.
-export function drawScene(ctx, rect, breath, ink = "#1c1c1c") {
+// a faint halo that swells with the breath and a soft ground shadow. halo: false = shadow only.
+export function drawScene(ctx, rect, breath, ink = "#1c1c1c", { halo = true } = {}) {
   const cx = rect.x + rect.w / 2
   ctx.save()
   const r = rect.w * 0.36 * (0.96 + 0.04 * breath)
-  ctx.globalAlpha = 0.035; ctx.strokeStyle = ink; ctx.lineWidth = rect.w * 0.03
+  ctx.globalAlpha = halo ? 0.035 : 0; ctx.strokeStyle = ink; ctx.lineWidth = rect.w * 0.03
   ctx.beginPath(); ctx.arc(cx, rect.y + rect.h * 0.08 + rect.w * 0.36, r, 0, Math.PI * 2); ctx.stroke()
   const gy = rect.y + rect.h * 0.92, gw = rect.w * 0.48 * (1 + 0.03 * breath) / 2, gh = rect.h * 0.03
   ctx.globalAlpha = 1; ctx.translate(cx, gy); ctx.scale(1, gh / gw)

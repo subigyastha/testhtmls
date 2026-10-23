@@ -5,16 +5,24 @@
 
 import { SAMPLES } from "./samples.mjs"
 import { EXERCISES } from "../animation-kit/motion.mjs"
+import { SOUND_OPTIONS, SOUND_PRESETS, LAYER_LABEL } from "./sound-catalog.mjs"
+import { ROUTINES, ROUTINE_ORDER, PREVIEW_ORDER } from "./routines.mjs"
+import { INTRO_NAME, HOOKS, HOOK_TOPICS, fillHook } from "./routine-copy.mjs"
 
 const $ = id => document.getElementById(id)
 const STATIC = await fetch("static.json").then(r => r.ok ? r.json() : null).catch(() => null)
 const base = SAMPLES["h3-polished"], FPS = base.fps || 30
-const ex = EXERCISES[base.exercise]
-const basePhases = ex.roles.map((role, i) => ({ role, seconds: ex.phases[i] })).filter(p => p.seconds > 0)
-// Box breathing keeps every side equal, so "seconds per phase" sets all four.
-const phases = () => basePhases.map(p => ({ ...p, seconds: +state.phaseSec || p.seconds }))
+// Routines come from the Breaks extension (routines.mjs): the same phases, labels and cues. Pace 4/5/6
+// stretches every phase ×1, ×1.25, ×1.5 as in the extension (rounded to whole seconds so the count
+// stays whole); 4-7-8 keeps its own timing. Box keeps each look's own phase copy.
+const routine = () => ROUTINES[state.routine] || ROUTINES.box
+function phases() {
+  const R = routine(), k = R.fixedPace ? 1 : (+state.phaseSec || 4) / 4, own = state.routine !== "box"
+  return R.phases.map(p => ({ role: p.role, seconds: R.fixedPace ? p.seconds : Math.max(1, Math.round(p.seconds * k)),
+    ...(own ? { label: p.label, cue: p.cue } : {}), ...(p.to ? { to: p.to } : {}), ...(p.hum ? { hum: true } : {}) }))
+}
 const cycle = () => phases().reduce((s, p) => s + p.seconds, 0)
-const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight"]
+const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
 const LABELS = {
   h3: { in: "Breathe in", hold: "Hold", out: "Breathe out", sip: "Sip in", natural: "Breathe normally" },
   app: { in: "Breathe in", hold: "Hold gently", out: "Breathe out", sip: "A little more in", natural: "Breathe naturally" }   // the app's copy
@@ -24,12 +32,13 @@ const range = (a, b) => Array.from({ length: Math.max(0, b - a) }, (_, i) => a +
 
 // ---------------------------------------------------------------- state
 const defaults = {
-  hook: "Is stress bothering you?", guide: "Let me guide you through box breathing.", guideSub: "",
+  hook: "Is stress bothering you?", hookTopic: "Constipation", guide: "Let me guide you through box breathing.", guideSub: "",
   start: "Let's start.", encourage: "Nice. Keep going.", halfway: "Halfway there.", last: "Last round.",
   outroTitle: "How did that feel?", outroCta: "Save this for your next busy moment.",
-  rounds: 4, phaseSec: 4, introPace: 1.25, countUp: true,
+  routine: "box", theme: "light", rounds: 4, phaseSec: 4, introPace: 1.25, countUp: true,
   ripple: true, rippleStrength: 1, rippleColor: "201,47,53", progress: true,
   vol: { master: 1, bed: 1, pad: 1, cues: 1, chimes: 1, foley: 1, voice: 1 }, look: "h3",
+  palPreset: "look", palBed: "ocean", palCue: "kalimba", palAccent: "bamboo", palPad: "warm", palMark: false, palStroke: "tune",
   voSource: "off", voice: "af_heart", speed: 0.78, voStyle: "meditation", counting: "first", duck: 8, name: "h3-final"
 }
 // Online, the published preset (the settings the build was made with) replaces the defaults.
@@ -38,6 +47,8 @@ const migrate = vol => vol && vol.ocean != null && vol.bed == null ? { ...vol, b
 if (STATIC?.preset) Object.assign(defaults, STATIC.preset, { vol: { ...defaults.vol, ...migrate(STATIC.preset.vol) } })
 let state = structuredClone(defaults)
 try { const saved = JSON.parse(localStorage.getItem("bello-portal") || "null"); if (saved) state = { ...state, ...saved, vol: { ...state.vol, ...migrate(saved.vol) } } } catch {}
+// The Breaks tune became the default stroke; settings saved on the old default ("single") move to it once.
+if (!state.tuneDefault) { if (!state.palStroke || state.palStroke === "single") state.palStroke = "tune"; state.tuneDefault = true }
 const save = () => { try { localStorage.setItem("bello-portal", JSON.stringify(state)) } catch {} }
 const get = k => k.split(".").reduce((o, p) => o[p], state)
 const set = (k, v) => { const p = k.split("."), last = p.pop(); p.reduce((o, q) => o[q], state)[last] = v }
@@ -60,19 +71,55 @@ function roundText(r) {
 // Intro pace stretches the whole intro (peek, walk, lines) before the routine starts.
 const T = x => +(x * (+state.introPace || 1)).toFixed(3)
 
+// ---------------------------------------------------------------- sound palettes
+// Options and presets come from sound-catalog.mjs. Like the voice audition, browsing (▶) plays a
+// pre-rendered clip and changes nothing; only "Use" changes the mix and rebuilds the sound.
+// Using a single option makes the palette "custom"; "look" = the look's own sound.
+const PRESET_MAP = Object.fromEntries(SOUND_PRESETS.map(([id, , p]) => [id, p]))
+// Stroke (how the cues are played) is kept apart from presets: presets don't change it.
+const STATE_KEY = { bed: "palBed", cue: "palCue", accent: "palAccent", pad: "palPad", stroke: "palStroke" }
+const lookPalette = () => ({ bed: app() ? "air" : "ocean", cue: "kalimba", accent: "bamboo", pad: "warm", markRounds: false })
+const PAL_KEYS = ["palMark"]
+function syncControls(keys) {
+  for (const k of keys) {
+    const el = document.querySelector(`[data-k="${k}"]`)
+    if (el) el.type === "checkbox" ? (el.checked = !!state[k]) : (el.value = state[k])
+  }
+}
+function applyPalettePreset() {
+  if (state.palPreset === "custom") return
+  const p = state.palPreset === "look" ? lookPalette() : PRESET_MAP[state.palPreset] || lookPalette()
+  Object.assign(state, { palBed: p.bed, palCue: p.cue, palAccent: p.accent, palPad: p.pad, palMark: !!p.markRounds })
+  syncControls(PAL_KEYS)
+}
+const stroke = () => state.palStroke || "tune"
+const paletteOf = () => state.palPreset === "look" ? (stroke() === "tune" ? undefined : { stroke: stroke() })
+  : { bed: state.palBed, cue: state.palCue, accent: state.palAccent, pad: state.palPad, markRounds: !!state.palMark, stroke: stroke() }
+const optionLabel = (kind, v) => SOUND_OPTIONS[kind].find(o => o[0] === v)?.[1] || v
+const presetLabel = id => id === "custom" ? "Custom mix" : SOUND_PRESETS.find(p => p[0] === id)?.[1] || id
+
+// Settle (as in the Breaks extension): he sits (walk + 2.15 s, compose.mjs walkKeys), smiles and
+// waves hello (the kit's "welcome" pose), "Let's start." comes during the smile, and the routine
+// starts as the smile fades (welcome + 3 s).
+// Longer hooks hold the first screen longer (about 0.14 s a character past 24, the length the
+// intro was timed for), so the spoken hook ends before the second line and there's time to read it.
+const hookX = () => +Math.max(0, (state.hook.trim().length - 24) * 0.14).toFixed(2)
+const TH = x => +(T(x) + hookX()).toFixed(3)
+const settleAt = () => TH(5.8) + 2.15
 function buildSpec() {
-  const base = lookBase(), g = T(base.guideAt), R = +state.rounds, C = cycle()
+  const base = lookBase(), g = settleAt() + 3, R = +state.rounds, C = cycle()
   return {
     ...structuredClone(base), name: state.name.replace(/[^a-z0-9-]/gi, "-") || "h3-final", rounds: R,
-    pattern: phases(), countUp: !!state.countUp,
-    walk: { ...base.walk, peek: { ...base.walk.peek, in: T(0.7), out: T(4.2) }, walkFrom: T(4.5), walk: T(5.8) },
-    welcomeAt: T(8.0), guideAt: g, chimeAt: T(7.4),
+    pattern: phases(), countUp: !!state.countUp, theme: state.theme,
+    belly: !!routine().belly, humming: phases().some(p => p.hum),
+    walk: { ...base.walk, peek: { ...base.walk.peek, in: T(0.7), out: TH(4.2) }, walkFrom: TH(4.5), walk: TH(5.8) },
+    welcomeAt: settleAt(), guideAt: g, chimeAt: settleAt() + 1.2,
     progress: state.progress, ripple: state.ripple ? { color: state.rippleColor, strength: +state.rippleStrength } : null,
-    breathOutline: false,
+    breathOutline: false, palette: paletteOf(),
     lines: [
-      { from: -1, to: T(2.4), text: state.hook, y: app() ? 0.3 : 0.33, size: app() ? 100 : 104 },
-      { from: T(2.4), to: T(4.8), text: state.guide, sub: guideSub(), y: app() ? 0.17 : 0.2, size: 88 },
-      { from: T(7.4), to: T(8.9), text: state.start, size: 96 },
+      { from: -1, to: TH(2.4), text: state.hook, y: app() ? 0.3 : 0.33, size: app() ? 100 : 104 },
+      { from: TH(2.4), to: TH(4.8), text: state.guide, sub: guideSub(), y: app() ? 0.17 : 0.2, size: 88 },
+      { from: settleAt() + 1.2, to: g - 0.1, text: state.start, size: 96 },
       ...range(1, R).map(r => ({ from: g + r * C + 0.2, to: g + r * C + 3.6, text: roundText(r), size: 64, quiet: app() }))
     ],
     // The app's end card keeps "Finished for now" and asks the end-card title under it, over the check-in.
@@ -87,14 +134,15 @@ const shortId = { in: "vo-08", hold: "vo-09", out: "vo-10" }
 function voEvents(spec) {
   const g = spec.guideAt, R = spec.rounds, C = cycle(), ev = []
   ev.push({ id: "vo-01", at: T(0.3), text: state.hook, kind: "intro" })
-  ev.push({ id: "vo-02", at: T(2.5), text: `${state.guide.replace(/\.$/, "")}… ${roundsText()}.`, kind: "intro" })
-  ev.push({ id: "vo-03", at: T(7.4), text: state.start, kind: "intro" })
+  ev.push({ id: "vo-02", at: TH(2.5), text: `${state.guide.replace(/\.$/, "")}… ${roundsText()}.`, kind: "intro" })
+  ev.push({ id: "vo-03", at: settleAt() + 1.2, text: state.start, kind: "intro" })
   for (let r = 0; r < R; r++) {
     let at = g + r * C
     phases().forEach((p, k) => {
       const count = state.counting === "all" || (state.counting === "first" && r === 0)
-      const cue = { id: shortId[p.role] || "", at: at + 0.05, text: `${LABEL[p.role]}…`, kind: "cue" }
-      if (count && state.voSource === "recorded") {
+      // Your recordings cover box breathing; other routines' lines are always spoken by the AI voice.
+      const cue = { id: state.routine === "box" ? shortId[p.role] || "" : "", at: at + 0.05, text: `${p.label || LABEL[p.role]}…`, kind: "cue" }
+      if (count && state.voSource === "recorded" && state.routine === "box") {
         // A whole counted line from the recording; falls back to the short cue if it's longer than the phase.
         ev.push({ id: `vo-0${4 + k}`, at: at + 0.05, text: `${LABEL[p.role]}… ${range(2, p.seconds + 1).map(n => WORDS[n]).join("… ")}.`, maxDur: p.seconds + 0.4, fallback: cue, kind: "cue" })
       } else if (count) {
@@ -167,6 +215,16 @@ function schedule(s) {
 let plan = { events: [], late: 0 }
 
 // ---------------------------------------------------------------- controls
+// Routine list: the extension's picker order, then the ones awaiting clinical approval.
+$("routineSel").innerHTML = [...ROUTINE_ORDER, ...PREVIEW_ORDER].map(id => `<option value="${id}">${ROUTINES[id].name} · ${ROUTINES[id].pattern}${ROUTINES[id].preview ? " (awaiting clinical approval)" : ""}</option>`).join("")
+if (!ROUTINES[state.routine]) state.routine = "box"
+// Hook picker: fills the Hook text (still editable); "{X} giving you stress?" takes the topic box.
+$("hookSel").innerHTML = [...HOOKS.map(h => `<option value="${h}">${h.replace("{X}", "___")}</option>`), `<option value="">Custom (type below)</option>`].join("")
+$("hookTopics").innerHTML = HOOK_TOPICS.map(t => `<option value="${t}">`).join("")
+const hookTemplate = () => HOOKS.find(h => fillHook(h, state.hookTopic) === state.hook) ?? ""
+function syncHookPick() { const h = hookTemplate(); $("hookSel").value = h; $("hookTopicBox").hidden = !h.includes("{X}") }
+function pickHook() { const h = $("hookSel").value; if (!h) return syncHookPick(); state.hook = fillHook(h, state.hookTopic); document.querySelector('[data-k="hook"]').value = state.hook; syncHookPick(); save(); refresh({}) }
+$("hookSel").addEventListener("input", pickHook)
 for (const el of document.querySelectorAll("[data-k]")) {
   const k = el.dataset.k, v = get(k)
   if (el.type === "checkbox") el.checked = v; else el.value = v
@@ -176,12 +234,28 @@ for (const el of document.querySelectorAll("[data-k]")) {
   el.addEventListener("input", () => {
     set(k, el.type === "checkbox" ? el.checked : el.type === "range" ? +el.value : k === "countUp" ? el.value === "true" : el.value); show(); save()
     if (k.startsWith("vol.")) return liveGains()
-    if (k === "look") { applyLook(); return refresh({ audio: true }) }
+    if (k === "look") { applyLook(); if (state.palPreset === "look") applyPalettePreset(); renderSoundLists(); return refresh({ audio: true }) }
+    if (PAL_KEYS.includes(k)) { if (state.palPreset !== "custom") state.palPreset = "custom"; save(); renderSoundLists(); return refresh({ audio: true }) }
+    if (k === "routine") { applyRoutine(); return refresh({ audio: true, vo: true }) }
     if (["rounds", "phaseSec", "introPace"].includes(k)) return refresh({ audio: true })
     if (["voSource", "counting", "voice", "speed", "voStyle", "countUp"].includes(k)) { showVoBoxes(); return refresh({ vo: true }) }
+    if (k === "hookTopic") { $("hookSel").value = "{X} giving you stress?"; return pickHook() }
+    if (k === "hook") syncHookPick()
     if (k === "duck") return
     refresh({})
   })
+}
+// Switching routine brings its intro line, rounds label and output name.
+function applyRoutine() {
+  state.guide = `Let me guide you through ${INTRO_NAME[state.routine] || routine().name.toLowerCase()}.`
+  state.name = `${app() ? "h4" : "h3"}-${state.routine.replace(/_/g, "-")}`
+  for (const el of document.querySelectorAll('[data-k="guide"], [data-k="name"]')) el.value = state[el.dataset.k]
+  routineLabels(); save()
+}
+function routineLabels() {
+  const R = routine()
+  $("roundsLabel").firstChild.textContent = `Rounds of ${R.name.toLowerCase()} (${R.pattern}) `
+  $("paceNote").textContent = R.fixedPace ? "4-7-8 keeps its own timing; pace doesn't apply." : ""
 }
 // Switching look brings that look's ripple defaults and output name; the controls show them.
 function applyLook() {
@@ -196,7 +270,7 @@ function applyLook() {
   save()
 }
 function showVoBoxes() { $("aiBox").hidden = state.voSource !== "ai"; $("recBox").hidden = state.voSource !== "recorded" }
-showVoBoxes()
+showVoBoxes(); routineLabels(); syncHookPick()
 
 // ---------------------------------------------------------------- video preview
 const view = $("view")
@@ -329,7 +403,7 @@ function refresh({ audio = false, vo = false }) {
 async function doRefresh(audio) {
   const wasPlaying = playing; stop()
   await rebuildVideo()
-  const timing = JSON.stringify([spec.rounds, spec.pattern, spec.guideAt, spec.walk])
+  const timing = JSON.stringify([spec.rounds, spec.pattern, spec.guideAt, spec.walk, spec.palette, spec.sound])
   if (audio || !stems || stemsFor !== timing) {
     status("Building sound…")
     stems = await buildStemsAsync(spec); stemsFor = timing
@@ -516,6 +590,101 @@ $("export").addEventListener("click", async () => {
 })
 
 // ---------------------------------------------------------------- start
+// ---------------------------------------------------------------- sound library (instant previews)
+// sound-library.mjs pre-renders a clip of every option and preset, so these play straight away.
+const LIB_ROOT = "out/audio/library/"
+const LIB = await fetch(LIB_ROOT + "index.json").then(r => r.ok ? r.json() : {}).catch(() => ({}))
+const libClip = key => LIB[app() ? "h4" : "h3"]?.[key]
+const libCache = new Map()
+let libSrc = null, libBtn = null
+function stopLib() {
+  if (libSrc) { try { libSrc.stop() } catch {} }
+  if (libBtn) libBtn.textContent = libBtn.dataset.label
+  libSrc = libBtn = null
+}
+async function playLib(rel, btn, label) {
+  const same = libBtn === btn
+  stopLib(); if (previewSrcs) { previewSrcs.forEach(s => { try { s.stop() } catch {} }); resetPreview() }
+  if (same) return                                         // second press stops
+  stop(); if (auditionSrc) { try { auditionSrc.stop() } catch {} }
+  await actx.resume()
+  if (!libCache.has(rel)) libCache.set(rel, await decode(LIB_ROOT + rel))
+  const src = actx.createBufferSource(), g = actx.createGain()
+  src.buffer = libCache.get(rel); g.gain.value = state.vol.master; src.connect(g); g.connect(actx.destination); src.start()
+  libSrc = src; libBtn = btn; btn.dataset.label ||= btn.textContent; btn.textContent = "■"
+  src.onended = () => { if (libSrc === src) stopLib() }
+  $("palStatus").textContent = `Playing: ${label}`
+}
+// The lists: presets, then each layer. A row is ▶ (listen, nothing changes) + name + Use.
+const LIST_ORDER = [["preset", "Presets"], ...Object.entries(LAYER_LABEL)]
+function renderSoundLists() {
+  const chosen = { preset: state.palPreset, bed: state.palBed, cue: state.palCue, accent: state.palAccent, pad: state.palPad, stroke: stroke() }
+  $("palCurrent").innerHTML = `<b>In use:</b> ${presetLabel(state.palPreset)} · ${["bed", "cue", "stroke", "accent", "pad"].map(k => `${LAYER_LABEL[k].split(" (")[0].toLowerCase()} <i>${optionLabel(k, chosen[k])}</i>`).join(" · ")}${state.palMark ? " · round marks" : ""}`
+  for (const [kind, title] of LIST_ORDER) {
+    const rows = kind === "preset" ? SOUND_PRESETS.map(([id, label, , flag]) => [id, label, flag]) : SOUND_OPTIONS[kind]
+    const box = $(`list-${kind}`)
+    box.closest("details").querySelector("summary").innerHTML = `${title} <span>· ${kind === "preset" ? presetLabel(chosen.preset) : optionLabel(kind, chosen[kind])}</span>`
+    box.innerHTML = rows.map(([v, label, flag]) => {
+      const on = chosen[kind] === v, playable = v !== "none"
+      return `<div class="opt${on ? " chosen" : ""}">
+        <button data-play="${kind}:${v}" ${playable ? "" : "disabled"} aria-label="Listen to ${label}">▶</button>
+        <span>${label}${flag ? ' <small title="Strongly tied to Buddhist or Hindu practice">⚑</small>' : ""}</span>
+        <button data-use="${kind}:${v}">${on ? "In use" : "Use"}</button></div>`
+    }).join("")
+  }
+}
+$("soundLists").addEventListener("click", e => {
+  const play = e.target.closest("[data-play]")?.dataset.play, use = e.target.closest("[data-use]")?.dataset.use
+  if (play) {
+    // Cues play in the stroke in use; a stroke plays with the cue in use.
+    const [kind, v] = play.split(":"), btn = e.target.closest("button")
+    const s = kind === "stroke" ? v : stroke(), c = kind === "stroke" ? state.palCue : v
+    const rel = kind === "cue" || kind === "stroke" ? libClip(s === "tune" || c === "breaks" ? `cue:${c}` : `cue:${c}@${s}`) : libClip(play)
+    if (!rel) { $("palStatus").textContent = "Not in the sound library yet: run node sound-library.mjs"; return }
+    const what = kind === "preset" ? presetLabel(v) : kind === "cue" || kind === "stroke" ? `${optionLabel("cue", c)} · ${optionLabel("stroke", s)}` : `${LAYER_LABEL[kind].split(" (")[0]} · ${optionLabel(kind, v)}`
+    return playLib(rel, btn, what)
+  }
+  if (!use) return
+  const [kind, v] = use.split(":")
+  if (kind === "preset") { state.palPreset = v; applyPalettePreset() }
+  else if (kind === "stroke") state.palStroke = v
+  else { state[STATE_KEY[kind]] = v; state.palPreset = "custom" }
+  save(); renderSoundLists(); refresh({ audio: true })
+  $("palStatus").textContent = `Using ${kind === "preset" ? presetLabel(v) : optionLabel(kind, v)}. Rebuilding the sound for the video…`
+})
+
+// ---------------------------------------------------------------- palette preview
+// A 15-second taste of the current palette: the start moment, one round at 3 s phases, the finish.
+// Presets play their pre-rendered clip instantly; a custom mix is built on the spot.
+let previewSrcs = null
+const resetPreview = () => { previewSrcs = null; $("palPreview").textContent = "▶ Preview 15 s" }
+$("palPreview").addEventListener("click", async () => {
+  if (previewSrcs) { previewSrcs.forEach(s => { try { s.stop() } catch {} }); resetPreview(); $("palStatus").textContent = ""; return }
+  const ready = state.palPreset !== "custom" && stroke() === "tune" && libClip(`preset:${state.palPreset}`)
+  if (ready || libBtn === $("palPreview")) return playLib(ready || "", $("palPreview"), `the mix in use (${presetLabel(state.palPreset)})`)
+  stopLib(); stop(); if (auditionSrc) { try { auditionSrc.stop() } catch {} }
+  $("palPreview").disabled = true; $("palStatus").textContent = "Building the preview (custom mix)…"
+  try {
+    const sec = Math.min(3, +state.phaseSec || 3), full = buildSpec()
+    const mini = { ...full, rounds: 1, guideAt: 1.4, chimeAt: 0.2, walk: null, lines: [],
+      pattern: phases().map(p => ({ ...p, seconds: sec })), outro: { ...full.outro, seconds: 4 } }
+    const { buffers } = await buildStemsAsync(mini)
+    await actx.resume()
+    const at = actx.currentTime + 0.05, master = actx.createGain()
+    master.gain.value = state.vol.master; master.connect(actx.destination)
+    previewSrcs = Object.entries(buffers).map(([k, b]) => {
+      const s = actx.createBufferSource(), g = actx.createGain()
+      s.buffer = b; g.gain.value = state.vol[k] ?? 1; s.connect(g); g.connect(master); s.start(at); return s
+    })
+    previewSrcs[0].onended = () => { if (previewSrcs) { resetPreview(); $("palStatus").textContent = "" } }
+    $("palPreview").textContent = "■ Stop"
+    $("palStatus").textContent = "Playing: the custom mix in use"
+  } catch (e) { $("palStatus").textContent = String(e.message || e) }
+  $("palPreview").disabled = false
+})
+
+if (state.palPreset !== "custom") applyPalettePreset()
+renderSoundLists()
 loadVoices()
 refresh({ audio: true })
 // Online: load the pre-recorded voice straight away so the first Play has the voice.

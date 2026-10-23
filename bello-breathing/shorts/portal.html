@@ -46,6 +46,18 @@
   .tl-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11.5px; color: var(--muted); margin-top: 4px; }
   .tl-legend .ok { color: #2e7d4f; } .tl-legend .moved { color: #c98a1b; } .tl-legend .dropped { color: var(--accent); }
   .vo-list .moved { color: #c98a1b; } .vo-list .dropped { color: var(--accent); } .vo-list i { color: var(--muted); font-style: normal; }
+  .pal-current { font-size: 12.5px; line-height: 1.5; margin-bottom: 6px; } .pal-current i { font-style: normal; color: var(--accent); }
+  #soundLists details { border-top: 1px solid var(--line); padding: 6px 0; }
+  #soundLists summary { cursor: pointer; font-size: 13px; font-weight: 600; padding: 2px 0; } #soundLists summary span { font-weight: 400; color: var(--muted); }
+  .opt-list { display: grid; gap: 3px; margin-top: 6px; max-height: 300px; overflow: auto; padding-right: 4px; }
+  .opt { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; padding: 3px 6px; border-radius: 8px; border: 1px solid transparent; font-size: 13px; }
+  .opt.chosen { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, transparent); }
+  .opt button { padding: 3px 8px; font-size: 12px; } .opt small { color: var(--muted); }
+  .pal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+  .lib-row { display: flex; gap: 6px; align-items: center; }
+  .lib-row select { flex: 1; min-width: 0; }
+  .lib-play { padding: 6px 9px; font-size: 12px; flex: none; }
+  @media (max-width: 420px) { .pal-grid { grid-template-columns: 1fr; } }
   .voices { display: grid; gap: 4px; max-height: 260px; overflow: auto; margin-bottom: 6px; padding-right: 4px; }
   .voice { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 8px; border: 1px solid transparent; font-size: 13px; }
   .voice.chosen { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, transparent); }
@@ -73,6 +85,8 @@
   <div class="panels">
     <section>
       <h2>Text</h2>
+      <label>Hook idea<select id="hookSel"></select></label>
+      <label id="hookTopicBox" hidden>Gut topic (the ___)<input type="text" data-k="hookTopic" list="hookTopics"><datalist id="hookTopics"></datalist></label>
       <label>Hook (first screen)<input type="text" data-k="hook"></label>
       <label>Second line (while he waves)<input type="text" data-k="guide"></label>
       <label>Under the second line<input type="text" data-k="guideSub"></label>
@@ -87,9 +101,11 @@
     <section>
       <h2>Routine &amp; visuals</h2>
       <label>Look<select data-k="look"><option value="h3">H3 · paper &amp; serif</option><option value="app">H4 · app look (breathing player)</option></select></label>
-      <label>Rounds of box breathing (4 · 4 · 4 · 4)
-        <select data-k="rounds"><option>2</option><option>3</option><option selected>4</option></select></label>
-      <label>Seconds per phase (in · hold · out · hold)<select data-k="phaseSec"><option value="4">4 s (app standard)</option><option value="5">5 s · slower</option><option value="6">6 s · slowest</option></select></label>
+      <label>Routine (from the Breaks extension)<select data-k="routine" id="routineSel"></select></label>
+      <label>Background<select data-k="theme"><option value="light">Light</option><option value="dark">Dark</option></select></label>
+      <label id="roundsLabel">Rounds of box breathing (4 · 4 · 4 · 4)
+        <select data-k="rounds"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>8</option></select></label>
+      <label>Pace (every phase ×1, ×1.25, ×1.5) <small id="paceNote"></small><select data-k="phaseSec"><option value="4">4 s (app standard)</option><option value="5">5 s · slower</option><option value="6">6 s · slowest</option></select></label>
       <label>On-screen count<select data-k="countUp"><option value="true">Count up 1 → 4 (matches spoken counting)</option><option value="false">Count down 4 → 1</option></select></label>
       <div class="slider"><span>Intro pace</span><input type="range" min="1" max="1.7" step="0.05" data-k="introPace"><output></output></div>
       <div class="check"><input type="checkbox" id="ripple" data-k="ripple"><label for="ripple" style="margin:0;color:inherit">Breathing circle &amp; ripples</label></div>
@@ -101,13 +117,26 @@
 
     <section>
       <h2>Sound</h2>
+      <div class="pal-current" id="palCurrent"></div>
+      <p class="hint" style="margin:0 0 8px">▶ listens to a pre-made clip (instant, nothing changes). <b>Use</b> puts it in the video and rebuilds the sound once.</p>
+      <div id="soundLists">
+        <details open><summary>Presets</summary><div class="opt-list" id="list-preset"></div></details>
+        <details><summary>Bed</summary><div class="opt-list" id="list-bed"></div></details>
+        <details open><summary>Breath cues</summary><div class="opt-list" id="list-cue"></div></details>
+        <details open><summary>Stroke</summary><div class="opt-list" id="list-stroke"></div></details>
+        <details><summary>Moments</summary><div class="opt-list" id="list-accent"></div></details>
+        <details><summary>Drone</summary><div class="opt-list" id="list-pad"></div></details>
+      </div>
+      <div class="check"><input type="checkbox" id="palMark" data-k="palMark"><label for="palMark" style="margin:0;color:inherit">Mark each new round with the moment sound</label></div>
+      <div class="row" style="margin-bottom:10px"><button id="palPreview">▶ Preview 15 s</button><small style="color:var(--muted)">the mix in use</small><span class="status" id="palStatus"></span></div>
+      <p class="hint" style="margin-bottom:12px">⚑ = strongly associated with Buddhist or Hindu practice. Next to a Budai-style monk these read as religious, which CHARACTER.md asks us to avoid, so treat them as tests. Every layer is matched in loudness to the look's own sound, so palettes differ in feel, not volume.</p>
       <div class="slider"><span>Master</span><input type="range" min="0" max="1.5" step="0.01" data-k="vol.master"><output></output></div>
-      <div class="slider"><span>Bed (ocean · air)</span><input type="range" min="0" max="2" step="0.01" data-k="vol.bed"><output></output></div>
-      <div class="slider"><span>Warm pad</span><input type="range" min="0" max="3" step="0.01" data-k="vol.pad"><output></output></div>
+      <div class="slider"><span>Bed</span><input type="range" min="0" max="2" step="0.01" data-k="vol.bed"><output></output></div>
+      <div class="slider"><span>Drone</span><input type="range" min="0" max="3" step="0.01" data-k="vol.pad"><output></output></div>
       <div class="slider"><span>Breath cues</span><input type="range" min="0" max="2" step="0.01" data-k="vol.cues"><output></output></div>
-      <div class="slider"><span>Chimes</span><input type="range" min="0" max="2" step="0.01" data-k="vol.chimes"><output></output></div>
+      <div class="slider"><span>Moments</span><input type="range" min="0" max="2" step="0.01" data-k="vol.chimes"><output></output></div>
       <div class="slider"><span>Foley</span><input type="range" min="0" max="2" step="0.01" data-k="vol.foley"><output></output></div>
-      <p class="hint">Everything here is generated, so it's free to use commercially. H3: ocean that breathes with the routine, kalimba-like cues, footsteps, bamboo chimes. H4: no water; an air bed that breathes, kalimba cues on the app's chime pitches (in 440 · hold 523 · out 330 Hz), wooden taps. Exports are levelled to −14 LUFS.</p>
+      <p class="hint">Everything here is generated in code, so it's free to use commercially. Look&rsquo;s own sound · H3: ocean that breathes with the routine, kalimba-like cues, footsteps, bamboo chimes. H4: no water; an air bed that breathes, kalimba cues on the app's chime pitches (in 440 · hold 523 · out 330 Hz), wooden taps. Exports are levelled to −14 LUFS.</p>
     </section>
 
     <section>

@@ -54,7 +54,7 @@ function build(s) {
     // Enter (no app motion) → welcome wave (story only) → hook lines → guided rounds → finish.
     const end = s.guideAt + s.rounds * cycle, duration = end + s.outro.seconds
     const raw = bake({ set: "breathing", duration, keys: s.keys,
-      clips: [{ at: 0, mode: "paused" }, ...(s.enter ? [{ at: s.enter.seconds, mode: "welcome" }] : []), ...(s.welcomeAt ? [{ at: s.welcomeAt, mode: "welcome" }] : []), { at: s.guideAt, mode: "guiding", exercise: s.exercise, pattern: s.pattern }, { at: end, mode: "finish" }] }, fps)
+      clips: [{ at: 0, mode: "paused" }, ...(s.enter ? [{ at: s.enter.seconds, mode: "welcome" }] : []), ...(s.welcomeAt ? [{ at: s.welcomeAt, mode: "welcome" }] : []), { at: s.guideAt, mode: "guiding", exercise: s.exercise, pattern: s.pattern, belly: s.belly, humming: s.humming }, { at: end, mode: "finish" }] }, fps)
     return raw.slice(0, Math.round(duration * fps)).map((f, i) => {
       const t = i / fps
       return { ...f, t, guide: t >= s.guideAt && t < end ? t - s.guideAt : null, hookEnd: s.guideAt, guideEnd: end }
@@ -118,11 +118,28 @@ function visibility(f) {
   }
 }
 
+// Shrinks a font's px size so a routine's longer labels ("Breathe into your belly") stay on one line.
+function fitFont(font, str, maxWidth) {
+  const px = parseFloat(font.match(/(\d+)px/)[1])
+  ctx.save(); ctx.font = font; const w = ctx.measureText(str).width; ctx.restore()
+  return w <= maxWidth ? font : font.replace(/\d+px/, `${Math.floor(px * maxWidth / w)}px`)
+}
+
+// How the phase text fades: in over 0.35 s; a short phase (the sigh's 1-second sip) also fades out over
+// its last 0.3 s, and the phase after it eases in more slowly (0.7 s), so "A little more" → "Sigh it out"
+// flows instead of cutting.
+function phaseFade(ph) {
+  const prev = phases[(ph.index - 1 + phases.length) % phases.length], inDur = prev.seconds < 2 ? 0.7 : 0.35
+  const k = ease(ph.offset / inDur), out = ph.seconds < 2 ? 1 - ease((ph.offset - (ph.seconds - 0.3)) / 0.3) : 1
+  return { a: k * out, rise: (prev.seconds < 2 ? 22 : 14) * (1 - k) }
+}
+
 // Phase label + count, fading in at each phase change.
 function phaseCue(f, y, { labelFont, labelColor, countFont, countColor, alpha }) {
   if (f.guide == null || alpha <= 0) return null
-  const ph = phaseAt(f.guide), a = alpha * ease(ph.offset / 0.35), rise = 14 * (1 - ease(ph.offset / 0.35))
-  text(LABEL[ph.role], y + rise, { font: labelFont, color: labelColor, alpha: a })
+  const ph = phaseAt(f.guide), fade = phaseFade(ph), a = alpha * fade.a, rise = fade.rise
+  const label = ph.label || LABEL[ph.role]
+  text(label, y + rise, { font: fitFont(labelFont, label, W - 120), color: labelColor, alpha: a })
   if (countFont) text(String(ph.count), y + rise + parseFloat(countFont.match(/(\d+)px/)[1]) * 1.25, { font: countFont, color: countColor, alpha: a })
   return ph
 }
@@ -137,7 +154,7 @@ function cycleLevel(s) {
   for (; i < phases.length - 1 && s >= phases[i].seconds; i++) { s -= phases[i].seconds; level = endLevel(phases[i], level) }
   return mix(level, endLevel(phases[i], level), ease(s / phases[i].seconds))
 }
-const endLevel = (p, level) => p.role === "in" || p.role === "sip" ? 1 : p.role === "out" || p.role === "natural" ? 0 : level
+const endLevel = (p, level) => p.role === "in" ? p.to ?? 1 : p.role === "sip" ? 1 : p.role === "out" || p.role === "natural" ? 0 : level
 
 // A full-width strip where the line pans left under the dot, so the dot seems to ride one endless line.
 //   anchor: where the dot sits across the width (0.33 shows what's coming, 0.5 centred, 0.8 heart-monitor trail)
@@ -337,6 +354,29 @@ const SPRITE_FILES = {
 }
 let sprites, kitHead
 
+// Colour match for art that came out of its generation duller than the rest: [art colour, target]
+// pairs (robe, skin, light), measured against the sit sheet and the seated app character. A 3×3
+// channel matrix is solved through the three pairs, so black stays black and only the hues move.
+const SPRITE_GRADE = {
+  sit4: [[[177, 69, 66], [193, 44, 48]], [[242, 177, 127], [248, 180, 126]], [[246, 243, 237], [246, 243, 237]]]
+}
+function grade(img, pairs) {
+  const A = pairs.map(p => p[0]), det = m => m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
+  const D = det(A)
+  // Row ch of the matrix solves A · row = target[ch] (Cramer's rule).
+  const M = [0, 1, 2].map(ch => [0, 1, 2].map(col => det(A.map((r, i) => r.map((v, j) => j === col ? pairs[i][1][ch] : v))) / D))
+  const c = Object.assign(document.createElement("canvas"), { width: img.width, height: img.height }), x = c.getContext("2d")
+  x.drawImage(img, 0, 0)
+  const im = x.getImageData(0, 0, c.width, c.height), d = im.data
+  for (let i = 0; i < d.length; i += 4) {
+    if (!d[i + 3]) continue
+    const r = d[i], g = d[i + 1], b = d[i + 2]
+    for (let ch = 0; ch < 3; ch++) d[i + ch] = M[ch][0] * r + M[ch][1] * g + M[ch][2] * b
+  }
+  x.putImageData(im, 0, 0)
+  return c
+}
+
 function measure(img, sx = 0, sy = 0, sw = img.width, sh = img.height) {
   const c = Object.assign(document.createElement("canvas"), { width: sw, height: sh }), x = c.getContext("2d")
   x.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh)
@@ -396,7 +436,9 @@ async function loadSprites() {
   const load = src => new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => fail(Error("Missing " + src)); i.src = src })
   sprites = {}
   for (const [name, file] of Object.entries(SPRITE_FILES)) {
-    const [path, cells] = Array.isArray(file) ? file : [file, 1], img = await load(SPRITE_DIR + path)
+    const [path, cells] = Array.isArray(file) ? file : [file, 1]
+    let img = await load(SPRITE_DIR + path)
+    if (SPRITE_GRADE[name]) img = grade(img, SPRITE_GRADE[name])
     if (cells === 1) { sprites[name] = measure(img); continue }
     // Split the sheet at the emptiest column near each third, then keep only the figure
     // connected to the cell's crown so a neighbour's robe can't leak in.
@@ -487,10 +529,11 @@ function walkKeys() {
   const T = spec.walk
   if (T.peek) {
     // Peek version: straight from the walk into a quick turn, then sit down directly.
-    // walk → stop (feet together) → turn → sit 1–3 → sit 4 (edited from the app art) → the app character
+    // walk → stop (feet together) → turn → sit 1–3 → the app character. (sit 4, an edit of the app
+    // art, read as an off-colour, flat copy of the next frame, so sit 3 now settles straight into it.)
     const w = T.walk, s = w + 0.65
     return [[w, "walk1"], [w + 0.22, "walkStop"], [w + 0.32, "walkStop"], [w + 0.55, "turn"], [s, "turn"],
-      [s + 0.3, "sit1"], [s + 0.6, "sit2"], [s + 0.9, "sit3"], [s + 1.2, "sit4"], [s + 1.5, "kit"]]
+      [s + 0.3, "sit1"], [s + 0.65, "sit2"], [s + 1.05, "sit3"], [s + 1.5, "kit"]]
   }
   const keys = [[T.walk, "walk1"], [T.walk + 0.35, "turn"], [T.turn, "turn"], [T.turn + 0.2, "wave1"]]
   const swing = ["wave2", "wave3", "wave2", "wave1"]
@@ -530,9 +573,12 @@ function peek(f, rect) {
 
 // A's circle behind him (same centre as the app's stage halo), growing with the breath, and a
 // soft ripple that leaves it at every phase change and fades as it spreads.
+// Before the routine (the settle moment, as in the Breaks extension's "Settle in"): the same ring,
+// still and lighter (0.55), fading in as he sits; it then grows to full strength as the routine starts.
 function breathRipple(f, rect) {
-  const o = { color: "201,47,53", strength: 1, ...spec.ripple }
-  const b = f.p.breath || 0, fadeIn = ease(f.guide / 1.2) * o.strength
+  const o = { color: "201,47,53", strength: 1, ...spec.ripple }, settle = f.guide == null
+  const seatedAt = walkTrack?.[walkTrack.length - 1]?.[0] ?? 0
+  const b = settle ? 0 : f.p.breath || 0, fadeIn = (settle ? 0.55 * ease((f.t - seatedAt) / 0.6) : 0.55 + 0.45 * ease(f.guide / 1.2)) * o.strength
   const cx = rect.x + rect.w / 2, cy = rect.y + rect.h * 0.08 + rect.w * 0.36, r0 = rect.w * 0.36
   const r = r0 * (0.94 + 0.16 * b)
   ctx.save()
@@ -542,6 +588,7 @@ function breathRipple(f, rect) {
   ctx.lineWidth = 6; ctx.strokeStyle = `rgba(${o.color},${(0.14 + 0.12 * b) * fadeIn})`
   ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.stroke()
   // Ripples: one per phase start in the last 3.2 s.
+  if (settle) { ctx.restore(); return }
   let edge = 0
   const starts = phases.map(p => (edge += p.seconds) - p.seconds)
   const now = f.guide, c0 = Math.floor(now / cycle)
@@ -588,12 +635,13 @@ function walkIn(f, rect) {
     if (still) opts.squash = 0.007 * Math.sin((t - keys[k][0]) * Math.PI * 2 / 3.4)
   }
   const seated = a === "kit" && b === "kit"
-  drawScene(ctx, { ...rect, x: rect.x + (x - cx) }, seated ? f.p.breath || 0 : 0)
+  // With the ring on, the grey stage halo is left out: just the ring right behind him (as in the extension).
+  drawScene(ctx, { ...rect, x: rect.x + (x - cx) }, seated ? f.p.breath || 0 : 0, dark() ? "#000000" : undefined, { halo: !spec.ripple })
   if (seated && spec.breathOutline && f.guide != null) {
     const fadeIn = ease(f.guide / 1.2), b = f.p.breath || 0
     silhouetteOutline(f, rect, { gap: 24 + 46 * b, width: 8, color: `rgba(201,47,53,${(0.16 + 0.2 * b) * fadeIn})` })
   }
-  if (seated && spec.ripple && f.guide != null) breathRipple(f, rect)
+  if (seated && spec.ripple && (f.guide != null || f.t < spec.guideAt)) breathRipple(f, rect)
   if (seated && !opts.squash) character.render(ctx, f, rect)
   else morph(a, b, m, f, rect, x, opts)
 }
@@ -608,6 +656,15 @@ const APP = {
   CUE: { in: "Through your nose.", hold: "Breathe sooner if you need.", out: "An easy breath out.", sip: "One more small sip of air.", natural: "" }
 }
 let brand
+// spec.theme "dark": the extension's dark tokens (style.css). setup() copies the theme into APP.
+const APP_LIGHT = { CANVAS: "#f6f3ed", CARD: "#ffffff", INK: "#10110f", MUTED: "#555950", LINE: "#dcddd7", SOFT: "#ebe9e3", CURRENT: "#a9aba4", SHADE: "85,89,80", WASH: "rgba(255,255,255,0.55)", GROUND: "#1c1c1c" }
+const APP_DARK = { CANVAS: "#191a17", CARD: "#23251f", INK: "#f3f4ed", MUTED: "#cccec4", LINE: "#41443b", SOFT: "#2d2f29", CURRENT: "#6f7268", SHADE: "204,206,196", WASH: "rgba(255,255,255,0.05)", GROUND: "#000000" }
+// H3 (minimal) in light and dark.
+const MINIMAL = {
+  light: { bg: "#EFECE6", glow: "rgba(255,255,255,0.35)", edge: "rgba(120,100,80,0.10)", ink: "#2B2622", muted: "#8A8178", red: "#C92F35", track: "rgba(43,38,34,0.12)", progress: "rgba(43,38,34,0.10)" },
+  dark: { bg: "#191a17", glow: "rgba(255,255,255,0.04)", edge: "rgba(0,0,0,0.25)", ink: "#f3f4ed", muted: "#cccec4", red: "#ff8985", track: "rgba(243,244,237,0.14)", progress: "rgba(243,244,237,0.12)" }
+}
+const dark = () => spec?.theme === "dark"
 
 // Breath level at s seconds into the cycle: the app's curve (smootherstep in and out, flat holds).
 function levelAt(s) {
@@ -615,7 +672,7 @@ function levelAt(s) {
   let level = 0, i = 0
   for (const p of phases) {
     starts.push(level)
-    level = p.role === "in" ? (sigh ? 0.72 : 1) : p.role === "sip" ? 1 : p.role === "out" || p.role === "natural" ? 0 : level
+    level = p.role === "in" ? p.to ?? (sigh ? 0.72 : 1) : p.role === "sip" ? 1 : p.role === "out" || p.role === "natural" ? 0 : level
     ends.push(level)
   }
   while (i < phases.length - 1 && s >= phases[i].seconds) { s -= phases[i].seconds; i++ }
@@ -628,10 +685,10 @@ function appScenery(rect, t, alpha) {
   const cx = rect.x + rect.w / 2, cy = rect.y + rect.h * 0.46, k = rect.w / 300
   ctx.save(); ctx.globalAlpha = alpha
   const wash = ctx.createRadialGradient(cx, cy, 0, cx, cy, rect.w * 0.75)
-  wash.addColorStop(0, "rgba(255,255,255,0.55)"); wash.addColorStop(1, "rgba(255,255,255,0)")
+  wash.addColorStop(0, APP.WASH); wash.addColorStop(1, "rgba(255,255,255,0)")
   ctx.fillStyle = wash; ctx.fillRect(0, 0, W, H)
   ctx.filter = `blur(${Math.round(17 * k)}px)`
-  const cloud = (x, y, w, h, a) => { ctx.fillStyle = `rgba(85,89,80,${a})`; ctx.beginPath(); ctx.ellipse(x, y, w / 2, h / 2, 0, 0, TAU); ctx.fill() }
+  const cloud = (x, y, w, h, a) => { ctx.fillStyle = `rgba(${APP.SHADE},${a})`; ctx.beginPath(); ctx.ellipse(x, y, w / 2, h / 2, 0, 0, TAU); ctx.fill() }
   cloud(rect.x + rect.w * 0.12 + 4 * k * Math.sin(t / 17), rect.y + rect.h * 0.47 + 2 * k * Math.sin(t / 23), rect.w * 0.46, rect.h * 0.28, 0.10)
   cloud(rect.x + rect.w * 0.86 + 3 * k * Math.sin(t / 21 + 0.8), rect.y + rect.h * 0.24 + 2 * k * Math.sin(t / 29 + 0.4), rect.w * 0.40, rect.h * 0.24, 0.08)
   ctx.restore()
@@ -744,9 +801,10 @@ const STYLES = {
     if (f.guide != null && v.guide > 0) {
       const ph = phaseAt(f.guide)
       text(`Round ${Math.min(ph.round + 1, spec.rounds)} of ${spec.rounds}`, H * 0.045 + 74, { font: `600 34px ${FONT}`, color: MUTED, alpha: v.guide })
-      const a = v.guide * ease(ph.offset / 0.35), rise = 14 * (1 - ease(ph.offset / 0.35))
-      text(APP.LABEL[ph.role], H * 0.2 + rise, { font: `700 96px ${FONT}`, color: INK, alpha: a, spacing: "-2px" })
-      text(APP.CUE[ph.role], H * 0.2 + 76 + rise, { font: `400 46px ${FONT}`, color: MUTED, alpha: a })
+      const fade = phaseFade(ph), a = v.guide * fade.a, rise = fade.rise
+      const label = ph.label || APP.LABEL[ph.role], cue = ph.cue ?? APP.CUE[ph.role]
+      text(label, H * 0.2 + rise, { font: fitFont(`700 96px ${FONT}`, label, W - 140), color: INK, alpha: a, spacing: "-2px", maxWidth: W })
+      text(cue, H * 0.2 + 76 + rise, { font: fitFont(`400 46px ${FONT}`, cue, W - 160), color: MUTED, alpha: a, maxWidth: W })
       appWave(f, H * 0.262, v.guide)
     }
 
@@ -756,22 +814,24 @@ const STYLES = {
       appCheckIn(y2 + 30, v.outro)
       if (brand?.logo) {
         const lw = 300, lh = lw * 156 / 603
-        ctx.save(); ctx.globalAlpha = v.outro; ctx.drawImage(brand.logo, (W - lw) / 2, H * 0.915, lw, lh); ctx.restore()
+        // Dark: the logo's dark lettering turned light, its colours kept.
+        ctx.save(); ctx.globalAlpha = v.outro; if (dark()) ctx.filter = "invert(1) hue-rotate(180deg)"; ctx.drawImage(brand.logo, (W - lw) / 2, H * 0.915, lw, lh); ctx.restore()
       }
     }
   },
 
   // The app's own stage: warm paper, faint halo and ground shadow, quiet type.
   minimal(f, v) {
-    ctx.fillStyle = "#EFECE6"; ctx.fillRect(0, 0, W, H)
+    const M = MINIMAL[dark() ? "dark" : "light"]
+    ctx.fillStyle = M.bg; ctx.fillRect(0, 0, W, H)
     const vignette = ctx.createRadialGradient(W / 2, H * 0.55, H * 0.2, W / 2, H * 0.55, H * 0.75)
-    vignette.addColorStop(0, "rgba(255,255,255,0.35)"); vignette.addColorStop(1, "rgba(120,100,80,0.10)")
+    vignette.addColorStop(0, M.glow); vignette.addColorStop(1, M.edge)
     ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H)
     const rect = spec.format === "walkin" ? walkRect() : charRect(H * 0.43, H * 0.66)
-    const ink = "#2B2622", muted = "#8A8178", red = "#C92F35"
+    const { ink, muted, red } = M
     if (spec.progress) {
       const total = frames.length / (spec.fps || 30), bx = 96, bw = W - 192, by = H * 0.038
-      ctx.fillStyle = "rgba(43,38,34,0.10)"; ctx.fillRect(bx, by, bw, 6)
+      ctx.fillStyle = M.progress; ctx.fillRect(bx, by, bw, 6)
       ctx.fillStyle = "rgba(201,47,53,0.75)"; ctx.fillRect(bx, by, bw * clamp(f.t / total), 6)
     }
     if (spec.format === "story" || spec.format === "walkin") {
@@ -802,7 +862,7 @@ const STYLES = {
       // Thin bar that fills over the phase.
       const bw = 360, bx = (W - bw) / 2, by = H * 0.33 + 150
       ctx.save(); ctx.globalAlpha = v.guide; ctx.lineCap = "round"; ctx.lineWidth = 8
-      ctx.strokeStyle = "rgba(43,38,34,0.12)"; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + bw, by); ctx.stroke()
+      ctx.strokeStyle = M.track; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + bw, by); ctx.stroke()
       ctx.strokeStyle = red; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + bw * Math.max(0.001, ph.progress), by); ctx.stroke()
       ctx.restore()
       if (spec.format !== "loop") text(`Round ${Math.min(ph.round + 1, spec.rounds)} of ${spec.rounds}`, by + 70, { font: `600 34px ${SANS}`, color: muted, alpha: v.guide, spacing: "1px" })
@@ -1002,6 +1062,7 @@ const STYLES = {
 // ---------------------------------------------------------------- API for render.mjs
 window.setup = async s => {
   spec = s; [W, H] = s.size || [1080, 1920]
+  Object.assign(APP, s.theme === "dark" ? APP_DARK : APP_LIGHT)
   out.width = W; out.height = H
   await Promise.all([`600 80px Fraunces`, `400 80px "Nunito Sans"`, `600 80px "Nunito Sans"`, `800 80px "Nunito Sans"`, `300 80px Inter`, `400 80px Inter`, `500 80px Inter`, `600 80px Inter`].map(f => document.fonts.load(f)))
   if (s.style === "app") {
