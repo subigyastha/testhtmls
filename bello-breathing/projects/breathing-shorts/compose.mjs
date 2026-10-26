@@ -9,9 +9,9 @@
 //   "loop"  the routine runs from frame 0; the last `blend` seconds ease the rig
 //           parameters back into the first frame, so the clip loops seamlessly.
 
-import { bake, EXERCISES } from "../animation-kit/motion.mjs"
-import { loadCharacter, drawScene, ART_W, ART_H } from "../animation-kit/renderer.mjs"
-import { clamp, ease, mix, warp, ART_SCALE } from "../animation-kit/rig/rig.mjs"
+import { bake, EXERCISES } from "../../shared/animation-kit/motion.mjs"
+import { loadCharacter, drawScene, ART_W, ART_H } from "../../shared/animation-kit/renderer.mjs"
+import { clamp, ease, mix, warp, ART_SCALE } from "../../shared/animation-kit/rig/rig.mjs"
 
 const out = document.getElementById("out"), ctx = out.getContext("2d")
 // Devanagari (Hindi) has no glyphs in Fraunces / Nunito / Inter; the Noto families fill in per glyph.
@@ -359,7 +359,7 @@ function enterCharacter(f, rect) {
 // New standing/walking/waving/sitting art (Gutsphere-Bello-Walk-In-Frames-v1). The frames come
 // from separate generations on different canvases, so each one is registered by its head:
 // skull radius (fitted from the crown, ignoring ears and a raised hand) and the ground line.
-const SPRITE_DIR = "../animation-kit/Gutsphere-Bello-Walk-In-Frames-v2/shorts/art/new/"
+const SPRITE_DIR = "../../shared/animation-kit/Gutsphere-Bello-Walk-In-Frames-v2/shorts/art/new/"
 const SPRITE_FILES = {
   stand: "01-stand-front.webp", turn: "03-turn.webp", caring: "06-caring-face.webp",
   walkStop: "02-walk-stop.webp", sit4: "05-sit-4.webp", peek1: "07-peek-1.webp", peek2: "07-peek-2.webp", peek3: "07-peek-3.webp",
@@ -459,7 +459,7 @@ async function loadSprites() {
     const cuts = sheetCuts(img, cells)
     for (let k = 0; k < cells; k++) sprites[`${name}${k + 1}`] = isolate(measure(img, cuts[k], 0, cuts[k + 1] - cuts[k], img.height))
   }
-  kitHead = measure(await load("../animation-kit/art/expressions/buddha-hd-calm.webp"))
+  kitHead = measure(await load("../../shared/animation-kit/art/expressions/buddha-hd-calm.webp"))
 }
 
 // The seated rect is sized so that, at the same head size, his *tallest* standing pose
@@ -1175,9 +1175,9 @@ window.setup = async s => {
   await Promise.all([`600 80px "Noto Serif Devanagari"`, ...[400, 600, 700].map(w => `${w} 80px "Noto Sans Devanagari"`)].map(f => document.fonts.load(f, "साँस")))
   if (s.style === "app") {
     await Promise.all([400, 600, 700].map(w => document.fonts.load(`${w} 80px "Gutsphere Inter"`)))
-    brand ||= { logo: await loadImage("art/brand/main_gutsphere_logo.svg").catch(() => null) }   // the end card skips the logo if it fails
+    brand ||= { logo: await loadImage("../../shared/brand/main_gutsphere_logo.svg").catch(() => null) }   // the end card skips the logo if it fails
   }
-  character ||= await loadCharacter("breathing", "../animation-kit")
+  character ||= await loadCharacter("breathing", "../../shared/animation-kit")
   if (s.format === "walkin" || s.format === "outro") { if (!sprites) await loadSprites(); walkTrack = null; leaveTrack = null }
   frames = build(s)
   return { count: frames.length, backend: character.backend, cycle }

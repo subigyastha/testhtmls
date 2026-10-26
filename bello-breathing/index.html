@@ -28,6 +28,9 @@
     .card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; }
     .card.star { border-color: rgba(201,47,53,0.55); }
     .card video { width: 100%; aspect-ratio: 9 / 16; display: block; background: #000; }
+    /* 16:9 videos (long-form outros): full width on a phone, two columns wide when there's room. */
+    .card.wide video { aspect-ratio: 16 / 9; }
+    @media (min-width: 560px) { .card.wide { grid-column: span 2; } }
     .meta { padding: 14px 16px 16px; }
     .tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; padding: 4px 9px; border-radius: 20px; background: #241a18; color: var(--coral); margin-bottom: 8px; }
     .card.star .tag { background: var(--red); color: #fff; }
@@ -43,12 +46,52 @@
     <h1>Breathing shorts</h1>
     <p class="sub">Every version of the box-breathing short with Bello, newest first. Turn sound on for the ones marked “with sound”. Open the studio to try settings yourself.</p>
 
-    <a class="studio" href="shorts/portal.html">
+    <a class="studio" href="projects/breathing-shorts/portal.html">
       <div><b>Studio · H3 &amp; H4</b><span>Live preview with the full sound mix: H3 or H4 look, text, rounds, phase length, intro pace, ripple, every sound layer, AI voice audition and the voice timeline. Best on a laptop.</span></div>
       <i>Open →</i>
     </a>
 
     <div class="grid">
+      <article class="card star">
+        <video src="videos/outro-b-left.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">Outro · Shorts · pick</span>
+          <h2>B · peek goodbye</h2>
+          <p>Eye contact, pat pat, he stands up, walks off left and peeks back from the spot of the hello peek: “Byeee, see you soon.” 7.4 s. No sound yet.</p>
+        </div>
+      </article>
+      <article class="card star wide">
+        <video src="videos/outro-s-standing-16x9.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">Outro · long-form 16:9 · pick</span>
+          <h2>S · standing goodbye</h2>
+          <p>Walks off right, then leans back in on the same ground line and waves bye. The pats are a placeholder bounce until the standing pat frames are drawn. 6.6 s. No sound yet.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/outro-b2-stand-wave.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">Outro · Shorts</span>
+          <h2>B2 · stand up and wave</h2>
+          <p>Eye contact, pat pat, stands up and waves bye in place, staying in frame. 6.4 s. No sound yet.</p>
+        </div>
+      </article>
+      <article class="card">
+        <video src="videos/outro-b3-seated-shake.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">Outro · Shorts</span>
+          <h2>B3 · seated head sway</h2>
+          <p>Eye contact, pat pat, eyes close with a big smile, then a slow, small, calming head sway. Stays seated. 5.8 s. No sound yet.</p>
+        </div>
+      </article>
+      <article class="card wide">
+        <video src="videos/outro-s2-wave-stay-16x9.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="meta">
+          <span class="tag">Outro · long-form 16:9</span>
+          <h2>S2 · wave, stays</h2>
+          <p>Standing, pat pat (placeholder bounce), then waves bye in place with no walk-off. 5.2 s. No sound yet.</p>
+        </div>
+      </article>
       <article class="card star">
         <video src="videos/h4-final-nicole-sound.mp4" controls playsinline preload="metadata"></video>
         <div class="meta">

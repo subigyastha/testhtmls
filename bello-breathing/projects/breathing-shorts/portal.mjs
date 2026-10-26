@@ -4,7 +4,7 @@
 // built with Web Audio; exports render that same graph offline so the file matches the preview.
 
 import { SAMPLES } from "./samples.mjs"
-import { EXERCISES } from "../animation-kit/motion.mjs"
+import { EXERCISES } from "../../shared/animation-kit/motion.mjs"
 import { SOUND_OPTIONS, SOUND_PRESETS, LAYER_LABEL } from "./sound-catalog.mjs"
 import { ROUTINES, ROUTINE_ORDER, PREVIEW_ORDER } from "./routines.mjs"
 import { INTRO_NAME, HOOKS, HOOK_TOPICS, fillHook, VIDEO_SECONDS, videoPattern } from "./routine-copy.mjs"

@@ -1,6 +1,6 @@
 // Builds the sound stems off the main thread for the portal.
 import { buildStems } from "./audio-core.mjs"
-import { EXERCISES } from "../animation-kit/motion.mjs"
+import { EXERCISES } from "../../shared/animation-kit/motion.mjs"
 
 self.onmessage = ({ data: spec }) => {
   const { SR, N, duration, stems } = buildStems(spec, EXERCISES)
