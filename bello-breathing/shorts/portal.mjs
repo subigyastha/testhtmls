@@ -7,7 +7,7 @@ import { SAMPLES } from "./samples.mjs"
 import { EXERCISES } from "../animation-kit/motion.mjs"
 import { SOUND_OPTIONS, SOUND_PRESETS, LAYER_LABEL } from "./sound-catalog.mjs"
 import { ROUTINES, ROUTINE_ORDER, PREVIEW_ORDER } from "./routines.mjs"
-import { INTRO_NAME, HOOKS, HOOK_TOPICS, fillHook } from "./routine-copy.mjs"
+import { INTRO_NAME, HOOKS, HOOK_TOPICS, fillHook, VIDEO_SECONDS, videoPattern } from "./routine-copy.mjs"
 import { LANGS, LANG_VOICE, COPY, fillHookIn } from "./i18n.mjs"
 
 const $ = id => document.getElementById(id)
@@ -22,7 +22,8 @@ function phases() {
   // Other languages always carry their own text (box too: the look's labels, the app's cues).
   const text = p => !L ? (own ? { label: p.label, cue: p.cue } : {})
     : own ? { label: L.phrase[p.label] ?? p.label, cue: L.phrase[p.cue] ?? p.cue } : { label: L.labels[app() ? "app" : "h3"][p.role], cue: L.cues[p.role] }
-  return R.phases.map(p => ({ role: p.role, seconds: R.fixedPace ? p.seconds : Math.max(1, Math.round(p.seconds * k)),
+  const own_s = VIDEO_SECONDS[state.routine] || {}, sec = p => own_s[p.role] ?? p.seconds
+  return R.phases.map(p => ({ role: p.role, seconds: R.fixedPace ? sec(p) : Math.max(1, Math.round(sec(p) * k)),
     ...text(p), ...(p.to ? { to: p.to } : {}), ...(p.hum ? { hum: true } : {}) }))
 }
 // Language: English is the copy in this file; Spanish and Hindi come from i18n.mjs.
@@ -237,7 +238,7 @@ let plan = { events: [], late: 0 }
 
 // ---------------------------------------------------------------- controls
 // Routine list: the extension's picker order, then the ones awaiting clinical approval.
-$("routineSel").innerHTML = [...ROUTINE_ORDER, ...PREVIEW_ORDER].map(id => `<option value="${id}">${ROUTINES[id].name} · ${ROUTINES[id].pattern}${ROUTINES[id].preview ? " (awaiting clinical approval)" : ""}</option>`).join("")
+$("routineSel").innerHTML = [...ROUTINE_ORDER, ...PREVIEW_ORDER].map(id => `<option value="${id}">${ROUTINES[id].name} · ${videoPattern(id, ROUTINES[id])}${ROUTINES[id].preview ? " (awaiting clinical approval)" : ""}</option>`).join("")
 if (!ROUTINES[state.routine]) state.routine = "box"
 // Hook picker: fills the Hook text (still editable); "{X} giving you stress?" takes the topic box.
 // Options are indexes into the language's hook list (the lists line up across languages).
@@ -299,7 +300,7 @@ function applyRoutine() {
 }
 function routineLabels() {
   const R = routine()
-  $("roundsLabel").firstChild.textContent = `Rounds of ${R.name.toLowerCase()} (${R.pattern}) `
+  $("roundsLabel").firstChild.textContent = `Rounds of ${R.name.toLowerCase()} (${videoPattern(state.routine, R)}) `
   $("paceNote").textContent = R.fixedPace ? "4-7-8 keeps its own timing; pace doesn't apply." : ""
 }
 // Switching look brings that look's ripple defaults and output name; the controls show them.

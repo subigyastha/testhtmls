@@ -9,3 +9,9 @@ export const HOOKS = ["Is stress bothering you?", "Stomach in knots?", "Belly fe
   "Tense belly before a big moment?", "Rushed meal? Give your belly a minute.", "{X} giving you stress?"]
 export const HOOK_TOPICS = ["Constipation", "Bloating", "Your gut", "Your tummy", "IBS", "Indigestion", "Gas"]
 export const fillHook = (h, x) => h.replace("{X}", x.trim() ? x.trim()[0].toUpperCase() + x.trim().slice(1) : "Your gut")
+
+// Video-only timing (routines.mjs stays a straight copy of the extension). Physiological sigh: the
+// user chose a 2-second top-up breath ("A little more") for the videos; the extension keeps 1 s.
+export const VIDEO_SECONDS = { sigh: { sip: 2 } }
+export const videoPattern = (id, R) => Object.entries(VIDEO_SECONDS[id] || {}).reduce((s, [role, sec]) =>
+  s.replace(`${role} ${R.phases.find(p => p.role === role)?.seconds}`, `${role} ${sec}`), R.pattern)
