@@ -85,6 +85,7 @@
   <div class="panels">
     <section>
       <h2>Text</h2>
+      <label>Language <small>(switching fills every line below in that language; voice: Chatterbox, cloned from Nicole)</small><select data-k="lang" id="langSel"></select></label>
       <label>Hook idea<select id="hookSel"></select></label>
       <label id="hookTopicBox" hidden>Gut topic (the ___)<input type="text" data-k="hookTopic" list="hookTopics"><datalist id="hookTopics"></datalist></label>
       <label>Hook (first screen)<input type="text" data-k="hook"></label>
@@ -141,7 +142,7 @@
 
     <section>
       <h2>Voice-over</h2>
-      <label>Voice<select data-k="voSource"><option value="off">Off</option><option value="ai">AI voice (Kokoro, local)</option><option value="recorded">My recordings</option></select></label>
+      <label>Voice<select data-k="voSource"><option value="off">Off</option><option value="ai">AI voice (Kokoro / Chatterbox, local)</option><option value="recorded" id="recOpt">My recordings (English)</option></select></label>
       <div id="aiBox">
         <label>AI voice<select data-k="voice"></select></label>
         <label>Style<select data-k="voStyle"><option value="meditation">Meditation · slower, warmer, softer</option><option value="natural">Natural</option></select></label>

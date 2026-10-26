@@ -8,6 +8,7 @@ import { EXERCISES } from "../animation-kit/motion.mjs"
 import { SOUND_OPTIONS, SOUND_PRESETS, LAYER_LABEL } from "./sound-catalog.mjs"
 import { ROUTINES, ROUTINE_ORDER, PREVIEW_ORDER } from "./routines.mjs"
 import { INTRO_NAME, HOOKS, HOOK_TOPICS, fillHook } from "./routine-copy.mjs"
+import { LANGS, LANG_VOICE, COPY, fillHookIn } from "./i18n.mjs"
 
 const $ = id => document.getElementById(id)
 const STATIC = await fetch("static.json").then(r => r.ok ? r.json() : null).catch(() => null)
@@ -17,10 +18,20 @@ const base = SAMPLES["h3-polished"], FPS = base.fps || 30
 // stays whole); 4-7-8 keeps its own timing. Box keeps each look's own phase copy.
 const routine = () => ROUTINES[state.routine] || ROUTINES.box
 function phases() {
-  const R = routine(), k = R.fixedPace ? 1 : (+state.phaseSec || 4) / 4, own = state.routine !== "box"
+  const R = routine(), k = R.fixedPace ? 1 : (+state.phaseSec || 4) / 4, own = state.routine !== "box", L = lang()
+  // Other languages always carry their own text (box too: the look's labels, the app's cues).
+  const text = p => !L ? (own ? { label: p.label, cue: p.cue } : {})
+    : own ? { label: L.phrase[p.label] ?? p.label, cue: L.phrase[p.cue] ?? p.cue } : { label: L.labels[app() ? "app" : "h3"][p.role], cue: L.cues[p.role] }
   return R.phases.map(p => ({ role: p.role, seconds: R.fixedPace ? p.seconds : Math.max(1, Math.round(p.seconds * k)),
-    ...(own ? { label: p.label, cue: p.cue } : {}), ...(p.to ? { to: p.to } : {}), ...(p.hum ? { hum: true } : {}) }))
+    ...text(p), ...(p.to ? { to: p.to } : {}), ...(p.hum ? { hum: true } : {}) }))
 }
+// Language: English is the copy in this file; Spanish and Hindi come from i18n.mjs.
+const lang = () => COPY[state.lang] || null
+const hooksOf = l => COPY[l]?.hooks || HOOKS, topicsOf = l => COPY[l]?.topics || HOOK_TOPICS
+const fillIn = (l, h, x) => COPY[l] ? fillHookIn(l, h, x) : fillHook(h, x)
+const words = () => lang()?.words || WORDS
+const fullStop = () => state.lang === "hi" ? "।" : "."
+const voiceOf = () => LANG_VOICE[state.lang] || state.voice
 const cycle = () => phases().reduce((s, p) => s + p.seconds, 0)
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
 const LABELS = {
@@ -35,7 +46,7 @@ const defaults = {
   hook: "Is stress bothering you?", hookTopic: "Constipation", guide: "Let me guide you through box breathing.", guideSub: "",
   start: "Let's start.", encourage: "Nice. Keep going.", halfway: "Halfway there.", last: "Last round.",
   outroTitle: "How did that feel?", outroCta: "Save this for your next busy moment.",
-  routine: "box", theme: "light", rounds: 4, phaseSec: 4, introPace: 1.25, countUp: true,
+  lang: "en", routine: "box", theme: "light", rounds: 4, phaseSec: 4, introPace: 1.25, countUp: true,
   ripple: true, rippleStrength: 1, rippleColor: "201,47,53", progress: true,
   vol: { master: 1, bed: 1, pad: 1, cues: 1, chimes: 1, foley: 1, voice: 1 }, look: "h3",
   palPreset: "look", palBed: "ocean", palCue: "kalimba", palAccent: "bamboo", palPad: "warm", palMark: false, palStroke: "tune",
@@ -56,11 +67,11 @@ const set = (k, v) => { const p = k.split("."), last = p.pop(); p.reduce((o, q) 
 // Look: H3 (paper and serif) or H4 (the app's breathing player). Each has its own base sample.
 const app = () => state.look === "app"
 const lookBase = () => SAMPLES[app() ? "h4-app" : "h3-polished"]
-const LABEL = new Proxy({}, { get: (_, k) => LABELS[app() ? "app" : "h3"][k] })
+const LABEL = new Proxy({}, { get: (_, k) => (lang()?.labels || LABELS)[app() ? "app" : "h3"][k] })
 const LOOK_PRESET = { h3: { rippleColor: "201,47,53", rippleStrength: 1 }, app: { rippleColor: "226,140,118", rippleStrength: 2.4 } }
 
-const roundsText = () => `${cap(WORDS[state.rounds])} rounds`
-const guideSub = () => state.guideSub || `${state.rounds} rounds. About ${state.rounds * cycle() < 50 ? "half a minute" : state.rounds * cycle() < 80 ? "a minute" : state.rounds * cycle() < 110 ? "a minute and a half" : "two minutes"}.`
+const roundsText = () => lang() ? lang().rounds(+state.rounds) : `${cap(WORDS[state.rounds])} rounds`
+const guideSub = () => state.guideSub || (lang() ? lang().about(state.rounds, state.rounds * cycle()) : `${state.rounds} rounds. About ${state.rounds * cycle() < 50 ? "half a minute" : state.rounds * cycle() < 80 ? "a minute" : state.rounds * cycle() < 110 ? "a minute and a half" : "two minutes"}.`)
 function roundText(r) {
   const R = +state.rounds
   if (r === R - 1) return state.last
@@ -103,7 +114,11 @@ const presetLabel = id => id === "custom" ? "Custom mix" : SOUND_PRESETS.find(p 
 // starts as the smile fades (welcome + 3 s).
 // Longer hooks hold the first screen longer (about 0.14 s a character past 24, the length the
 // intro was timed for), so the spoken hook ends before the second line and there's time to read it.
-const hookX = () => +Math.max(0, (state.hook.trim().length - 24) * 0.14).toFixed(2)
+// Other languages use the spoken hook's real length once it's voiced (2.35 s = the English 24-character hook).
+const hookX = () => {
+  const clip = lang() && state.voSource !== "off" && voClips.get(clipKey({ text: state.hook }))
+  return +Math.max(0, clip ? clip.dur - 2.35 : (state.hook.trim().length - 24) * 0.14).toFixed(2)
+}
 const TH = x => +(T(x) + hookX()).toFixed(3)
 const settleAt = () => TH(5.8) + 2.15
 function buildSpec() {
@@ -116,6 +131,8 @@ function buildSpec() {
     welcomeAt: settleAt(), guideAt: g, chimeAt: settleAt() + 1.2,
     progress: state.progress, ripple: state.ripple ? { color: state.rippleColor, strength: +state.rippleStrength } : null,
     breathOutline: false, palette: paletteOf(),
+    // Text compose.mjs draws itself (round counter, the app's check-in), in the video's language.
+    ...(lang() ? { text: { round: lang().round, ask: lang().ask, chips: lang().chips } } : {}),
     lines: [
       { from: -1, to: TH(2.4), text: state.hook, y: app() ? 0.3 : 0.33, size: app() ? 100 : 104 },
       { from: TH(2.4), to: TH(4.8), text: state.guide, sub: guideSub(), y: app() ? 0.17 : 0.2, size: 88 },
@@ -123,7 +140,7 @@ function buildSpec() {
       ...range(1, R).map(r => ({ from: g + r * C + 0.2, to: g + r * C + 3.6, text: roundText(r), size: 64, quiet: app() }))
     ],
     // The app's end card keeps "Finished for now" and asks the end-card title under it, over the check-in.
-    outro: app() ? { ...base.outro, ask: state.outroTitle, cta: state.outroCta } : { ...base.outro, text: state.outroTitle, cta: state.outroCta }
+    outro: app() ? { ...base.outro, ...(lang() ? { text: lang().done.app } : {}), ask: state.outroTitle, cta: state.outroCta } : { ...base.outro, text: state.outroTitle, cta: state.outroCta }
   }
 }
 
@@ -134,7 +151,7 @@ const shortId = { in: "vo-08", hold: "vo-09", out: "vo-10" }
 function voEvents(spec) {
   const g = spec.guideAt, R = spec.rounds, C = cycle(), ev = []
   ev.push({ id: "vo-01", at: T(0.3), text: state.hook, kind: "intro" })
-  ev.push({ id: "vo-02", at: TH(2.5), text: `${state.guide.replace(/\.$/, "")}… ${roundsText()}.`, kind: "intro" })
+  ev.push({ id: "vo-02", at: TH(2.5), text: `${state.guide.replace(/[.।]$/, "")}… ${roundsText()}${fullStop()}`, kind: "intro" })
   ev.push({ id: "vo-03", at: settleAt() + 1.2, text: state.start, kind: "intro" })
   for (let r = 0; r < R; r++) {
     let at = g + r * C
@@ -149,7 +166,7 @@ function voEvents(spec) {
         ev.push(cue)
         for (let n = 2; n <= p.seconds; n++) {
           const say = state.countUp ? n : p.seconds - n + 1
-          ev.push({ id: "", at: at + n - 1 + 0.05, text: `${cap(WORDS[say])}.`, gain: 0.7, kind: "count" })
+          ev.push({ id: "", at: at + n - 1 + 0.05, text: `${cap(words()[say])}${fullStop()}`, gain: 0.7, kind: "count", group: `${r}-${k}` })
         }
       } else ev.push(cue)
       at += p.seconds
@@ -160,7 +177,8 @@ function voEvents(spec) {
       ev.push({ id: text === state.last ? "vo-12" : text === state.halfway ? "vo-11" : "vo-14", at: g + r * C, text, kind: "encourage", round: r })
     }
   }
-  ev.push({ id: "vo-13", at: g + R * C + 0.3, text: `${app() ? "Finished for now" : "Nice work"}… ${state.outroTitle}`, kind: "outro" })
+  const done = lang() ? lang().done[app() ? "app" : "h3"] : app() ? "Finished for now" : "Nice work"
+  ev.push({ id: "vo-13", at: g + R * C + 0.3, text: `${done}… ${state.outroTitle}`, kind: "outro" })
   return ev
 }
 
@@ -203,9 +221,12 @@ function schedule(s) {
       take({ ...e, at: hold.at, status: "moved", note: `said in the hold before round ${e.round + 1}, instead of “Hold…”` })
     } else out.push({ ...e, status: "dropped" })
   }
-  // 4. numbers only where there's room
-  for (const e of all.filter(e => e.kind === "count")) {
-    if (free(e.at, e.at + e.dur, 0.12)) take({ ...e, status: "ok" }); else out.push({ ...e, status: "dropped" })
+  // 4. numbers only where the whole phase's count fits: a count with holes ("Breathe in… … three. …")
+  // sounds like a stumble, so a phase either counts every number or just says its name.
+  const groups = Map.groupBy(all.filter(e => e.kind === "count"), e => e.group)
+  for (const nums of groups.values()) {
+    const fits = nums.every(e => free(e.at, e.at + e.dur, 0.12))
+    for (const e of nums) fits ? take({ ...e, status: "ok" }) : out.push({ ...e, status: "dropped", note: "no room for the whole count, phase name only" })
   }
   out.sort((a, b) => a.at - b.at)
   const start = out.find(e => e.id === "vo-03" && e.kind === "intro")
@@ -219,12 +240,35 @@ let plan = { events: [], late: 0 }
 $("routineSel").innerHTML = [...ROUTINE_ORDER, ...PREVIEW_ORDER].map(id => `<option value="${id}">${ROUTINES[id].name} · ${ROUTINES[id].pattern}${ROUTINES[id].preview ? " (awaiting clinical approval)" : ""}</option>`).join("")
 if (!ROUTINES[state.routine]) state.routine = "box"
 // Hook picker: fills the Hook text (still editable); "{X} giving you stress?" takes the topic box.
-$("hookSel").innerHTML = [...HOOKS.map(h => `<option value="${h}">${h.replace("{X}", "___")}</option>`), `<option value="">Custom (type below)</option>`].join("")
-$("hookTopics").innerHTML = HOOK_TOPICS.map(t => `<option value="${t}">`).join("")
-const hookTemplate = () => HOOKS.find(h => fillHook(h, state.hookTopic) === state.hook) ?? ""
-function syncHookPick() { const h = hookTemplate(); $("hookSel").value = h; $("hookTopicBox").hidden = !h.includes("{X}") }
-function pickHook() { const h = $("hookSel").value; if (!h) return syncHookPick(); state.hook = fillHook(h, state.hookTopic); document.querySelector('[data-k="hook"]').value = state.hook; syncHookPick(); save(); refresh({}) }
+// Options are indexes into the language's hook list (the lists line up across languages).
+function hookOptions() {
+  $("hookSel").innerHTML = [...hooksOf(state.lang).map((h, i) => `<option value="${i}">${h.replace("{X}", "___")}</option>`), `<option value="">Custom (type below)</option>`].join("")
+  $("hookTopics").innerHTML = topicsOf(state.lang).map(t => `<option value="${t}">`).join("")
+}
+hookOptions()
+const hookIndex = (l = state.lang) => hooksOf(l).findIndex(h => fillIn(l, h, state.hookTopic) === state.hook)
+const topicSlot = () => String(hooksOf(state.lang).findIndex(h => h.includes("{X}")))
+function syncHookPick() { const i = hookIndex(); $("hookSel").value = i < 0 ? "" : String(i); $("hookTopicBox").hidden = i < 0 || !hooksOf(state.lang)[i].includes("{X}") }
+function pickHook() { const v = $("hookSel").value; if (v === "") return syncHookPick(); state.hook = fillIn(state.lang, hooksOf(state.lang)[+v], state.hookTopic); document.querySelector('[data-k="hook"]').value = state.hook; syncHookPick(); save(); refresh({}) }
+// Switching language rewrites every line in the new language, keeping the picked hook and topic.
+$("langSel").innerHTML = Object.entries(LANGS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")
+if (!LANGS[state.lang]) state.lang = "en"
+function applyLang(prev) {
+  const i = hookIndex(prev), t = topicsOf(prev).indexOf(state.hookTopic), L = lang()
+  if (t >= 0) state.hookTopic = topicsOf(state.lang)[t]
+  state.hook = fillIn(state.lang, hooksOf(state.lang)[i >= 0 ? i : 0], state.hookTopic)
+  const en = { ...defaults, ...(STATIC?.preset || {}) }
+  for (const k of ["start", "encourage", "halfway", "last", "outroTitle", "outroCta"]) state[k] = L ? L[k] : en[k]
+  state.guide = L ? L.intro[state.routine] || L.intro.box : `Let me guide you through ${INTRO_NAME[state.routine] || routine().name.toLowerCase()}.`
+  state.guideSub = ""
+  if (L && state.voSource === "recorded") state.voSource = "ai"   // the recordings are English
+  for (const el of document.querySelectorAll("[data-k]")) if (["hook", "hookTopic", "guide", "guideSub", "start", "encourage", "halfway", "last", "outroTitle", "outroCta", "voSource"].includes(el.dataset.k)) el.value = state[el.dataset.k]
+  $("recOpt").disabled = !!L
+  hookOptions(); syncHookPick(); showVoBoxes(); save()
+  if (voiceNames.length) loadVoices()
+}
 $("hookSel").addEventListener("input", pickHook)
+let prevLang = state.lang
 for (const el of document.querySelectorAll("[data-k]")) {
   const k = el.dataset.k, v = get(k)
   if (el.type === "checkbox") el.checked = v; else el.value = v
@@ -239,7 +283,8 @@ for (const el of document.querySelectorAll("[data-k]")) {
     if (k === "routine") { applyRoutine(); return refresh({ audio: true, vo: true }) }
     if (["rounds", "phaseSec", "introPace"].includes(k)) return refresh({ audio: true })
     if (["voSource", "counting", "voice", "speed", "voStyle", "countUp"].includes(k)) { showVoBoxes(); return refresh({ vo: true }) }
-    if (k === "hookTopic") { $("hookSel").value = "{X} giving you stress?"; return pickHook() }
+    if (k === "lang") { applyLang(prevLang); prevLang = state.lang; return refresh({ vo: true }) }
+    if (k === "hookTopic") { $("hookSel").value = topicSlot(); return pickHook() }
     if (k === "hook") syncHookPick()
     if (k === "duck") return
     refresh({})
@@ -247,7 +292,7 @@ for (const el of document.querySelectorAll("[data-k]")) {
 }
 // Switching routine brings its intro line, rounds label and output name.
 function applyRoutine() {
-  state.guide = `Let me guide you through ${INTRO_NAME[state.routine] || routine().name.toLowerCase()}.`
+  state.guide = lang() ? lang().intro[state.routine] : `Let me guide you through ${INTRO_NAME[state.routine] || routine().name.toLowerCase()}.`
   state.name = `${app() ? "h4" : "h3"}-${state.routine.replace(/_/g, "-")}`
   for (const el of document.querySelectorAll('[data-k="guide"], [data-k="name"]')) el.value = state[el.dataset.k]
   routineLabels(); save()
@@ -270,7 +315,7 @@ function applyLook() {
   save()
 }
 function showVoBoxes() { $("aiBox").hidden = state.voSource !== "ai"; $("recBox").hidden = state.voSource !== "recorded" }
-showVoBoxes(); routineLabels(); syncHookPick()
+showVoBoxes(); routineLabels(); syncHookPick(); $("recOpt").disabled = !!lang()
 
 // ---------------------------------------------------------------- video preview
 const view = $("view")
@@ -322,7 +367,7 @@ function buildStemsAsync(s) {
 }
 
 // Key for a clip: AI clips by voice/speed/style/text, recordings by their file id.
-const clipKey = e => state.voSource === "ai" ? `ai|${state.voice}|${state.speed}|${state.voStyle}|${e.text}` : `rec|${e.id}`
+const clipKey = e => state.voSource === "ai" ? `ai|${voiceOf()}|${state.speed}|${state.voStyle}|${e.text}` : `rec|${e.id}`
 // Resolves each event to {buffer, start, dur}; a recorded counted line longer than its phase
 // falls back to the short phase cue (the on-screen number keeps the count).
 function resolve(e) {
@@ -465,33 +510,35 @@ if (STATIC) {
 // ---------------------------------------------------------------- voice
 // Calm, soft-sounding voices listed first in the audition.
 const CALM = ["af_heart", "af_nicole", "af_sky", "bf_emma", "bf_isabella", "af_bella", "am_michael", "bm_george", "bm_lewis"]
-const ACCENT = { af: "US female", am: "US male", bf: "UK female", bm: "UK male" }
+const ACCENT = { af: "US female", am: "US male", bf: "UK female", bm: "UK male", es: "Spanish · Chatterbox", hi: "Hindi · Chatterbox" }
+// English lists the Kokoro voices; another language lists its own (Chatterbox) voices.
+const forLang = v => state.lang === "en" ? !/^(es|hi)_/.test(v) : v.startsWith(state.lang + "_")
 let voiceNames = [], auditionSrc = null
 
 async function loadVoices() {
   try {
-    voiceNames = await api.voices()
+    voiceNames = (await api.voices()).filter(forLang)
     voiceNames.sort((a, b) => (CALM.includes(b) - CALM.includes(a)) || (CALM.indexOf(a) - CALM.indexOf(b)) || a.localeCompare(b))
     const sel = document.querySelector("[data-k=voice]")
     sel.innerHTML = voiceNames.map(v => `<option value="${v}">${CALM.includes(v) ? "★ " : ""}${v.split("_")[1]} · ${ACCENT[v.slice(0, 2)] || v.slice(0, 2)}</option>`).join("")
-    sel.value = state.voice
+    sel.value = voiceOf(); sel.disabled = state.lang !== "en"
     renderAudition()
   } catch { $("voStatus").textContent = "Voice server not reachable" }
 }
 
 function renderAudition() {
   $("voiceList").innerHTML = voiceNames.map(v => `
-    <div class="voice${v === state.voice ? " chosen" : ""}" data-v="${v}">
+    <div class="voice${v === voiceOf() ? " chosen" : ""}" data-v="${v}">
       <button data-play="${v}" aria-label="Play ${v}">▶</button>
       <span>${CALM.includes(v) ? "★ " : ""}${v.split("_")[1]} <small>${ACCENT[v.slice(0, 2)] || ""}</small></span>
-      <button data-use="${v}">${v === state.voice ? "Chosen" : "Use"}</button>
+      <button data-use="${v}">${v === voiceOf() ? "Chosen" : "Use"}</button>
     </div>`).join("")
 }
 
 $("voiceList").addEventListener("click", async e => {
   const play = e.target.closest("[data-play]")?.dataset.play, use = e.target.closest("[data-use]")?.dataset.use
   if (use) {
-    state.voice = use; save()
+    if (state.lang === "en") state.voice = use; save()
     document.querySelector("[data-k=voice]").value = use
     renderAudition(); refresh({})
     $("voStatus").textContent = `Voice set to ${use.split("_")[1]}. Press "Generate voice-over" to voice the whole video.`
@@ -503,7 +550,7 @@ $("voiceList").addEventListener("click", async e => {
   stop()
   btn.textContent = "…"; btn.disabled = true
   try {
-    const text = $("demoText").value.trim() || "Breathe in…"
+    const text = lang() ? `${state.hook} ${state.guide}` : $("demoText").value.trim() || "Breathe in…"   // other languages audition the hook and intro
     const clipUrl = await api.tts(play, STATIC ? STATIC.voices[play]?.demoText || text : text)
     await actx.resume()
     const src = actx.createBufferSource(), g = actx.createGain()
@@ -526,7 +573,7 @@ $("genVo").addEventListener("click", async () => {
   for (let i = 0; i < todo.length; i++) {
     $("voStatus").textContent = `${STATIC ? "Loading" : "Speaking"} line ${i + 1} of ${todo.length}…`
     try {
-      const buffer = await decode(await api.tts(state.voice, todo[i]))
+      const buffer = await decode(await api.tts(voiceOf(), todo[i]))
       voClips.set(clipKey({ text: todo[i] }), { buffer, start: 0, dur: buffer.duration })
       renderVoList()
     } catch (e) { skipped++; if (!STATIC) { $("voStatus").textContent = String(e.message || e); break } }

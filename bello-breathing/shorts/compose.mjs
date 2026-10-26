@@ -14,7 +14,8 @@ import { loadCharacter, drawScene, ART_W, ART_H } from "../animation-kit/rendere
 import { clamp, ease, mix, warp, ART_SCALE } from "../animation-kit/rig/rig.mjs"
 
 const out = document.getElementById("out"), ctx = out.getContext("2d")
-const SERIF = "Fraunces, Georgia, serif", SANS = "'Nunito Sans', 'Segoe UI', sans-serif"
+// Devanagari (Hindi) has no glyphs in Fraunces / Nunito / Inter; the Noto families fill in per glyph.
+const SERIF = "Fraunces, 'Noto Serif Devanagari', Georgia, serif", SANS = "'Nunito Sans', 'Noto Sans Devanagari', 'Segoe UI', sans-serif"
 const LABEL = { in: "Breathe in", hold: "Hold", out: "Breathe out", sip: "Sip in a little more", natural: "Breathe normally" }
 
 let spec, frames, phases, cycle, character, W, H
@@ -40,7 +41,7 @@ const layersOf = p => ({ calm: clamp(p.calm), exhale: clamp(p.exhale || 0), look
 
 function build(s) {
   const fps = s.fps || 30
-  phases = s.pattern ? s.pattern.filter(p => p.seconds > 0) : phasesOf(s.exercise); cycle = phases.reduce((sum, p) => sum + p.seconds, 0)
+  phases = s.pattern ? s.pattern.filter(p => p.seconds > 0) : s.exercise ? phasesOf(s.exercise) : [{ role: "natural", seconds: 1 }]; cycle = phases.reduce((sum, p) => sum + p.seconds, 0)
   if (s.format === "card") {
     const hook = s.hook.seconds, end = hook + s.rounds * cycle, duration = end + s.outro.seconds
     const raw = bake({ set: "breathing", duration, keys: s.keys,
@@ -49,6 +50,16 @@ function build(s) {
       const t = i / fps
       return { ...f, t, guide: t >= hook && t < end ? t - hook : null, hookEnd: hook, guideEnd: end }
     })
+  }
+  if (s.format === "outro") {
+    // Seated: eye contact and a smile, then each belly pat lifts the hands and drops them back
+    // (the rig's hand warp, as in the rest pose's small hand lift, only bigger and quicker).
+    const L = s.leave, pats = (L.pats || []).flatMap(tp => [
+      { t: tp - 0.3, hands: 0 }, { t: tp - 0.1, hands: L.patLift ?? 12 }, { t: tp + 0.02, hands: -1 }, { t: tp + 0.22, hands: 0 }])
+    const raw = bake({ set: "breathing", duration: s.duration, keys: [{ t: 0, look: 0, calm: 0, cheeks: 0, smile: 0 },
+      { t: 0.4, look: 1, calm: -1, cheeks: 0.55, smile: 0.45 }, ...pats, ...(s.keys || [])],
+      clips: [{ at: 0, mode: "rest" }] }, fps)
+    return raw.slice(0, Math.round(s.duration * fps)).map((f, i) => ({ ...f, t: i / fps, guide: null, hookEnd: 0, guideEnd: Infinity }))
   }
   if (s.format === "story" || s.format === "walkin") {
     // Enter (no app motion) → welcome wave (story only) → hook lines → guided rounds → finish.
@@ -133,6 +144,9 @@ function phaseFade(ph) {
   const k = ease(ph.offset / inDur), out = ph.seconds < 2 ? 1 - ease((ph.offset - (ph.seconds - 0.3)) / 0.3) : 1
   return { a: k * out, rise: (prev.seconds < 2 ? 22 : 14) * (1 - k) }
 }
+
+// "Round 2 of 4", or the video's language (spec.text.round: "Ronda {r} de {n}").
+const roundOf = ph => (spec.text?.round || "Round {r} of {n}").replace("{r}", Math.min(ph.round + 1, spec.rounds)).replace("{n}", spec.rounds)
 
 // Phase label + count, fading in at each phase change.
 function phaseCue(f, y, { labelFont, labelColor, countFont, countColor, alpha }) {
@@ -461,7 +475,9 @@ function walkRect() {
 
 // ---- poses: every sprite plus "kit" (the app's seated character) and "caring" (face swap on kit)
 let blendCanvas, maskCanvas
-const layer = () => (blendCanvas ||= Object.assign(document.createElement("canvas"), { width: W, height: H }))
+// Overrides spec.mirror for the sprites while set (the outro faces whichever way he leaves).
+let flipNow = null
+const layer = () => (blendCanvas?.width === W && blendCanvas.height === H ? blendCanvas : (blendCanvas = Object.assign(document.createElement("canvas"), { width: W, height: H })))
 
 function poseHeight(name, rect) {
   if (name === "kit" || name === "caring") return (kitHead.bottom - kitHead.top) / ART_H * rect.h * ART_SCALE
@@ -479,7 +495,7 @@ function drawPose(c, name, f, rect, x, alpha, sy = 1) {
     if (name === "caring") drawCaringFace(c, r)
   } else {
     const s = sprites[name], k = rect.headR / s.R
-    if (spec.mirror && name !== "sit4") { c.translate(x, 0); c.scale(-1, 1); c.translate(-x, 0) }
+    if ((flipNow ?? spec.mirror) && name !== "sit4") { c.translate(x, 0); c.scale(-1, 1); c.translate(-x, 0) }
     c.drawImage(s.img, s.sx, s.sy, s.sw, s.sh, x - s.headX * k, rect.groundY - s.bottom * k, s.sw * k, s.sh * k)
   }
   c.restore()
@@ -491,7 +507,7 @@ function drawCaringFace(c, r) {
   const s = sprites.caring, kitR = kitHead.R / ART_W * r.w * ART_SCALE, k = kitR / s.R
   const crownX = r.x + r.w * (0.5 + (kitHead.headX / ART_W - 0.5) * ART_SCALE)
   const crownY = r.y + r.h * (0.5 + (kitHead.top / ART_H - 0.5) * ART_SCALE)
-  const m = (maskCanvas ||= Object.assign(document.createElement("canvas"), { width: W, height: H })), mc = m.getContext("2d")
+  const m = (maskCanvas = maskCanvas?.width === W && maskCanvas.height === H ? maskCanvas : Object.assign(document.createElement("canvas"), { width: W, height: H })), mc = m.getContext("2d")
   mc.setTransform(1, 0, 0, 1, 0, 0); mc.clearRect(0, 0, W, H)
   mc.drawImage(s.img, s.sx, s.sy, s.sw, s.sh, crownX - s.headX * k, crownY - s.top * k, s.sw * k, s.sh * k)
   const cx = crownX, cy = crownY + kitR * 1.15, g = mc.createRadialGradient(cx, cy, kitR * 0.55, cx, cy, kitR * 0.95)
@@ -554,17 +570,31 @@ let walkTrack
 
 // Before the walk: an empty stage, or Bello peeking in from the right edge, leaning so only
 // his head and waving arm come into view (the body stays off screen), then ducking back out.
-function peek(f, rect) {
-  const P = spec.walk.peek, t = f.t
+function peek(f, rect, P = spec.walk.peek, left = !!spec.mirror) {
+  const t = f.t
   if (!P || t < P.in || t > P.out + 0.5) return
   const k = ease((t - P.in) / 0.6) * (1 - ease((t - P.out) / 0.5))
+  if (P.ground) {
+    // On his walking plane: standing at the screen edge (feet on the ground line), leaning in from
+    // the side and waving with the standing wave art. The waving hand faces the middle of the frame.
+    const s = Math.max(0, t - P.in - 0.35) / 0.17, i = Math.floor(s), seq = ["wave1", "wave2", "wave3", "wave2"]
+    const w = sprites.wave1, half = w.sw * rect.headR / w.R / 2, side = left ? -1 : 1
+    const x = (left ? 0 : W) + side * half * (-0.3 + 1.5 * (1 - k))
+    const was = flipNow; flipNow = left
+    drawScene(ctx, { ...rect, x: rect.x + (x - W / 2) }, 0, dark() ? "#000000" : undefined, { halo: false })
+    morph(seq[i % 4], seq[(i + 1) % 4], ease(s - i), f, rect, x, { tilt: -side * (P.lean ?? 0.1) * k })
+    flipNow = was
+    return
+  }
   if (P.art) {
     // Dedicated peek art, already cut off by its right edge: pin that edge to the screen edge,
     // slide it in, and swing the waving hand between the two frames.
     const s = Math.max(0, t - P.in - 0.35) / 0.2, i = Math.floor(s), seq = ["peek1", "peek2", "peek3", "peek2"]
     const p = sprites.peek1, kk = rect.headR / p.R, inset = (p.sw - p.headX) * kk, slide = (1 - k) * p.sw * kk * 0.75
-    const x = spec.mirror ? -30 + inset - slide : W + 30 - inset + slide
-    morph(seq[i % 4], seq[(i + 1) % 4], ease(s - i), f, rect, x, { tilt: (spec.mirror ? 1 : -1) * (P.angle || 0) * k, lift: -rect.headR * (P.drop || 0) })
+    const x = left ? -30 + inset - slide : W + 30 - inset + slide
+    const was = flipNow; flipNow = left
+    morph(seq[i % 4], seq[(i + 1) % 4], ease(s - i), f, rect, x, { tilt: (left ? 1 : -1) * (P.angle || 0) * k, lift: -rect.headR * (P.drop || 0) })
+    flipNow = was
     return
   }
   const s = Math.max(0, t - P.in - 0.35) / 0.17, seq = ["wave1", "wave2", "wave3", "wave2"], i = Math.floor(s)
@@ -646,12 +676,87 @@ function walkIn(f, rect) {
   else morph(a, b, m, f, rect, x, opts)
 }
 
+// ---------------------------------------------------------------- outro: pat, stand, walk off, peek back
+// spec.leave = { start: "seated" | "standing", pats: [s…], wave: [from, to] (on his feet), stand: s,
+//   walk: [from, to] (optional: without it he stays in frame), exit: "right" | "left", peeks: [{ in, out, side }], drop }
+// Only art from the walk-in set; standing pats are a placeholder bounce until the pat frames exist.
+function leaveKeys() {
+  const L = spec.leave, s = L.stand, standing = L.start === "standing"
+  const keys = [[0, standing ? "stand" : "kit"]]
+  // Standing up is the sit-down in reverse: app character → sit 3 → 2 → 1 → turn, then a step
+  // (or, with no walk, settling on his feet).
+  if (!standing) keys.push([s, "kit"], [s + 0.3, "sit3"], [s + 0.6, "sit2"], [s + 0.9, "sit1"], [s + 1.2, "turn"], [s + (L.walk ? 1.4 : 1.45), L.walk ? "walkStop" : "stand"])
+  if (L.wave) {
+    // Standing wave (3-frame swing), back to the standing pose when it ends.
+    const [w0, w1] = L.wave, swing = ["wave2", "wave3", "wave2", "wave1"]
+    keys.push([w0, "stand"], [w0 + 0.2, "wave1"])
+    let t = w0 + 0.2, i = 0
+    while (t + 0.17 <= w1 - 0.1) { t += 0.17; keys.push([t, swing[i++ % 4]]) }
+    if (keys[keys.length - 1][1] !== "wave1") keys.push([t + 0.17, "wave1"])
+    keys.push([keys[keys.length - 1][0] + 0.25, "stand"])
+  }
+  if (L.walk) {
+    if (standing) keys.push([s, "stand"], [s + 0.22, "walkStop"])
+    keys.push([L.walk[0], "walk1"])
+  }
+  return keys.sort((a, b) => a[0] - b[0])
+}
+let leaveTrack
+
+// One soft bounce per pat, peaking just after the hands land.
+const patBounce = t => Math.max(0, ...(spec.leave.pats || []).map(tp => t > tp - 0.03 && t < tp + 0.25 ? Math.sin(Math.PI * (t - tp + 0.03) / 0.28) : 0))
+
+function leaveScene(f, rect) {
+  const L = spec.leave, t = f.t, cx = W / 2, [w0, w1] = L.walk || [Infinity, Infinity], dir = L.exit === "left" ? -1 : 1
+  for (const P of L.peeks || []) peek(f, rect, { art: true, angle: 0, drop: L.drop ?? 2.7, ...P }, P.side === "left")
+  if (t >= w1) return
+  leaveTrack ||= leaveKeys()
+  flipNow = dir > 0   // the walk art faces left; mirrored it faces right
+  let x = cx, a, b, m = 0, opts = {}
+  if (t >= w0) {
+    // Leaves at a waddle that speeds up, a whole number of cycles from the first step.
+    const u = (t - w0) / (w1 - w0), dist = W / 2 + rect.headR * 5, travel = u ** 1.6
+    x = cx + dir * dist * travel
+    const seq = L.steps || ["walk1", "walk3", "walk6", "walk7", "walk8", "walk9"], n = seq.length
+    const cycles = Math.max(1, Math.round(dist / (rect.headR * 2.6))), s = travel * cycles * n
+    const i = Math.floor(s), frac = s - i
+    a = seq[i % n]; b = seq[(i + 1) % n]; m = ease(clamp((frac - 0.25) / 0.5))
+    opts = { lift: Math.sin(Math.PI * s / (n / 2)) ** 2 * rect.headR * 0.09, tilt: 0.035 * Math.sin(2 * Math.PI * s / n) }
+  } else {
+    const keys = leaveTrack
+    let k = 0
+    while (k < keys.length - 1 && t >= keys[k + 1][0]) k++
+    a = keys[k][1]; b = keys[Math.min(k + 1, keys.length - 1)][1]
+    const span = k >= keys.length - 1 ? 1 : keys[k + 1][0] - keys[k][0], u = (t - keys[k][0]) / span
+    const soft = a.startsWith("wave") && b.startsWith("wave"), w = soft ? 1 : Math.min(1, 0.15 / span)
+    m = k >= keys.length - 1 ? 0 : ease(clamp((u - (1 - w) / 2) / w))
+    if (a === b && a === "stand") opts.squash = 0.007 * Math.sin(t * Math.PI * 2 / 3.4)
+    opts.squash = (opts.squash || 0) + (a === "stand" || a === "kit" ? (a === "stand" ? 0.03 : 0.018) * patBounce(t) : 0)
+  }
+  drawScene(ctx, { ...rect, x: rect.x + (x - cx) }, 0, dark() ? "#000000" : undefined, { halo: false })
+  morph(a, b, m, f, rect, x, opts)
+  flipNow = null
+}
+
+function outroApp(f) {
+  const { CANVAS, INK, FONT } = APP, L = spec.leave
+  ctx.fillStyle = CANVAS; ctx.fillRect(0, 0, W, H)
+  const rect = walkRect()
+  // The stage fades as he walks away, leaving the clean canvas the intro starts on.
+  appScenery(rect, f.t, L.walk ? 1 - ease((f.t - L.walk[0]) / (L.walk[1] - L.walk[0])) : 1)
+  leaveScene(f, rect)
+  for (const line of spec.lines || []) {
+    const a = ease((f.t - line.from) / 0.45) * (1 - ease((f.t - line.to + 0.4) / 0.4)), rise = 18 * (1 - ease((f.t - line.from) / 0.45))
+    text(line.text, (line.y ? H * line.y : H * 0.3) + rise, { font: `700 ${line.size || 100}px ${FONT}`, color: INK, alpha: a, spacing: "-2px", maxWidth: W - 140, lineHeight: (line.size || 100) * 1.12 })
+  }
+}
+
 // ---------------------------------------------------------------- the app's breathing player
 // Tokens and copy from gutsphere_app (gs_product.css, box_player.css, box_breathing.en.yml).
 const APP = {
   CANVAS: "#f6f3ed", CARD: "#ffffff", INK: "#10110f", MUTED: "#555950", LINE: "#dcddd7", SOFT: "#ebe9e3", CURRENT: "#a9aba4",
   AIR_IN: "84,143,134", AIR_OUT: "183,128,97", // #548f86 to the nose, #b78061 out of the mouth
-  FONT: "'Gutsphere Inter', Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif",
+  FONT: "'Gutsphere Inter', Inter, 'Noto Sans Devanagari', -apple-system, 'Helvetica Neue', Arial, sans-serif",
   LABEL: { in: "Breathe in", hold: "Hold gently", out: "Breathe out", sip: "A little more in", natural: "Breathe naturally" },
   CUE: { in: "Through your nose.", hold: "Breathe sooner if you need.", out: "An easy breath out.", sip: "One more small sip of air.", natural: "" }
 }
@@ -759,7 +864,7 @@ function appSegments(f, y, alpha) {
 
 // End card: the app's check-in, as chips.
 function appCheckIn(y, alpha) {
-  const chips = ["Calmer", "About the same", "More tense", "Not sure"], font = `600 40px ${APP.FONT}`, h = 92, gap = 18
+  const chips = spec.text?.chips || ["Calmer", "About the same", "More tense", "Not sure"], font = `600 40px ${APP.FONT}`, h = 92, gap = 18
   ctx.font = font
   const widths = chips.map(c => ctx.measureText(c).width + 76), boxes = []
   ;[[0, 1], [2, 3]].forEach((row, r) => {
@@ -780,6 +885,7 @@ const STYLES = {
   // The app's breathing player, at 9:16: warm off-white canvas, Inter, monochrome UI; colour only in
   // Bello, the peach ripples and the air at his nose and mouth.
   app(f, v) {
+    if (spec.format === "outro") return outroApp(f)
     const { CANVAS, INK, MUTED, FONT } = APP
     ctx.fillStyle = CANVAS; ctx.fillRect(0, 0, W, H)
     const rect = walkRect()
@@ -800,7 +906,7 @@ const STYLES = {
     appSegments(f, H * 0.045, v.guide)
     if (f.guide != null && v.guide > 0) {
       const ph = phaseAt(f.guide)
-      text(`Round ${Math.min(ph.round + 1, spec.rounds)} of ${spec.rounds}`, H * 0.045 + 74, { font: `600 34px ${FONT}`, color: MUTED, alpha: v.guide })
+      text(roundOf(ph), H * 0.045 + 74, { font: `600 34px ${FONT}`, color: MUTED, alpha: v.guide })
       const fade = phaseFade(ph), a = v.guide * fade.a, rise = fade.rise
       const label = ph.label || APP.LABEL[ph.role], cue = ph.cue ?? APP.CUE[ph.role]
       text(label, H * 0.2 + rise, { font: fitFont(`700 96px ${FONT}`, label, W - 140), color: INK, alpha: a, spacing: "-2px", maxWidth: W })
@@ -810,7 +916,7 @@ const STYLES = {
 
     if (v.outro > 0) {
       const y = text(spec.outro.text, H * 0.13, { font: `700 96px ${FONT}`, color: INK, alpha: v.outro, spacing: "-2px" })
-      const y2 = text(spec.outro.ask || "How do you feel?", y + 6, { font: `400 46px ${FONT}`, color: MUTED, alpha: v.outro })
+      const y2 = text(spec.outro.ask || spec.text?.ask || "How do you feel?", y + 6, { font: `400 46px ${FONT}`, color: MUTED, alpha: v.outro })
       appCheckIn(y2 + 30, v.outro)
       if (brand?.logo) {
         const lw = 300, lh = lw * 156 / 603
@@ -865,7 +971,7 @@ const STYLES = {
       ctx.strokeStyle = M.track; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + bw, by); ctx.stroke()
       ctx.strokeStyle = red; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + bw * Math.max(0.001, ph.progress), by); ctx.stroke()
       ctx.restore()
-      if (spec.format !== "loop") text(`Round ${Math.min(ph.round + 1, spec.rounds)} of ${spec.rounds}`, by + 70, { font: `600 34px ${SANS}`, color: muted, alpha: v.guide, spacing: "1px" })
+      if (spec.format !== "loop") text(roundOf(ph), by + 70, { font: `600 34px ${SANS}`, color: muted, alpha: v.guide, spacing: "1px" })
     }
     if (v.outro > 0) {
       const y = text(spec.outro.text, H * 0.2, { font: `600 104px ${SERIF}`, color: ink, alpha: v.outro })
@@ -1065,12 +1171,14 @@ window.setup = async s => {
   Object.assign(APP, s.theme === "dark" ? APP_DARK : APP_LIGHT)
   out.width = W; out.height = H
   await Promise.all([`600 80px Fraunces`, `400 80px "Nunito Sans"`, `600 80px "Nunito Sans"`, `800 80px "Nunito Sans"`, `300 80px Inter`, `400 80px Inter`, `500 80px Inter`, `600 80px Inter`].map(f => document.fonts.load(f)))
+  // Devanagari only loads for a glyph in its range, so ask with Hindi text.
+  await Promise.all([`600 80px "Noto Serif Devanagari"`, ...[400, 600, 700].map(w => `${w} 80px "Noto Sans Devanagari"`)].map(f => document.fonts.load(f, "साँस")))
   if (s.style === "app") {
     await Promise.all([400, 600, 700].map(w => document.fonts.load(`${w} 80px "Gutsphere Inter"`)))
     brand ||= { logo: await loadImage("art/brand/main_gutsphere_logo.svg").catch(() => null) }   // the end card skips the logo if it fails
   }
   character ||= await loadCharacter("breathing", "../animation-kit")
-  if (s.format === "walkin") { if (!sprites) await loadSprites(); walkTrack = null }
+  if (s.format === "walkin" || s.format === "outro") { if (!sprites) await loadSprites(); walkTrack = null; leaveTrack = null }
   frames = build(s)
   return { count: frames.length, backend: character.backend, cycle }
 }

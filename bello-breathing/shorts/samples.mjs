@@ -122,6 +122,61 @@ export const SAMPLES = {
     outro: { seconds: 5, text: "Finished for now", ask: "How do you feel?" }
   },
 
+  // Outros (H4 look): eye contact, pat pat, stand up, walk off, peek back at the hello peek's height
+  // ("Byeee, see you soon."), then the clean canvas the intro starts on. Existing art only.
+  "outro-a-right": {
+    ...base, format: "outro", mirror: true, style: "app", duration: 7.4,
+    leave: { start: "seated", pats: [0.75, 1.2], stand: 1.75, walk: [3.2, 4.5], exit: "right", peeks: [{ in: 4.85, out: 6.6, side: "right" }] },
+    lines: [{ from: 5.15, to: 7.0, text: "Byeee, see you soon.", size: 88 }]
+  },
+  // Leaves the way he came in and peeks from the exact spot of the hello peek.
+  "outro-b-left": {
+    ...base, format: "outro", mirror: true, style: "app", duration: 7.4,
+    leave: { start: "seated", pats: [0.75, 1.2], stand: 1.75, walk: [3.2, 4.5], exit: "left", peeks: [{ in: 4.85, out: 6.6, side: "left" }] },
+    lines: [{ from: 5.15, to: 7.0, text: "Byeee, see you soon.", size: 88 }]
+  },
+  // Walks off to the right, then surprises from the left (where he first said hello).
+  "outro-c-around": {
+    ...base, format: "outro", mirror: true, style: "app", duration: 7.6,
+    leave: { start: "seated", pats: [0.75, 1.2], stand: 1.75, walk: [3.2, 4.5], exit: "right", peeks: [{ in: 5.05, out: 6.8, side: "left" }] },
+    lines: [{ from: 5.35, to: 7.2, text: "Byeee, see you soon.", size: 88 }]
+  },
+  // Double peek: a quick look back, ducks, then pops up again to say bye.
+  "outro-d-double": {
+    ...base, format: "outro", mirror: true, style: "app", duration: 8.6,
+    leave: { start: "seated", pats: [0.75, 1.2], stand: 1.75, walk: [3.2, 4.5], exit: "right",
+      peeks: [{ in: 4.85, out: 5.55, side: "right" }, { in: 6.35, out: 7.9, side: "right" }] },
+    lines: [{ from: 6.6, to: 8.3, text: "Byeee, see you soon.", size: 88 }]
+  },
+  // Long-form 16:9, standing: pats are a placeholder bounce (no pat art yet), walk off (no wave), then leans
+  // back in from the right edge on the same ground line he walks on and waves (not the corner peek).
+  "outro-s-standing-16x9": {
+    ...base, size: [1920, 1080], format: "outro", mirror: true, style: "app", duration: 6.6,
+    leave: { start: "standing", pats: [0.6, 1.05], stand: 1.5, walk: [1.75, 3.35], exit: "right", peeks: [{ in: 3.75, out: 5.75, side: "right", ground: true }] },
+    lines: [{ from: 4.05, to: 6.25, text: "Byeee, see you soon.", y: 0.2, size: 84 }]
+  },
+
+  // Shorts, no walk-off: pat pat, stands up, waves bye where he is and stays.
+  "outro-b2-stand-wave": {
+    ...base, format: "outro", mirror: true, style: "app", duration: 6.4,
+    leave: { start: "seated", pats: [0.75, 1.2], stand: 1.75, wave: [3.4, 5.3] },
+    lines: [{ from: 3.5, to: 5.9, text: "Byeee, see you soon.", size: 88 }]
+  },
+  // Shorts, stays seated: pat pat, then eyes close with a big smile and a slow, small, calming head sway.
+  "outro-b3-seated-shake": {
+    ...base, format: "outro", mirror: true, style: "app", duration: 5.8,
+    leave: { start: "seated", pats: [0.75, 1.2], stand: 99 },
+    keys: [{ t: 1.45, look: 1, cheeks: 0.55, smile: 0.45 }, { t: 1.75, look: 0, cheeks: 0.75, smile: 0.55 },
+      { t: 1.5, tilt: 0, sway: 0 }, { t: 2.30, tilt: 1.7, sway: 0.45 }, { t: 3.10, tilt: -1.7, sway: -0.45 }, { t: 3.90, tilt: 1.7, sway: 0.45 }, { t: 4.70, tilt: 0.0, sway: 0.0 }],
+    lines: [{ from: 1.7, to: 5.4, text: "Byeee, see you soon.", size: 88 }]
+  },
+  // Long-form 16:9, no walk-off: pat pat (placeholder bounce), then waves bye in place and stays.
+  "outro-s2-wave-stay-16x9": {
+    ...base, size: [1920, 1080], format: "outro", mirror: true, style: "app", duration: 5.2,
+    leave: { start: "standing", pats: [0.6, 1.05], wave: [1.6, 3.7] },
+    lines: [{ from: 1.7, to: 4.6, text: "Byeee, see you soon.", y: 0.2, size: 84 }]
+  },
+
   // Locked E1: hook always on top, the line pans under the rider (playhead at ⅓ width), loop.
   "e1-line-dot": {
     ...base, format: "loop", style: "line", rider: "dot", exercise: "box", rounds: 2,
